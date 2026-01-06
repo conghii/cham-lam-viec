@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
+import dynamic from "next/dynamic"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -9,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Label } from "@/components/ui/label"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
-import { Image as ImageIcon, X, Trash2, Target, CheckSquare, StickyNote, PenTool, Loader2 } from "lucide-react"
+import { Image as ImageIcon, X, Trash2, Target, CheckSquare, StickyNote, PenTool, Loader2, Smile } from "lucide-react"
 import { uploadFile } from "@/lib/firebase/storage"
 import { createPost, updatePost, type Post, type Attachment, subscribeToGoals, subscribeToTasks, subscribeToNotes, subscribeToBlogPosts, type Goal, type Task, type Note, type BlogPost } from "@/lib/firebase/firestore"
 import { auth } from "@/lib/firebase/auth"
@@ -23,17 +24,21 @@ import {
 } from "@/components/ui/select"
 import { Globe, Users as UsersIcon } from "lucide-react"
 
+// Dynamic import for emoji picker to avoid SSR issues
+const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false })
+
 export function CreatePostDialog({ children, onPostCreated, postToEdit }: { children: React.ReactNode, onPostCreated?: () => void, postToEdit?: Post }) {
     const [open, setOpen] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
     const [title, setTitle] = useState("")
-    const [description, setDescription] = useState("")
     const [content, setContent] = useState("")
     const [tags, setTags] = useState("")
     const [selectedImage, setSelectedImage] = useState<File | null>(null)
     const [imagePreview, setImagePreview] = useState("")
     const [attachments, setAttachments] = useState<Attachment[]>([])
     const [visibility, setVisibility] = useState<'public' | 'private'>('public')
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false)
+    const contentRef = useRef<HTMLTextAreaElement>(null)
 
     // Data for attachments
     const [myGoals, setMyGoals] = useState<Goal[]>([])
@@ -48,7 +53,6 @@ export function CreatePostDialog({ children, onPostCreated, postToEdit }: { chil
 
         if (postToEdit) {
             setTitle(postToEdit.title || "")
-            setDescription(postToEdit.description || "")
             setContent(postToEdit.content || "")
             setTags(postToEdit.tags.join(", "))
             setAttachments(postToEdit.attachments || [])
@@ -102,6 +106,25 @@ export function CreatePostDialog({ children, onPostCreated, postToEdit }: { chil
         setAttachments(attachments.filter(a => a.id !== id))
     }
 
+    const handleEmojiClick = (emojiData: any) => {
+        const emoji = emojiData.emoji
+        const textarea = contentRef.current
+        if (textarea) {
+            const start = textarea.selectionStart
+            const end = textarea.selectionEnd
+            const newContent = content.substring(0, start) + emoji + content.substring(end)
+            setContent(newContent)
+            // Set cursor position after emoji
+            setTimeout(() => {
+                textarea.focus()
+                textarea.setSelectionRange(start + emoji.length, start + emoji.length)
+            }, 0)
+        } else {
+            setContent(content + emoji)
+        }
+        setShowEmojiPicker(false)
+    }
+
     const handleSubmit = async () => {
         if (!content && !selectedImage && attachments.length === 0) return
 
@@ -129,7 +152,6 @@ export function CreatePostDialog({ children, onPostCreated, postToEdit }: { chil
                 await updatePost(postToEdit.id, {
                     content,
                     title,
-                    description,
                     tags: tagList,
                     attachments: JSON.parse(JSON.stringify(finalAttachments)),
                     visibility,
@@ -142,7 +164,7 @@ export function CreatePostDialog({ children, onPostCreated, postToEdit }: { chil
                     imageUrls,
                     tagList,
                     title,
-                    description,
+                    "", // description removed
                     JSON.parse(JSON.stringify(finalAttachments)), // Deep sanitize to remove any undefined
                     visibility
                 )
@@ -150,7 +172,6 @@ export function CreatePostDialog({ children, onPostCreated, postToEdit }: { chil
 
             // Reset
             setTitle("")
-            setDescription("")
             setContent("")
             setTags("")
             handleRemoveImage()
@@ -185,18 +206,31 @@ export function CreatePostDialog({ children, onPostCreated, postToEdit }: { chil
                             value={title}
                             onChange={e => setTitle(e.target.value)}
                         />
-                        <Input
-                            placeholder="Short description..."
-                            className="text-sm border-none px-0 focus-visible:ring-0 shadow-none h-auto py-0 text-muted-foreground"
-                            value={description}
-                            onChange={e => setDescription(e.target.value)}
-                        />
-                        <Textarea
-                            placeholder="What's on your mind? Share your knowledge..."
-                            className="min-h-[150px] resize-none border-none p-0 focus-visible:ring-0 shadow-none text-base"
-                            value={content}
-                            onChange={e => setContent(e.target.value)}
-                        />
+                        <div className="relative">
+                            <Textarea
+                                ref={contentRef}
+                                placeholder="What's on your mind? Share your knowledge..."
+                                className="min-h-[150px] resize-none border-none p-0 focus-visible:ring-0 shadow-none text-base pr-10"
+                                value={content}
+                                onChange={e => setContent(e.target.value)}
+                            />
+                            <div className="absolute top-2 right-2 flex gap-1">
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8 w-8 p-0 hover:bg-muted"
+                                    onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                                >
+                                    <Smile className="h-4 w-4 text-muted-foreground" />
+                                </Button>
+                            </div>
+                            {showEmojiPicker && (
+                                <div className="absolute top-12 right-0 z-50 shadow-lg">
+                                    <EmojiPicker onEmojiClick={handleEmojiClick} />
+                                </div>
+                            )}
+                        </div>
 
                         {/* Attachments Display */}
                         {(imagePreview || attachments.length > 0) && (

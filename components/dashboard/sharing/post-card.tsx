@@ -1,7 +1,9 @@
 "use client"
 
 import { useState } from "react"
+import dynamic from "next/dynamic"
 import { type Post, type Attachment, toggleLikePost, deletePost, addComment, subscribeToComments, type SocialComment, type Friendship, sendFriendRequest } from "@/lib/firebase/firestore"
+import { useRef } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -9,7 +11,7 @@ import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Heart, MessageCircle, Share2, MoreVertical, Trash2, Send, Target, CheckSquare, StickyNote, Globe, Users, UserPlus, Clock } from "lucide-react"
+import { Heart, MessageCircle, Share2, MoreVertical, Trash2, Send, Target, CheckSquare, StickyNote, Globe, Users, UserPlus, Clock, Smile } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { cn } from "@/lib/utils"
 import { useEffect } from "react"
@@ -19,6 +21,9 @@ import { ViewAttachmentDialog } from "./view-attachment-dialog"
 import { Edit } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner";
+
+// Dynamic import for emoji picker to avoid SSR issues
+const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false })
 
 export function PostCard({ post, currentUserId, friendships = [] }: { post: Post, currentUserId?: string, friendships?: Friendship[] }) {
     const [requestLoading, setRequestLoading] = useState(false)
@@ -264,6 +269,8 @@ export function PostCard({ post, currentUserId, friendships = [] }: { post: Post
 function CommentSection({ postId }: { postId: string }) {
     const [comments, setComments] = useState<SocialComment[]>([])
     const [newComment, setNewComment] = useState("")
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false)
+    const commentInputRef = useRef<HTMLInputElement>(null)
 
     useEffect(() => {
         const unsub = subscribeToComments(postId, (data) => setComments(data))
@@ -274,6 +281,26 @@ function CommentSection({ postId }: { postId: string }) {
         if (!newComment.trim()) return
         await addComment(postId, newComment)
         setNewComment("")
+        setShowEmojiPicker(false)
+    }
+
+    const handleEmojiClick = (emojiData: any) => {
+        const emoji = emojiData.emoji
+        const input = commentInputRef.current
+        if (input) {
+            const start = input.selectionStart || 0
+            const end = input.selectionEnd || 0
+            const newText = newComment.substring(0, start) + emoji + newComment.substring(end)
+            setNewComment(newText)
+            // Set cursor position after emoji
+            setTimeout(() => {
+                input.focus()
+                input.setSelectionRange(start + emoji.length, start + emoji.length)
+            }, 0)
+        } else {
+            setNewComment(newComment + emoji)
+        }
+        setShowEmojiPicker(false)
     }
 
     return (
@@ -306,20 +333,36 @@ function CommentSection({ postId }: { postId: string }) {
                 </Avatar>
                 <div className="flex-1 relative">
                     <Input
+                        ref={commentInputRef}
                         placeholder="Write a comment..."
-                        className="min-h-[36px] h-9 text-sm pr-10 rounded-full bg-muted/40 border-transparent focus:bg-background focus:border-input transition-all"
+                        className="min-h-[36px] h-9 text-sm pr-20 rounded-full bg-muted/40 border-transparent focus:bg-background focus:border-input transition-all"
                         value={newComment}
                         onChange={(e) => setNewComment(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && handleSend()}
                     />
-                    <Button
-                        size="icon"
-                        variant="ghost"
-                        className="absolute right-1 top-0.5 h-8 w-8 hover:bg-primary/10 hover:text-primary rounded-full transition-colors"
-                        onClick={handleSend}
-                    >
-                        <Send className="h-4 w-4" />
-                    </Button>
+                    <div className="absolute right-1 top-0.5 flex gap-1">
+                        <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8 hover:bg-primary/10 hover:text-primary rounded-full transition-colors"
+                            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                        >
+                            <Smile className="h-4 w-4" />
+                        </Button>
+                        <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8 hover:bg-primary/10 hover:text-primary rounded-full transition-colors"
+                            onClick={handleSend}
+                        >
+                            <Send className="h-4 w-4" />
+                        </Button>
+                    </div>
+                    {showEmojiPicker && (
+                        <div className="absolute bottom-12 right-0 z-50">
+                            <EmojiPicker onEmojiClick={handleEmojiClick} />
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
