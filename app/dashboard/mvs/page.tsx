@@ -136,9 +136,8 @@ export default function MVSPage() {
     };
 
     const removeStrategy = (id: string) => {
-        if (confirm("Are you sure you want to remove this strategy?")) {
-            setEditStrategies(editStrategies.filter(s => s.id !== id));
-        }
+        setEditStrategies(editStrategies.filter(s => s.id !== id));
+        toast.info("Strategy removed from list (Save to apply)");
     };
 
     if (isLoading) {

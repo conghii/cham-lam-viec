@@ -107,7 +107,7 @@ export function StatsOverview() {
                     <div className="flex items-baseline gap-2">
                         <div className="text-xl font-bold leading-none">{activeGoalsCount}</div>
                         <div className="text-[10px] text-muted-foreground/70 font-medium">
-                            / {completedGoalsCount} Done
+                            / {goals.length} Total
                         </div>
                     </div>
                     <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide mt-0.5">Active Goals</div>
@@ -123,10 +123,14 @@ export function StatsOverview() {
                 </div>
                 <div>
                     <div className="flex items-center gap-2">
-                        <div className="text-xl font-bold leading-none">{completionRate}%</div>
-                        <div className="text-[10px] text-muted-foreground/70 font-medium whitespace-nowrap">
-                            ({completedTasksCount} finished)
+                        <div className="text-xl font-bold leading-none">
+                            {totalTasks > 0 ? `${completionRate}%` : "Let's Start!"}
                         </div>
+                        {totalTasks > 0 && (
+                            <div className="text-[10px] text-muted-foreground/70 font-medium whitespace-nowrap">
+                                ({completedTasksCount} finished)
+                            </div>
+                        )}
                     </div>
                     <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide mt-0.5">Completion Rate</div>
                 </div>

@@ -8,6 +8,10 @@ import { Sidebar } from "@/components/shared/sidebar"
 import { Header } from "@/components/shared/header"
 import { BottomNav } from "@/components/shared/bottom-nav"
 import { Loader2 } from "lucide-react"
+import { ContentWrapper } from "@/components/dashboard/content-wrapper"
+
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
+import { cn } from "@/lib/utils"
 
 export default function DashboardLayout({
     children,
@@ -16,6 +20,7 @@ export default function DashboardLayout({
 }) {
     const [loading, setLoading] = useState(true)
     const [user, setUser] = useState<any>(null)
+    const [isCollapsed, setIsCollapsed] = useState(false)
     const router = useRouter()
 
     useEffect(() => {
@@ -41,15 +46,46 @@ export default function DashboardLayout({
 
     if (!user) return null
 
+
+
     return (
         <div className="flex h-screen overflow-hidden bg-background">
-            <Sidebar />
-            <div className="flex flex-1 flex-col overflow-hidden">
-                <Header />
-                <main className="flex-1 overflow-y-auto p-4 pb-20 md:p-8 md:pb-8">
-                    {children}
-                </main>
+            <ResizablePanelGroup
+                direction="horizontal"
+                className="hidden md:flex"
+            >
+                <ResizablePanel
+                    defaultSize={20}
+                    minSize={15}
+                    maxSize={250}
+                    collapsible={true}
+                    collapsedSize={4}
+                    className={cn(isCollapsed && "min-w-[50px] transition-all duration-300 ease-in-out")}
+                    onResize={(size: any) => setIsCollapsed(size < 10)}
+                >
+                    <Sidebar isCollapsed={isCollapsed} />
+                </ResizablePanel>
+                <ResizableHandle withHandle />
+                <ResizablePanel defaultSize={80}>
+                    <div className="flex flex-1 flex-col overflow-hidden h-full">
+                        <Header />
+                        <ContentWrapper>
+                            {children}
+                        </ContentWrapper>
+                    </div>
+                </ResizablePanel>
+            </ResizablePanelGroup>
+
+            {/* Mobile Layout (No Resizable Panels) */}
+            <div className="flex flex-col h-full w-full md:hidden">
+                <div className="flex-1 flex flex-col overflow-hidden">
+                    <Header />
+                    <ContentWrapper>
+                        {children}
+                    </ContentWrapper>
+                </div>
             </div>
+
             <BottomNav />
         </div>
     )

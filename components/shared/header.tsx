@@ -5,11 +5,11 @@ import Link from "next/link"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Bell } from "lucide-react"
+import { Bell, Users } from "lucide-react"
 import { ModeToggle } from "@/components/theme-toggle"
 
 import { auth, logOut } from "@/lib/firebase/auth"
-import { subscribeToUserProfile } from "@/lib/firebase/firestore"
+import { subscribeToUserProfile, subscribeToChats, type Chat } from "@/lib/firebase/firestore"
 
 import { getDailyQuote } from "@/lib/quotes"
 
@@ -18,6 +18,7 @@ export function Header() {
     const [user, setUser] = useState(auth.currentUser)
     const [userData, setUserData] = useState<any>(null)
     const [quote, setQuote] = useState(getDailyQuote())
+    const [unreadCount, setUnreadCount] = useState(0)
 
     useEffect(() => {
         const hour = new Date().getHours()
@@ -42,6 +43,20 @@ export function Header() {
 
         return () => unsubAuth()
     }, [])
+
+    useEffect(() => {
+        if (!user) return;
+        const unsub = subscribeToChats((chats: Chat[]) => {
+            let count = 0;
+            chats.forEach(c => {
+                if (c.unreadCount && c.unreadCount[user.uid] && c.unreadCount[user.uid] > 0) {
+                    count++;
+                }
+            });
+            setUnreadCount(count);
+        });
+        return () => unsub();
+    }, [user])
 
     const handleLogout = async () => {
         try {
@@ -71,6 +86,16 @@ export function Header() {
             </div>
             <div className="flex items-center gap-4">
                 <ModeToggle />
+                <Link href="/dashboard/friends">
+                    <Button variant="ghost" size="icon" title="Friends" className="relative">
+                        <Users className="h-5 w-5" />
+                        {unreadCount > 0 && (
+                            <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-rose-500 text-[10px] font-bold text-white flex items-center justify-center border-2 border-background">
+                                {unreadCount > 9 ? '9+' : unreadCount}
+                            </span>
+                        )}
+                    </Button>
+                </Link>
                 <Button variant="ghost" size="icon">
                     <Bell className="h-5 w-5" />
                 </Button>

@@ -13,7 +13,8 @@ import { UserGroupSelect } from "@/components/dashboard/user-group-select"
 import { AssigneeDisplay } from "@/components/dashboard/assignee-display"
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
-import { Shield } from "lucide-react"
+import { Shield, CheckCircle2 } from "lucide-react"
+import { toast } from "sonner"
 
 export default function NotesPage() {
     const [notes, setNotes] = useState<Note[]>([])
@@ -139,8 +140,11 @@ export default function NotesPage() {
 
     const handleDelete = async (e: React.MouseEvent, noteId: string) => {
         e.stopPropagation() // Prevent opening edit modal
-        if (confirm("Are you sure you want to delete this note?")) {
+        try {
             await deleteNote(noteId)
+            toast.success("Note deleted")
+        } catch (error) {
+            toast.error("Failed to delete note")
         }
     }
 

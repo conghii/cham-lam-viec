@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
+import { toast } from "sonner";
 
 interface AiGoalPlannerProps {
     onPlanGenerated: (plan: any) => void;
@@ -23,7 +24,7 @@ export function AiGoalPlanner({ onPlanGenerated }: AiGoalPlannerProps) {
 
     const handleGenerate = async () => {
         if (!goal.trim() || !deadline) {
-            alert("Please enter a goal and pick a deadline.");
+            toast.error("Please enter a goal and pick a deadline.");
             return;
         }
 
@@ -44,7 +45,7 @@ export function AiGoalPlanner({ onPlanGenerated }: AiGoalPlannerProps) {
 
             onPlanGenerated(data);
         } catch (error: any) {
-            alert(error.message);
+            toast.error(error.message);
         } finally {
             setLoading(false);
         }

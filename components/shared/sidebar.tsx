@@ -2,12 +2,15 @@
 
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { LayoutDashboard, CheckSquare, Target, BookOpen, PenTool, Settings, Users, Timer, StickyNote, ChevronDown, Plus, Check, MoreVertical, Zap } from "lucide-react"
+import { LayoutDashboard, CheckSquare, Target, BookOpen, PenTool, Settings, Users, Timer, StickyNote, ChevronDown, Plus, Check, MoreVertical, Zap, Share2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { logOut, auth } from "@/lib/firebase/auth"
 import { useState, useEffect } from "react"
-import { Organization, subscribeToUserOrganizations, getUserOrganization, switchOrganization, subscribeToUserProfile } from "@/lib/firebase/firestore"
+import { Organization, subscribeToUserOrganizations, getUserOrganization, switchOrganization, subscribeToUserProfile, subscribeToTasks, type Task } from "@/lib/firebase/firestore"
+import { isToday } from "date-fns"
+import { toast } from "sonner"
+
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -27,13 +30,14 @@ const mainItems = [
 ]
 
 const utilityItems = [
+    { icon: Share2, label: "Sharing", href: "/dashboard/sharing" },
     { icon: Timer, label: "Focus", href: "/dashboard/focus" },
     { icon: StickyNote, label: "Notes", href: "/dashboard/notes" },
     { icon: PenTool, label: "Blog", href: "/dashboard/blog" },
     { icon: BookOpen, label: "Planner", href: "/dashboard/planner" },
 ]
 
-export function Sidebar() {
+export function Sidebar({ isCollapsed = false }: { isCollapsed?: boolean }) {
     const pathname = usePathname()
     const router = useRouter()
 
@@ -41,10 +45,12 @@ export function Sidebar() {
     const [currentOrg, setCurrentOrg] = useState<Organization | null>(null)
     const [user, setUser] = useState(auth.currentUser)
     const [userData, setUserData] = useState<any>(null)
+    const [todayTaskCount, setTodayTaskCount] = useState(0)
 
     useEffect(() => {
         let unsubOrgs: () => void = () => { }
         let unsubProfile: () => void = () => { }
+        let unsubTasks: () => void = () => { }
 
         const unsubscribeAuth = auth.onAuthStateChanged(async (u) => {
             setUser(u)
@@ -52,8 +58,7 @@ export function Sidebar() {
                 // 1. Subscribe to Organizations
                 unsubOrgs = subscribeToUserOrganizations(u.uid, (myOrgs) => {
                     setOrgs(myOrgs);
-                    // Also update current org from the new list if it exists
-                    const curId = currentOrg?.id; // This might be stale if we don't handle it carefully
+                    const curId = currentOrg?.id;
                 });
 
                 // 2. Initial fetch of current Org
@@ -64,10 +69,21 @@ export function Sidebar() {
                 unsubProfile = subscribeToUserProfile(u.uid, (data) => {
                     setUserData(data);
                 });
+
+                // 4. Subscribe to Tasks for Badge
+                unsubTasks = subscribeToTasks((tasks: Task[]) => {
+                    const count = tasks.filter(t =>
+                        !t.completed &&
+                        t.dueDate &&
+                        (isToday(new Date(t.dueDate)) || new Date(t.dueDate) < new Date()) // Count today and overdue
+                    ).length;
+                    setTodayTaskCount(count);
+                });
             } else {
                 setOrgs([]);
                 setCurrentOrg(null);
                 setUserData(null);
+                setTodayTaskCount(0);
             }
         })
 
@@ -75,6 +91,7 @@ export function Sidebar() {
             unsubscribeAuth();
             unsubOrgs();
             unsubProfile();
+            unsubTasks();
         }
     }, [])
 
@@ -95,31 +112,36 @@ export function Sidebar() {
             window.location.reload(); // Force reload to update all context
         } catch (error) {
             console.error("Failed to switch org", error);
-            alert("Failed to switch organization");
+            toast.error("Failed to switch organization");
         }
     }
 
 
 
     return (
-        <aside className="hidden h-screen w-64 flex-col border-r border-border/40 bg-card/50 backdrop-blur-xl md:flex">
+        <aside
+            data-collapsed={isCollapsed}
+            className="group hidden h-screen w-full flex-col border-r border-border/40 bg-card/50 backdrop-blur-xl md:flex data-[collapsed=true]:w-[50px]"
+        >
             <div className="flex h-16 items-center px-4 border-b border-border/40">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="w-full justify-between px-2 hover:bg-accent/50 h-12">
-                            <div className="flex items-center gap-3">
+                            <div className={cn("flex items-center gap-3", isCollapsed && "justify-center w-full")}>
                                 <div className={cn(
-                                    "flex h-8 w-8 items-center justify-center font-bold shadow-sm",
+                                    "flex h-8 w-8 items-center justify-center font-bold shadow-sm shrink-0",
                                     currentOrg?.isPersonal ? "rounded-full bg-primary text-primary-foreground" : "rounded-lg bg-primary text-primary-foreground"
                                 )}>
                                     {currentOrg?.name?.[0]?.toUpperCase() || "S"}
                                 </div>
-                                <div className="text-left">
-                                    <p className="font-semibold text-sm leading-none truncate max-w-[120px]">{currentOrg?.name || "Stitch."}</p>
-                                    <p className="text-[10px] text-muted-foreground mt-0.5">{currentOrg?.isPersonal ? "Personal Space" : "Shared Team"}</p>
-                                </div>
+                                {!isCollapsed && (
+                                    <div className="text-left bg-transparent">
+                                        <p className="font-semibold text-sm leading-none truncate max-w-[120px]">{currentOrg?.name || "Stitch."}</p>
+                                        <p className="text-[10px] text-muted-foreground mt-0.5">{currentOrg?.isPersonal ? "Personal Space" : "Shared Team"}</p>
+                                    </div>
+                                )}
                             </div>
-                            <ChevronDown className="h-4 w-4 text-muted-foreground opacity-50" />
+                            {!isCollapsed && <ChevronDown className="h-4 w-4 text-muted-foreground opacity-50" />}
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start" className="w-[240px]">
@@ -181,11 +203,21 @@ export function Sidebar() {
                                 variant={pathname === item.href ? "secondary" : "ghost"}
                                 className={cn(
                                     "w-full justify-start gap-4 px-4 py-6 font-medium text-muted-foreground transition-all hover:text-foreground",
-                                    pathname === item.href && "bg-secondary text-foreground shadow-sm"
+                                    pathname === item.href && "bg-secondary text-foreground shadow-sm",
+                                    isCollapsed && "justify-center px-2"
                                 )}
                             >
-                                <item.icon className="h-5 w-5" />
-                                {item.label}
+                                <item.icon className="h-5 w-5 shrink-0" />
+                                {!isCollapsed && (
+                                    <div className="flex-1 flex items-center justify-between">
+                                        <span>{item.label}</span>
+                                        {item.label === "Tasks" && todayTaskCount > 0 && (
+                                            <span className="h-5 w-5 rounded-full bg-rose-500 text-[10px] font-bold text-white flex items-center justify-center">
+                                                {todayTaskCount > 99 ? '99+' : todayTaskCount}
+                                            </span>
+                                        )}
+                                    </div>
+                                )}
                             </Button>
                         </Link>
                     ))}
@@ -199,27 +231,32 @@ export function Sidebar() {
                                 variant={pathname === item.href ? "secondary" : "ghost"}
                                 className={cn(
                                     "w-full justify-start gap-3 px-3 py-2 h-9 text-sm font-medium text-muted-foreground transition-all hover:text-foreground hover:bg-accent/50",
-                                    pathname === item.href && "bg-secondary text-foreground shadow-sm"
+                                    pathname === item.href && "bg-secondary text-foreground shadow-sm",
+                                    isCollapsed && "justify-center px-2 h-12"
                                 )}
                             >
-                                <item.icon className="h-4 w-4" />
-                                {item.label}
+                                <item.icon className="h-4 w-4 shrink-0" />
+                                {!isCollapsed && item.label}
                             </Button>
                         </Link>
                     ))}
                 </div>
 
                 <Link href="/dashboard/profile">
-                    <Button variant="ghost" className="w-full justify-start gap-3 px-2 py-6 h-auto hover:bg-accent/50 group">
-                        <Avatar className="h-9 w-9 border border-border group-hover:border-primary/50 transition-colors">
+                    <Button variant="ghost" className={cn("w-full justify-start gap-3 px-2 py-6 h-auto hover:bg-accent/50 group", isCollapsed && "justify-center")}>
+                        <Avatar className="h-9 w-9 border border-border group-hover:border-primary/50 transition-colors shrink-0">
                             <AvatarImage src={userData?.photoURL || "/avatars/01.png"} />
                             <AvatarFallback>{userData?.displayName?.[0] || userData?.email?.[0]?.toUpperCase()}</AvatarFallback>
                         </Avatar>
-                        <div className="text-left flex-1 truncate">
-                            <p className="font-semibold text-sm leading-none truncate">{userData?.displayName || "User"}</p>
-                            <p className="text-[10px] text-muted-foreground mt-1 truncate">{userData?.email}</p>
-                        </div>
-                        <Settings className="h-4 w-4 text-muted-foreground opacity-30 group-hover:opacity-100 transition-opacity" />
+                        {!isCollapsed && (
+                            <>
+                                <div className="text-left flex-1 truncate">
+                                    <p className="font-semibold text-sm leading-none truncate">{userData?.displayName || "User"}</p>
+                                    <p className="text-[10px] text-muted-foreground mt-1 truncate">{userData?.email}</p>
+                                </div>
+                                <Settings className="h-4 w-4 text-muted-foreground opacity-30 group-hover:opacity-100 transition-opacity" />
+                            </>
+                        )}
                     </Button>
                 </Link>
 

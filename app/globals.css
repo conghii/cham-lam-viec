@@ -124,3 +124,65 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Basic HTML content styles for rendered posts/notes */
+.prose-content {
+  line-height: 1.6;
+}
+
+.prose-content p {
+  margin-bottom: 0.75rem;
+}
+
+.prose-content h1,
+.prose-content h2,
+.prose-content h3 {
+  font-weight: 700;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+  line-height: 1.25;
+}
+
+.prose-content h1 {
+  font-size: 1.5rem;
+}
+
+.prose-content h2 {
+  font-size: 1.25rem;
+}
+
+.prose-content h3 {
+  font-size: 1.1rem;
+}
+
+.prose-content ul,
+.prose-content ol {
+  margin-left: 1.5rem;
+  margin-bottom: 0.75rem;
+  list-style-type: disc;
+}
+
+.prose-content li {
+  margin-bottom: 0.25rem;
+}
+
+.prose-content a {
+  @apply text-primary underline underline-offset-4 decoration-primary/30 hover:decoration-primary transition-colors;
+}
+
+.prose-content strong {
+  font-weight: 600;
+}
+
+.prose-content blockquote {
+  border-left: 3px solid var(--border);
+  padding-left: 1rem;
+  margin: 1rem 0;
+  font-style: italic;
+  color: var(--muted-foreground);
+}
+
+.prose-content img {
+  border-radius: var(--radius);
+  margin: 1rem 0;
+}

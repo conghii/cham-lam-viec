@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { getCurrentUser, updateUserProfile } from "@/lib/firebase/auth"
-import { getDailyWinsHistory, DailyWin, updateMemberName } from "@/lib/firebase/firestore"
+import { getDailyWinsHistory, DailyWin, updateMemberName, subscribeToUserPosts, type Post } from "@/lib/firebase/firestore"
 import { uploadFile } from "@/lib/firebase/storage"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -10,6 +10,8 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { PostCard } from "@/components/dashboard/sharing/post-card"
 import {
     Dialog,
     DialogContent,
@@ -34,6 +36,7 @@ interface UserProfile {
 export default function ProfilePage() {
     const [user, setUser] = useState<UserProfile | null>(null)
     const [history, setHistory] = useState<DailyWin[]>([])
+    const [posts, setPosts] = useState<Post[]>([])
     const [loading, setLoading] = useState(true)
     const [isEditing, setIsEditing] = useState(false)
     const [newName, setNewName] = useState("")
@@ -112,6 +115,14 @@ export default function ProfilePage() {
         }
         loadData()
     }, [])
+
+    useEffect(() => {
+        if (!user?.uid) return
+        const unsub = subscribeToUserPosts(user.uid, (data) => {
+            setPosts(data)
+        })
+        return () => unsub()
+    }, [user?.uid])
 
     if (loading) {
         return <div className="p-8 text-center text-muted-foreground">Loading profile...</div>
@@ -218,72 +229,96 @@ export default function ProfilePage() {
                 </div>
             </div>
 
-            {/* Stats / 3 Wins History */}
-            <div className="grid gap-8 md:grid-cols-3">
-                {/* Main History Column */}
-                <div className="md:col-span-2 space-y-6">
-                    <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-yellow-500/10 flex items-center justify-center text-yellow-500">
-                            <Trophy className="h-5 w-5" />
-                        </div>
-                        <h2 className="text-2xl font-semibold">Victory Log</h2>
-                    </div>
+            {/* Content Tabs */}
+            <Tabs defaultValue="overview" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 mb-8 items-center bg-transparent border-b rounded-none h-auto p-0">
+                    <TabsTrigger value="overview" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-8 py-3 text-base">Overview</TabsTrigger>
+                    <TabsTrigger value="posts" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-8 py-3 text-base">Posts</TabsTrigger>
+                </TabsList>
 
-                    <ScrollArea className="h-[500px] pr-4">
-                        <div className="space-y-4">
-                            {history.length === 0 ? (
-                                <p className="text-muted-foreground italic">No history yet. Start recording your wins!</p>
-                            ) : (
-                                history.map((day) => (
-                                    <Card key={day.id} className="overflow-hidden border-none shadow-sm bg-secondary/20 hover:bg-secondary/30 transition-colors">
-                                        <CardHeader className="py-4 px-6 bg-secondary/30 flex flex-row items-center justify-between">
-                                            <div className="flex items-center gap-2 font-medium">
-                                                <Calendar className="h-4 w-4 text-primary" />
-                                                {format(parseISO(day.date), 'EEEE, MMMM do, yyyy')}
-                                            </div>
-                                            <div className="text-xs text-muted-foreground font-mono">
-                                                {day.wins.filter(w => w).length}/3 Completed
-                                            </div>
-                                        </CardHeader>
-                                        <CardContent className="p-4 px-6 grid gap-2">
-                                            {day.wins.map((win, idx) => (
-                                                <div key={idx} className="flex items-start gap-3">
-                                                    <div className={cn(
-                                                        "mt-1 h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0",
-                                                        win ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground"
-                                                    )}>
-                                                        {idx + 1}
-                                                    </div>
-                                                    <p className={cn("text-sm leading-relaxed", !win && "text-muted-foreground italic")}>
-                                                        {win || "No win recorded"}
-                                                    </p>
-                                                </div>
-                                            ))}
-                                        </CardContent>
-                                    </Card>
-                                ))
-                            )}
-                        </div>
-                    </ScrollArea>
-                </div>
-
-                {/* Sidebar Stats (Placeholder for now) */}
-                <div className="space-y-6">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Streaks</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-center py-6">
-                                <div className="text-4xl font-black text-primary mb-2">
-                                    {history.length > 0 ? history.length : 0}
+                <TabsContent value="overview">
+                    {/* Stats / 3 Wins History */}
+                    <div className="grid gap-8 md:grid-cols-3">
+                        {/* Main History Column */}
+                        <div className="md:col-span-2 space-y-6">
+                            <div className="flex items-center gap-3">
+                                <div className="h-10 w-10 rounded-full bg-yellow-500/10 flex items-center justify-center text-yellow-500">
+                                    <Trophy className="h-5 w-5" />
                                 </div>
-                                <p className="text-sm text-muted-foreground">Days logged</p>
+                                <h2 className="text-2xl font-semibold">Victory Log</h2>
                             </div>
-                        </CardContent>
-                    </Card>
-                </div>
-            </div>
+
+                            <ScrollArea className="h-[500px] pr-4">
+                                <div className="space-y-4">
+                                    {history.length === 0 ? (
+                                        <p className="text-muted-foreground italic">No history yet. Start recording your wins!</p>
+                                    ) : (
+                                        history.map((day) => (
+                                            <Card key={day.id} className="overflow-hidden border-none shadow-sm bg-secondary/20 hover:bg-secondary/30 transition-colors">
+                                                <CardHeader className="py-4 px-6 bg-secondary/30 flex flex-row items-center justify-between">
+                                                    <div className="flex items-center gap-2 font-medium">
+                                                        <Calendar className="h-4 w-4 text-primary" />
+                                                        {format(parseISO(day.date), 'EEEE, MMMM do, yyyy')}
+                                                    </div>
+                                                    <div className="text-xs text-muted-foreground font-mono">
+                                                        {day.wins.filter(w => w).length}/3 Completed
+                                                    </div>
+                                                </CardHeader>
+                                                <CardContent className="p-4 px-6 grid gap-2">
+                                                    {day.wins.map((win, idx) => (
+                                                        <div key={idx} className="flex items-start gap-3">
+                                                            <div className={cn(
+                                                                "mt-1 h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0",
+                                                                win ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground"
+                                                            )}>
+                                                                {idx + 1}
+                                                            </div>
+                                                            <p className={cn("text-sm leading-relaxed", !win && "text-muted-foreground italic")}>
+                                                                {win || "No win recorded"}
+                                                            </p>
+                                                        </div>
+                                                    ))}
+                                                </CardContent>
+                                            </Card>
+                                        ))
+                                    )}
+                                </div>
+                            </ScrollArea>
+                        </div>
+
+                        {/* Sidebar Stats (Placeholder for now) */}
+                        <div className="space-y-6">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Streaks</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-center py-6">
+                                        <div className="text-4xl font-black text-primary mb-2">
+                                            {history.length > 0 ? history.length : 0}
+                                        </div>
+                                        <p className="text-sm text-muted-foreground">Days logged</p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </div>
+                </TabsContent>
+
+                <TabsContent value="posts">
+                    <div className="max-w-2xl mx-auto space-y-6">
+                        {posts.length === 0 ? (
+                            <div className="text-center py-20 border-2 border-dashed rounded-xl bg-muted/20">
+                                <p className="text-muted-foreground">No posts yet.</p>
+                            </div>
+                        ) : (
+                            posts.map(post => (
+                                <PostCard key={post.id} post={post} currentUserId={user.uid} />
+                            ))
+                        )}
+                    </div>
+                </TabsContent>
+            </Tabs>
         </div>
     )
 }

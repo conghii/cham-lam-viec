@@ -1,5 +1,6 @@
 import { storage } from "./config";
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
+import { compressImage } from "@/lib/utils/image-compression";
 
 /**
  * Uploads a file to Firebase Storage.
@@ -9,8 +10,20 @@ import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage
  */
 export const uploadFile = async (file: File, path: string): Promise<string> => {
     try {
+        let fileToUpload = file;
+
+        // Compress image if it's an image file
+        if (file.type.startsWith('image/')) {
+            try {
+                fileToUpload = await compressImage(file);
+                console.log(`Compressed image: ${file.size} -> ${fileToUpload.size} bytes`);
+            } catch (compressionError) {
+                console.warn("Image compression failed, uploading original file:", compressionError);
+            }
+        }
+
         const storageRef = ref(storage, path);
-        const snapshot = await uploadBytes(storageRef, file);
+        const snapshot = await uploadBytes(storageRef, fileToUpload);
         const url = await getDownloadURL(snapshot.ref);
         return url;
     } catch (error) {

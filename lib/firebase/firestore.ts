@@ -20,7 +20,10 @@ import {
     type Timestamp,
     type Unsubscribe,
     arrayRemove,
-    deleteField
+    deleteField,
+    or,
+    and,
+    increment
 } from "firebase/firestore";
 import { auth } from "./auth";
 
@@ -590,6 +593,147 @@ export const subscribeToBlogPosts = (callback: (posts: BlogPost[]) => void) => {
     return () => {
         if (unsubscribe) unsubscribe();
     };
+};
+
+export const subscribeToGlobalFeed = (callback: (posts: Post[]) => void) => {
+    const q = query(
+        collection(db, "posts"),
+        orderBy("createdAt", "desc"),
+        limit(20)
+    );
+
+    return onSnapshot(q, (snapshot) => {
+        const posts = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        })) as Post[];
+
+        // Hydrate authors (simple hydration for now)
+        (async () => {
+            const authorIds = [...new Set(posts.map(p => p.authorId).filter(id => id))];
+            const authors: Record<string, any> = {};
+            await Promise.all(authorIds.map(async (uid) => {
+                if (uid && !authors[uid]) {
+                    try {
+                        const snap = await getDoc(doc(db, "users", uid));
+                        if (snap.exists()) authors[uid] = snap.data();
+                    } catch (e) {
+                        console.error("Failed to hydrate user", uid, e);
+                    }
+                }
+            }));
+
+            const hydrated = posts.map(p => {
+                const authorData = authors[p.authorId];
+                return {
+                    ...p,
+                    author: authorData ? {
+                        displayName: authorData.displayName || "User",
+                        photoURL: authorData.photoURL || null
+                    } : {
+                        displayName: (p as any).displayName || "Unknown User",
+                        photoURL: (p as any).photoURL || null
+                    }
+                };
+            });
+            callback(hydrated);
+        })();
+    });
+};
+
+export const subscribeToTrendingPosts = (callback: (posts: Post[]) => void) => {
+    // Trending logic: Order by likes count (desc) then commentsCount (desc)
+    // However, Firestore can't easily order by array length without a separate field.
+    // For now, we'll order by commentsCount as a proxy for engagement, or just simple recent 50 and sort client side if needed.
+    // Better approach: Order by createdAt (recent) then we sort client side for "Trending" to avoid complex indexes for now.
+    // actually, let's just get recent 50 and sort by likes.length client side for the MVP "Trending".
+
+    const q = query(
+        collection(db, "posts"),
+        orderBy("createdAt", "desc"),
+        limit(50)
+    );
+
+    return onSnapshot(q, async (snapshot) => {
+        const posts = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        })) as Post[];
+
+        // Hydrate authors
+        // ... (We could batch fetch authors here, but for now relies on PostCard to fetch or basic hydration if author object exists)
+        // Actually existing subscribeToFeed does author hydration. We should do it here too or reuse logic.
+        // Let's copy basic hydration from subscribeToFeed if possible, or simpler:
+
+        // Parallel fetch authors
+        // Parallel fetch authors
+        const authors: Record<string, any> = {};
+        const authorIds = [...new Set(posts.map(p => p.authorId).filter(id => id))];
+
+        await Promise.all(authorIds.map(async (uid) => {
+            if (uid && !authors[uid]) {
+                try {
+                    const userSnap = await getDoc(doc(db, "users", uid));
+                    if (userSnap.exists()) authors[uid] = userSnap.data();
+                } catch (e) {
+                    console.error("Failed to hydrate user", uid, e);
+                }
+            }
+        }));
+
+        const hydrated = posts.map(p => {
+            const authorData = authors[p.authorId];
+            return {
+                ...p,
+                author: authorData ? {
+                    displayName: authorData.displayName || "User",
+                    photoURL: authorData.photoURL || null
+                } : {
+                    displayName: (p as any).displayName || "Unknown User",
+                    photoURL: (p as any).photoURL || null
+                }
+            };
+        });
+
+        // Sort by engagement (likes + comments)
+        hydrated.sort((a, b) => {
+            const scoreA = (a.likes?.length || 0) + (a.commentsCount || 0);
+            const scoreB = (b.likes?.length || 0) + (b.commentsCount || 0);
+            return scoreB - scoreA;
+        });
+
+        callback(hydrated.slice(0, 10)); // Top 10
+    });
+};
+
+export const subscribeToUserPosts = (userId: string, callback: (posts: Post[]) => void) => {
+    const q = query(
+        collection(db, "posts"),
+        where("authorId", "==", userId)
+        // orderBy("createdAt", "desc") // Requires index
+    );
+
+    return onSnapshot(q, async (snapshot) => {
+        const posts = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        })) as Post[];
+
+        // Sort client side to avoid index requirement for now
+        posts.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0));
+
+        // Hydrate author (which is the user themselves mostly, but for consistency)
+        const userRef = doc(db, "users", userId);
+        const userSnap = await getDoc(userRef);
+        const userData = userSnap.exists() ? userSnap.data() : undefined;
+
+        const hydrated = posts.map(p => ({
+            ...p,
+            author: userData as { displayName: string; photoURL: string; }
+        }));
+
+        callback(hydrated);
+    });
 };
 export const getBlogPost = async (postId: string) => {
     // Since we are mostly using real-time subs, standard getDoc is useful for edit page
@@ -1371,4 +1515,424 @@ export const deleteTagFromOrganization = async (orgId: string, tagId: string) =>
     const updatedTags = tags.filter((t: Tag) => t.id !== tagId);
 
     await updateDoc(orgRef, { tags: updatedTags });
+};
+
+// --- Friends & Messaging ---
+
+export type Friendship = {
+    id: string;
+    requesterId: string;
+    recipientId: string;
+    status: 'pending' | 'accepted' | 'rejected';
+    createdAt: Timestamp;
+    updatedAt: Timestamp;
+    friend?: any; // Hydrated user data
+}
+
+export type Message = {
+    id: string;
+    senderId: string;
+    content: string;
+    createdAt: Timestamp;
+    readBy: string[];
+}
+
+export type Chat = {
+    id: string;
+    participants: string[];
+    lastMessage?: string;
+    lastMessageTime?: Timestamp;
+    unreadCount?: Record<string, number>;
+    otherUser?: any; // Hydrated user data
+}
+
+// Friends
+export const sendFriendRequest = async (recipientId: string) => {
+    const { getCurrentUser } = await import("./auth");
+    const user = await getCurrentUser();
+    if (!user) throw new Error("User not authenticated");
+
+    // Check if friendship already exists
+    const q1 = query(
+        collection(db, "friendships"),
+        where("requesterId", "==", user.uid),
+        where("recipientId", "==", recipientId)
+    );
+    const q2 = query(
+        collection(db, "friendships"),
+        where("requesterId", "==", recipientId),
+        where("recipientId", "==", user.uid)
+    );
+
+    const [snap1, snap2] = await Promise.all([getDocs(q1), getDocs(q2)]);
+    if (!snap1.empty || !snap2.empty) return; // Already exists
+
+    await addDoc(collection(db, "friendships"), {
+        requesterId: user.uid,
+        recipientId: recipientId,
+        status: 'pending',
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+    });
+};
+
+export const acceptFriendRequest = async (friendshipId: string) => {
+    await updateDoc(doc(db, "friendships", friendshipId), {
+        status: 'accepted',
+        updatedAt: serverTimestamp()
+    });
+};
+
+export const rejectFriendRequest = async (friendshipId: string) => {
+    await updateDoc(doc(db, "friendships", friendshipId), {
+        status: 'rejected',
+        updatedAt: serverTimestamp()
+    });
+};
+
+export const subscribeToFriendships = (callback: (friendships: Friendship[]) => void) => {
+    const user = auth.currentUser;
+    if (!user) return () => { };
+
+    const q = query(
+        collection(db, "friendships"),
+        or(
+            where("requesterId", "==", user.uid),
+            where("recipientId", "==", user.uid)
+        )
+    );
+
+    return onSnapshot(q, async (snapshot) => {
+        const friendships = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        })) as Friendship[];
+
+        // Hydrate friend data
+        const hydrated = await Promise.all(friendships.map(async (f) => {
+            const friendId = f.requesterId === user.uid ? f.recipientId : f.requesterId;
+            const friendSnap = await getDoc(doc(db, "users", friendId));
+            return {
+                ...f,
+                friend: friendSnap.exists() ? { id: friendSnap.id, ...friendSnap.data() } : null
+            };
+        }));
+
+        callback(hydrated);
+    });
+};
+
+export const searchUsers = async (searchTerm: string) => {
+    // Simple search by email or display name (client-side filtering for demo/MVP)
+    // In prod, use Algolia or similar
+    const q = query(collection(db, "users"), limit(20));
+    const snap = await getDocs(q);
+    const term = searchTerm.toLowerCase();
+
+    return snap.docs
+        .map(doc => ({ id: doc.id, ...doc.data() } as any))
+        .filter(u =>
+            u.email?.toLowerCase().includes(term) ||
+            u.displayName?.toLowerCase().includes(term)
+        );
+};
+
+// Messaging
+export const createOrGetChat = async (otherUserId: string) => {
+    const { getCurrentUser } = await import("./auth");
+    const user = await getCurrentUser();
+    if (!user) throw new Error("User not authenticated");
+
+    // Look for existing chat
+    const q = query(
+        collection(db, "chats"),
+        where("participants", "array-contains", user.uid)
+    );
+
+    const snap = await getDocs(q);
+    const existing = snap.docs.find(doc => {
+        const data = doc.data();
+        return data.participants.includes(otherUserId);
+    });
+
+    if (existing) return existing.id;
+
+    // Create new
+    const ref = await addDoc(collection(db, "chats"), {
+        participants: [user.uid, otherUserId],
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        unreadCount: {
+            [user.uid]: 0,
+            [otherUserId]: 0
+        }
+    });
+    return ref.id;
+};
+
+export const sendMessage = async (chatId: string, content: string) => {
+    const { getCurrentUser } = await import("./auth");
+    const user = await getCurrentUser();
+    if (!user) throw new Error("User not authenticated");
+
+    const chatRef = doc(db, "chats", chatId);
+    const chatSnap = await getDoc(chatRef);
+    if (!chatSnap.exists()) return;
+
+    const chatData = chatSnap.data();
+    const otherUserId = chatData.participants.find((id: string) => id !== user.uid);
+
+    const batch = writeBatch(db);
+
+    // Add message
+    const msgRef = doc(collection(db, `chats/${chatId}/messages`));
+    batch.set(msgRef, {
+        senderId: user.uid,
+        content,
+        createdAt: serverTimestamp(),
+        readBy: [user.uid]
+    });
+
+    // Update chat metadata
+    batch.update(chatRef, {
+        lastMessage: content,
+        lastMessageTime: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        [`unreadCount.${otherUserId}`]: (chatData.unreadCount?.[otherUserId] || 0) + 1
+    });
+
+    await batch.commit();
+};
+
+export const subscribeToChats = (callback: (chats: Chat[]) => void) => {
+    const user = auth.currentUser;
+    if (!user) return () => { };
+
+    const q = query(
+        collection(db, "chats"),
+        where("participants", "array-contains", user.uid),
+        orderBy("updatedAt", "desc")
+    );
+
+    return onSnapshot(q, async (snapshot) => {
+        const chats = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        })) as Chat[];
+
+        // Hydrate other user
+        const hydrated = await Promise.all(chats.map(async (c) => {
+            const otherId = c.participants.find(id => id !== user.uid);
+            if (!otherId) return c;
+            const uSnap = await getDoc(doc(db, "users", otherId));
+            return {
+                ...c,
+                otherUser: uSnap.exists() ? { id: uSnap.id, ...uSnap.data() } : null
+            };
+        }));
+
+        callback(hydrated);
+    });
+};
+
+export const subscribeToMessages = (chatId: string, callback: (messages: Message[]) => void) => {
+    const q = query(
+        collection(db, `chats/${chatId}/messages`),
+        orderBy("createdAt", "asc")
+    );
+
+    return onSnapshot(q, (snapshot) => {
+        const messages = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        })) as Message[];
+        callback(messages);
+    });
+};
+
+export const markChatRead = async (chatId: string) => {
+    const { getCurrentUser } = await import("./auth");
+    const user = await getCurrentUser();
+    if (!user) return;
+
+    const chatRef = doc(db, "chats", chatId);
+    await updateDoc(chatRef, {
+        [`unreadCount.${user.uid}`]: 0
+    });
+};
+export interface SocialComment {
+    id: string;
+    authorId: string;
+    content: string;
+    createdAt: any;
+    author?: {
+        displayName: string;
+        photoURL: string;
+    };
+}
+
+export interface Attachment {
+    type: 'image' | 'goal' | 'task' | 'note' | 'blog';
+    id: string; // URL for image, ID for others
+    title: string;
+    preview?: string;
+}
+
+export interface Post {
+    id: string;
+    authorId: string;
+    content: string; // Now acts as "body"
+    title?: string;
+    description?: string;
+    attachments?: Attachment[];
+    images: string[]; // Kept for backward compat, but main images should go to attachments? Let's sync them.
+    tags: string[];
+    likes: string[];
+    commentsCount: number;
+    createdAt: any;
+    updatedAt: any;
+    author?: {
+        displayName: string;
+        photoURL: string;
+    };
+}
+
+// --- SHARING / SOCIAL NETWORK FUNCTIONS ---
+
+export const createPost = async (
+    content: string,
+    images: string[] = [],
+    tags: string[] = [],
+    title: string = "",
+    description: string = "",
+    attachments: Attachment[] = []
+) => {
+    const { getCurrentUser } = await import("./auth");
+    const user = await getCurrentUser();
+    if (!user) throw new Error("Must be logged in");
+
+    // Sync validation: if images are passed in 'images' array, add them to attachments if not present?
+    // For simplicity, we trust the caller.
+
+    await addDoc(collection(db, "posts"), {
+        authorId: user.uid,
+        content: content || "",
+        title: title || "",
+        description: description || "",
+        attachments,
+        images,
+        tags,
+        likes: [],
+        commentsCount: 0,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+    });
+};
+
+export const updatePost = async (postId: string, data: Partial<Post>) => {
+    const ref = doc(db, "posts", postId);
+    await updateDoc(ref, {
+        ...data,
+        updatedAt: serverTimestamp()
+    });
+};
+
+export const deletePost = async (postId: string) => {
+    await deleteDoc(doc(db, "posts", postId));
+};
+
+export const subscribeToFeed = (participantIds: string[], callback: (posts: Post[]) => void) => {
+    // Note: 'in' query supports max 10 values normally, 30 with optimization. 
+    // For MVP, we pass current user + friends. If > 30, we might need multiple queries or client-side filtering.
+    // Here strictly assuming < 30 friends for MVP.
+
+    // Fallback: if empty friends list, just show own posts
+    const authors = participantIds.length > 0 ? participantIds : ["OnlyMe"];
+
+    const q = query(
+        collection(db, "posts"),
+        where("authorId", "in", authors),
+        orderBy("createdAt", "desc"),
+        limit(50)
+    );
+
+    return onSnapshot(q, async (snapshot) => {
+        const posts = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        })) as Post[];
+
+        // Hydrate authors
+        const hydrated = await Promise.all(posts.map(async (p) => {
+            const uSnap = await getDoc(doc(db, "users", p.authorId));
+            return {
+                ...p,
+                author: uSnap.exists() ? uSnap.data() : null
+            };
+        }));
+
+        callback(hydrated as Post[]);
+    });
+};
+
+export const toggleLikePost = async (postId: string, userId: string, isLiked: boolean) => {
+    const ref = doc(db, "posts", postId);
+    if (isLiked) {
+        // Unlike
+        await updateDoc(ref, {
+            likes: arrayRemove(userId)
+        });
+    } else {
+        // Like
+        await updateDoc(ref, {
+            likes: arrayUnion(userId)
+        });
+    }
+};
+
+export const addComment = async (postId: string, content: string) => {
+    const { getCurrentUser } = await import("./auth");
+    const user = await getCurrentUser();
+    if (!user) return;
+
+    const batch = writeBatch(db);
+    const commentRef = doc(collection(db, `posts/${postId}/comments`));
+    const postRef = doc(db, "posts", postId);
+
+    batch.set(commentRef, {
+        authorId: user.uid,
+        content,
+        createdAt: serverTimestamp()
+    });
+
+    batch.update(postRef, {
+        commentsCount: increment(1)
+    });
+
+    await batch.commit();
+};
+
+export const subscribeToComments = (postId: string, callback: (comments: SocialComment[]) => void) => {
+    const q = query(
+        collection(db, `posts/${postId}/comments`),
+        orderBy("createdAt", "asc")
+    );
+
+    return onSnapshot(q, async (snapshot) => {
+        const comments = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        })) as SocialComment[];
+
+        // Hydrate authors
+        const hydrated = await Promise.all(comments.map(async (c) => {
+            const uSnap = await getDoc(doc(db, "users", c.authorId));
+            return {
+                ...c,
+                author: uSnap.exists() ? uSnap.data() : null
+            };
+        }));
+
+        callback(hydrated as SocialComment[]);
+    });
 };
