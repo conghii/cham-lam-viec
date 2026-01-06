@@ -51,23 +51,23 @@ function KeyResultItem({ goalId, kr, onEdit, onDelete }: {
     const maxVal = Math.max(1, kr.target || 100);
 
     return (
-        <div className="relative group/kr pl-3 border-l-2 border-muted hover:border-primary transition-colors py-2">
-            <div className="flex justify-between items-center mb-2">
+        <div className="relative group/kr py-3 first:pt-0 last:pb-0 border-b border-gray-100 last:border-0 hover:bg-slate-50/50 -mx-4 px-4 transition-colors">
+            <div className="flex justify-between items-center mb-3">
                 <div className="flex-1">
                     <div className="flex items-baseline justify-between gap-2">
-                        <span className="font-medium text-foreground/90">{kr.title}</span>
+                        <span className="font-medium text-gray-700">{kr.title}</span>
                         <div className="flex items-center gap-2">
-                            <span className="text-xs text-muted-foreground font-mono bg-muted/50 px-2 py-0.5 rounded">
+                            <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
                                 {localCurrent} / {kr.target} {kr.unit}
                             </span>
 
                             {/* EDIT / DELETE BUTTONS */}
-                            <div className="flex items-center gap-0.5">
+                            <div className="flex items-center gap-0.5 opacity-0 group-hover/kr:opacity-100 transition-opacity">
                                 {onEdit && (
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="h-6 w-6 text-muted-foreground hover:text-primary z-20 relative"
+                                        className="h-6 w-6 text-gray-400 hover:text-blue-600"
                                         onClick={() => onEdit(kr)}
                                         title="Edit Key Result"
                                     >
@@ -78,7 +78,7 @@ function KeyResultItem({ goalId, kr, onEdit, onDelete }: {
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="h-6 w-6 text-muted-foreground hover:text-destructive z-20 relative"
+                                        className="h-6 w-6 text-gray-400 hover:text-red-600"
                                         onClick={() => onDelete(kr.id)}
                                         title="Delete Key Result"
                                     >
@@ -366,7 +366,21 @@ export default function GoalsPage() {
 
     const handleSaveKeyResult = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!activeGoalId || !newKRTitle.trim() || !newKRTarget) return;
+
+        // Validation with Feedback
+        if (!activeGoalId) {
+            toast.error("Internal Error: Goal ID missing.");
+            return;
+        }
+        if (!newKRTitle.trim()) {
+            toast.error("Please enter a Key Result title.");
+            return;
+        }
+        if (!newKRTarget) {
+            toast.error("Please enter a Target Value.");
+            return;
+        }
+
         try {
             if (editingKR) {
                 await updateKeyResult(activeGoalId, {
@@ -449,478 +463,506 @@ export default function GoalsPage() {
     const canEdit = userRole === 'owner' || userRole === 'member';
 
     return (
-        <div className="space-y-8 max-w-7xl mx-auto p-2 pb-20">
-            {/* Header & Actions */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-                <div>
-                    <h2 className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                        Goals & OKRs
-                    </h2>
-                    <p className="text-muted-foreground mt-2 text-lg">
-                        Execute your vision. Track what matters.
-                    </p>
-                </div>
-                {canEdit && (
-                    <Dialog open={isAddGoalOpen} onOpenChange={setIsAddGoalOpen}>
-                        <DialogTrigger asChild>
-                            <Button size="lg" className="shadow-lg hover:shadow-primary/20 transition-all">
-                                <Plus className="h-5 w-5 mr-2" /> New Objective
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                            <DialogHeader>
-                                <DialogTitle>Create New Objective</DialogTitle>
-                            </DialogHeader>
-                            <form onSubmit={handleAddGoal} className="space-y-4 mt-4">
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">Objective Title</label>
-                                    <Input
-                                        placeholder="e.g. Become Market Leader"
-                                        value={newGoalTitle}
-                                        onChange={(e) => setNewGoalTitle(e.target.value)}
-                                        autoFocus
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">Description</label>
-                                    <Input
-                                        placeholder="Why is this important?"
-                                        value={newGoalDesc}
-                                        onChange={(e) => setNewGoalDesc(e.target.value)}
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">Target Date</label>
-                                    <Input
-                                        type="date"
-                                        value={newGoalDate}
-                                        onChange={(e) => setNewGoalDate(e.target.value)}
-                                    />
-                                </div>
-                                {orgId && (
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium">Assignees & Teams</label>
-                                        <UserGroupSelect
-                                            orgId={orgId}
-                                            assigneeIds={newGoalAssigneeIds}
-                                            groupIds={newGoalGroupIds}
-                                            onAssigneeChange={setNewGoalAssigneeIds}
-                                            onGroupChange={setNewGoalGroupIds}
-                                            members={members}
-                                        />
-                                    </div>
-                                )}
-                                <DialogFooter>
-                                    <Button type="submit">Create Objective</Button>
-                                </DialogFooter>
-                            </form>
-                        </DialogContent>
-                    </Dialog>
-                )}
-            </div>
-
-            {/* Stats Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card className="bg-card/40 backdrop-blur-sm border-primary/10 shadow-sm">
-                    <CardHeader className="pb-2">
-                        <CardDescription>Total Progress</CardDescription>
-                        <CardTitle className="text-3xl font-bold flex items-center gap-2">
-                            {overallProgress}%
-                            <TrendingUp className="h-5 w-5 text-green-500" />
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <Progress value={overallProgress} className="h-1.5" />
-                    </CardContent>
-                </Card>
-                <Card className="bg-card/40 backdrop-blur-sm border-primary/10 shadow-sm">
-                    <CardHeader className="pb-2">
-                        <CardDescription>Active Goals</CardDescription>
-                        <CardTitle className="text-3xl font-bold flex items-center gap-2">
-                            {activeGoals}
-                            <Target className="h-5 w-5 text-blue-500" />
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="text-sm text-muted-foreground">
-                        Keep pushing!
-                    </CardContent>
-                </Card>
-                <Card className="bg-card/40 backdrop-blur-sm border-primary/10 shadow-sm">
-                    <CardHeader className="pb-2">
-                        <CardDescription>Completed</CardDescription>
-                        <CardTitle className="text-3xl font-bold flex items-center gap-2">
-                            {completedGoals}
-                            <Trophy className="h-5 w-5 text-yellow-500" />
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="text-sm text-muted-foreground">
-                        Objectives crushed.
-                    </CardContent>
-                </Card>
-            </div>
-
-            {/* Goals Grid */}
-            <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
-                {loading ? (
-                    <div className="col-span-full flex justify-center py-20"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>
-                ) : filteredGoals.length === 0 ? (
-                    <div className="col-span-full text-center py-20 border-2 border-dashed rounded-xl bg-muted/20">
-                        <Target className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                        <h3 className="text-lg font-medium">No objectives visible to you.</h3>
-                        <p className="text-muted-foreground mb-4">Start by creating your first big objective.</p>
-                        <Button onClick={() => setIsAddGoalOpen(true)} variant="outline">Create Goal</Button>
+        <div className="min-h-screen bg-slate-50/50">
+            <div className="space-y-8 max-w-7xl mx-auto p-6 md:p-8 pb-32">
+                {/* Header & Actions */}
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                    <div>
+                        <h2 className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                            Goals & OKRs
+                        </h2>
+                        <p className="text-muted-foreground mt-2 text-lg">
+                            Execute your vision. Track what matters.
+                        </p>
                     </div>
-                ) : (
-                    filteredGoals.map((goal) => (
-                        <Card key={goal.id} onClick={() => openGoalDetails(goal, false)} className="group relative overflow-hidden border-border/50 bg-card/60 backdrop-blur-xl hover:shadow-xl transition-all duration-300 hover:border-primary/20 cursor-pointer">
-                            {/* Header Gradient Stripe */}
-                            <div className={cn("absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-transparent opacity-50 group-hover:opacity-100 transition-opacity")} />
-
-                            <CardHeader>
-                                <div className="flex justify-between items-start">
-                                    <div className="space-y-1">
-                                        <div className="flex items-center gap-2">
-                                            <CardTitle className="text-xl font-bold leading-tight">{goal.title}</CardTitle>
-                                            {goal.progress >= 100 && <Badge variant="secondary" className="bg-green-500/10 text-green-500 hover:bg-green-500/20"><CheckCircle2 className="h-3 w-3 mr-1" /> Done</Badge>}
-                                        </div>
-                                        {goal.description && <p className="text-sm text-muted-foreground line-clamp-2">{goal.description}</p>}
-                                    </div>
-                                    {canEdit && (
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                {/* Stop propagation so clicking menu doesn't open card */}
-                                                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={(e) => e.stopPropagation()}>
-                                                    <MoreVertical className="h-4 w-4" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openGoalDetails(goal, true); }}>
-                                                    <Pencil className="h-4 w-4 mr-2" /> Edit Objective
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={(e) => { e.stopPropagation(); deleteGoal(goal.id); }}>
-                                                    <Trash2 className="h-4 w-4 mr-2" /> Delete
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    )}
-                                </div>
-
-                                <div className="mt-4 space-y-2">
-                                    <div className="flex justify-between items-center text-sm font-medium">
-                                        <span className="text-muted-foreground">{goal.targetDate ? `Due ${new Date(goal.targetDate).toLocaleDateString()}` : "No deadline"}</span>
-                                        <AssigneeDisplay
-                                            assigneeIds={goal.assigneeIds}
-                                            groupIds={goal.groupIds}
-                                            members={members}
-                                            groups={groups}
+                    {canEdit && (
+                        <Dialog open={isAddGoalOpen} onOpenChange={setIsAddGoalOpen}>
+                            <DialogTrigger asChild>
+                                <Button size="lg" className="shadow-lg hover:shadow-primary/20 transition-all">
+                                    <Plus className="h-5 w-5 mr-2" /> New Objective
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>Create New Objective</DialogTitle>
+                                </DialogHeader>
+                                <form onSubmit={handleAddGoal} className="space-y-4 mt-4">
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium">Objective Title</label>
+                                        <Input
+                                            placeholder="e.g. Become Market Leader"
+                                            value={newGoalTitle}
+                                            onChange={(e) => setNewGoalTitle(e.target.value)}
+                                            autoFocus
                                         />
                                     </div>
-                                    <div className="flex justify-between items-center text-sm font-medium">
-                                        <span className={cn(goal.progress >= 100 ? "text-green-500" : "text-primary")}>{goal.progress}%</span>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium">Description</label>
+                                        <Input
+                                            placeholder="Why is this important?"
+                                            value={newGoalDesc}
+                                            onChange={(e) => setNewGoalDesc(e.target.value)}
+                                        />
                                     </div>
-                                    <Progress value={goal.progress} className="h-2" />
-                                </div>
-                            </CardHeader>
-
-                            <CardContent className="space-y-4">
-                                <div className="space-y-3">
-                                    <div className="flex items-center justify-between">
-                                        <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Key Results</h4>
-                                        {canEdit && (
-                                            <Button variant="ghost" size="sm" className="h-6 text-xs hover:bg-primary/10 hover:text-primary" onClick={() => openAddKR(goal.id)}>
-                                                <Plus className="h-3 w-3 mr-1" /> Add KR
-                                            </Button>
-                                        )}
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium">Target Date</label>
+                                        <Input
+                                            type="date"
+                                            value={newGoalDate}
+                                            onChange={(e) => setNewGoalDate(e.target.value)}
+                                        />
                                     </div>
-
-                                    <div className="space-y-3">
-                                        {(goal.keyResults && goal.keyResults.length > 0) ? (
-                                            goal.keyResults.map((kr) => (
-                                                <KeyResultItem
-                                                    key={kr.id}
-                                                    goalId={goal.id}
-                                                    kr={kr}
-                                                    onEdit={canEdit ? (kr) => openEditKR(goal.id, kr) : undefined}
-                                                    onDelete={canEdit ? (krId) => handleDeleteKeyResult(goal.id, krId) : undefined}
-                                                />
-                                            ))
-                                        ) : (
-                                            canEdit ? (
-                                                <div className="bg-muted/30 rounded-lg p-4 text-center cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => openAddKR(goal.id)}>
-                                                    <p className="text-sm text-muted-foreground italic">No key results. Click to add.</p>
-                                                    {/* Legacy Manual Slider fallback if needed, but keeping UI clean is better. */}
-                                                    <div className="mt-3 pt-3 border-t border-dashed border-border/50">
-                                                        <div className="flex justify-between text-xs text-muted-foreground mb-2">
-                                                            <span>Manual Update</span>
-                                                        </div>
-                                                        <Slider
-                                                            defaultValue={[goal.progress]}
-                                                            max={100}
-                                                            step={5}
-                                                            onValueCommit={(val) => updateGoalManualProgress(goal.id, val[0])}
-                                                            className="cursor-pointer opacity-50 hover:opacity-100 transition-opacity"
-                                                        />
-                                                    </div>
-                                                </div>
-                                            ) : (
-                                                <div className="text-sm text-muted-foreground italic text-center py-4">No key results set.</div>
-                                            )
-                                        )}
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ))
-                )}
-            </div>
-
-            {/* Shared Dialogs */}
-            <Dialog open={isKRModalOpen} onOpenChange={(open) => { if (!open) closeKRModal(); }}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>{editingKR ? "Edit Key Result" : "Add Key Result"}</DialogTitle>
-                    </DialogHeader>
-                    <form onSubmit={handleSaveKeyResult} className="space-y-4 mt-2">
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">Result Title</label>
-                            <Input
-                                placeholder="e.g. Read 5 books"
-                                value={newKRTitle}
-                                onChange={(e) => setNewKRTitle(e.target.value)}
-                                autoFocus
-                            />
-                        </div>
-                        <div className="flex gap-4">
-                            <div className="space-y-2 flex-1">
-                                <label className="text-sm font-medium">Target Value</label>
-                                <Input
-                                    type="number"
-                                    placeholder="5"
-                                    value={newKRTarget}
-                                    onChange={(e) => setNewKRTarget(e.target.value)}
-                                />
-                            </div>
-                            <div className="space-y-2 flex-1">
-                                <label className="text-sm font-medium">Unit</label>
-                                <Input
-                                    placeholder="books"
-                                    value={newKRUnit}
-                                    onChange={(e) => setNewKRUnit(e.target.value)}
-                                />
-                            </div>
-                        </div>
-                        <DialogFooter>
-                            <Button type="submit">{editingKR ? "Save Changes" : "Save Result"}</Button>
-                        </DialogFooter>
-                    </form>
-                </DialogContent>
-            </Dialog>
-
-            <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-                <DialogContent className="!max-w-[65vw] !w-[65vw] h-[90vh] overflow-hidden flex flex-col p-0 gap-0 border-0 shadow-2xl bg-background/95 backdrop-blur-3xl ring-1 ring-white/10">
-
-                    {/* Header with Hero Gradient */}
-                    <DialogHeader className="px-8 py-6 border-b shrink-0 bg-gradient-to-r from-violet-500/10 via-fuchsia-500/5 to-transparent">
-                        <DialogTitle className="sr-only">Goal Details</DialogTitle>
-                        <div className="flex items-start justify-between gap-6">
-                            <div className="space-y-2 flex-1 relative">
-                                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Objective</label>
-                                {isEditMode ? (
-                                    <Input
-                                        value={title}
-                                        onChange={(e) => setTitle(e.target.value)}
-                                        className="font-bold text-3xl md:text-4xl border-transparent px-0 h-auto focus-visible:ring-0 bg-transparent hover:bg-white/5 transition-all text-foreground placeholder:text-muted-foreground/50 tracking-tight"
-                                        placeholder="Enter your ambitious goal..."
-                                    />
-                                ) : (
-                                    <h2 className="font-bold text-3xl md:text-4xl text-foreground tracking-tight py-1">{title}</h2>
-                                )}
-                                <div className="flex items-center gap-3 pt-1">
-                                    <Badge variant={(selectedGoal?.progress || 0) >= 100 ? "default" : "secondary"} className="rounded-full px-3 py-0.5 font-medium transition-all">
-                                        {(selectedGoal?.progress || 0) >= 100 ? <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> : <Target className="h-3.5 w-3.5 mr-1" />}
-                                        {selectedGoal?.progress}% Achieved
-                                    </Badge>
-                                    <span className="text-sm text-muted-foreground flex items-center gap-1">
-                                        <CalendarIcon className="h-3.5 w-3.5" />
-                                        {isEditMode ? (
-                                            <Input
-                                                type="date"
-                                                value={date ? format(date, "yyyy-MM-dd") : ""}
-                                                onChange={(e) => setDate(e.target.value ? new Date(e.target.value) : undefined)}
-                                                className="w-auto h-6 text-xs px-2 py-0 inline-flex ml-2"
+                                    {orgId && (
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium">Assignees & Teams</label>
+                                            <UserGroupSelect
+                                                orgId={orgId}
+                                                assigneeIds={newGoalAssigneeIds}
+                                                groupIds={newGoalGroupIds}
+                                                onAssigneeChange={setNewGoalAssigneeIds}
+                                                onGroupChange={setNewGoalGroupIds}
+                                                members={members}
                                             />
-                                        ) : (
-                                            <span>{date ? format(date, "MMMM d, yyyy") : "No deadline"}</span>
-                                        )}
-                                    </span>
+                                        </div>
+                                    )}
+                                    <DialogFooter>
+                                        <Button type="submit">Create Objective</Button>
+                                    </DialogFooter>
+                                </form>
+                            </DialogContent>
+                        </Dialog>
+                    )}
+                </div>
+
+                {/* Stats Overview */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <Card className="border-none shadow-sm bg-white hover:shadow-md transition-all duration-200">
+                        <CardHeader className="pb-2">
+                            <div className="flex items-center gap-4">
+                                <div className="h-12 w-12 rounded-full bg-emerald-100 flex items-center justify-center">
+                                    <TrendingUp className="h-6 w-6 text-emerald-600" />
+                                </div>
+                                <div>
+                                    <CardDescription className="text-sm font-medium text-slate-500">Total Progress</CardDescription>
+                                    <CardTitle className="text-4xl font-black text-slate-900 mt-1">
+                                        {overallProgress}%
+                                    </CardTitle>
                                 </div>
                             </div>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="flex items-center gap-2 text-sm font-medium text-emerald-600">
+                                <span>↑ 12%</span>
+                                <span className="text-slate-400 font-normal">vs last month</span>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border-none shadow-sm bg-white hover:shadow-md transition-all duration-200">
+                        <CardHeader className="pb-2">
+                            <div className="flex items-center gap-4">
+                                <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
+                                    <Target className="h-6 w-6 text-blue-600" />
+                                </div>
+                                <div>
+                                    <CardDescription className="text-sm font-medium text-slate-500">Active Goals</CardDescription>
+                                    <CardTitle className="text-4xl font-black text-slate-900 mt-1">
+                                        {activeGoals}
+                                    </CardTitle>
+                                </div>
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-sm text-slate-500 font-medium">
+                                Keep pushing!
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border-none shadow-sm bg-white hover:shadow-md transition-all duration-200">
+                        <CardHeader className="pb-2">
+                            <div className="flex items-center gap-4">
+                                <div className="h-12 w-12 rounded-full bg-yellow-100 flex items-center justify-center">
+                                    <Trophy className="h-6 w-6 text-yellow-600" />
+                                </div>
+                                <div>
+                                    <CardDescription className="text-sm font-medium text-slate-500">Completed</CardDescription>
+                                    <CardTitle className="text-4xl font-black text-slate-900 mt-1">
+                                        {completedGoals}
+                                    </CardTitle>
+                                </div>
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-sm text-slate-500 font-medium">
+                                Objectives crushed.
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                {/* Goals Grid */}
+                <div className="grid gap-6 md:grid-cols-2">
+                    {loading ? (
+                        <div className="col-span-full flex justify-center py-20"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>
+                    ) : filteredGoals.length === 0 ? (
+                        <div className="col-span-full text-center py-20 border-2 border-dashed rounded-xl bg-white/50">
+                            <Target className="h-12 w-12 mx-auto text-slate-300 mb-4" />
+                            <h3 className="text-lg font-medium text-slate-900">No objectives visible to you.</h3>
+                            <p className="text-slate-500 mb-4">Start by creating your first big objective.</p>
+                            <Button onClick={() => setIsAddGoalOpen(true)} variant="outline">Create Goal</Button>
                         </div>
-                        {isEditMode && orgId && (
-                            <div className="pt-2">
-                                <UserGroupSelect
-                                    orgId={orgId}
-                                    assigneeIds={editAssigneeIds}
-                                    groupIds={editGroupIds}
-                                    onAssigneeChange={setEditAssigneeIds}
-                                    onGroupChange={setEditGroupIds}
-                                    members={members}
+                    ) : (
+                        filteredGoals.map((goal) => (
+                            <Card key={goal.id} onClick={() => openGoalDetails(goal, false)} className="group relative overflow-hidden bg-white border-0 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer ring-1 ring-slate-200">
+                                <CardHeader className="pb-2 relative z-10">
+                                    <div className="flex justify-between items-start">
+                                        <div className="space-y-1.5">
+                                            <div className="flex items-center gap-2">
+                                                <CardTitle className="text-xl font-bold text-slate-900 leading-tight group-hover:text-blue-600 transition-colors">
+                                                    {goal.title}
+                                                </CardTitle>
+                                                {goal.progress >= 100 && <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border-0"><CheckCircle2 className="h-3 w-3 mr-1" /> Done</Badge>}
+                                            </div>
+                                            <div className="flex items-center gap-4 text-xs font-medium text-slate-500">
+                                                <span className="flex items-center gap-1.5">
+                                                    <CalendarIcon className="h-3.5 w-3.5" />
+                                                    {goal.targetDate ? format(new Date(goal.targetDate), "MMM d, yyyy") : "No deadline"}
+                                                </span>
+                                                <AssigneeDisplay
+                                                    assigneeIds={goal.assigneeIds}
+                                                    groupIds={goal.groupIds}
+                                                    members={members}
+                                                    groups={groups}
+                                                />
+                                            </div>
+                                        </div>
+                                        {canEdit && (
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-900" onClick={(e) => e.stopPropagation()}>
+                                                        <MoreVertical className="h-4 w-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openGoalDetails(goal, true); }}>
+                                                        <Pencil className="h-4 w-4 mr-2" /> Edit Objective
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={(e) => { e.stopPropagation(); deleteGoal(goal.id); }}>
+                                                        <Trash2 className="h-4 w-4 mr-2" /> Delete
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        )}
+                                    </div>
+
+                                    <div className="mt-5 space-y-2">
+                                        <div className="flex justify-between items-center text-sm font-medium">
+                                            <span className="text-slate-500">Progress</span>
+                                            <span className={cn("font-bold", goal.progress >= 100 ? "text-emerald-600" : "text-blue-600")}>
+                                                {goal.progress}%
+                                            </span>
+                                        </div>
+                                        <div className="relative h-3 w-full overflow-hidden rounded-full bg-slate-100">
+                                            <div
+                                                className="h-full bg-gradient-to-r from-blue-400 to-indigo-500 transition-all duration-500 ease-out"
+                                                style={{ width: `${goal.progress}%` }}
+                                            />
+                                        </div>
+                                    </div>
+                                </CardHeader>
+
+                                <CardContent className="pt-2 relative z-10">
+                                    <div className="mt-4 pt-4 border-t border-slate-100">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">Key Results</h4>
+                                            {canEdit && (
+                                                <Button variant="ghost" size="sm" className="h-6 text-xs hover:bg-blue-50 hover:text-blue-600 -mr-2" onClick={(e) => { e.stopPropagation(); openAddKR(goal.id); }}>
+                                                    <Plus className="h-3 w-3 mr-1" /> Add
+                                                </Button>
+                                            )}
+                                        </div>
+
+                                        <div className="space-y-1">
+                                            {(goal.keyResults && goal.keyResults.length > 0) ? (
+                                                goal.keyResults.map((kr) => (
+                                                    <KeyResultItem
+                                                        key={kr.id}
+                                                        goalId={goal.id}
+                                                        kr={kr}
+                                                        onEdit={canEdit ? (kr) => openEditKR(goal.id, kr) : undefined}
+                                                        onDelete={canEdit ? (krId) => handleDeleteKeyResult(goal.id, krId) : undefined}
+                                                    />
+                                                ))
+                                            ) : (
+                                                canEdit ? (
+                                                    <div className="border-2 border-dashed border-slate-100 rounded-lg p-6 text-center cursor-pointer hover:border-blue-200 hover:bg-blue-50/30 transition-all group/empty" onClick={(e) => { e.stopPropagation(); openAddKR(goal.id); }}>
+                                                        <p className="text-sm text-slate-500 group-hover/empty:text-blue-600 font-medium">No key results yet.</p>
+                                                        <p className="text-xs text-slate-400 mt-1">Click to add your first metric.</p>
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-sm text-slate-400 italic text-center py-4">No key results set.</div>
+                                                )
+                                            )}
+                                        </div>
+                                    </div>
+                                </CardContent>
+
+                                {/* Background decoration/illustration */}
+                                <div className="absolute -bottom-6 -right-6 h-32 w-32 bg-gradient-to-br from-slate-50 to-slate-100 rounded-full opacity-50 z-0 pointer-events-none" />
+                            </Card>
+                        ))
+                    )}
+                </div>
+
+                {/* Shared Dialogs */}
+                <Dialog open={isKRModalOpen} onOpenChange={(open) => { if (!open) closeKRModal(); }}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>{editingKR ? "Edit Key Result" : "Add Key Result"}</DialogTitle>
+                        </DialogHeader>
+                        <form onSubmit={handleSaveKeyResult} className="space-y-4 mt-2">
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">Result Title</label>
+                                <Input
+                                    placeholder="e.g. Read 5 books"
+                                    value={newKRTitle}
+                                    onChange={(e) => setNewKRTitle(e.target.value)}
+                                    autoFocus
                                 />
                             </div>
-                        )}
+                            <div className="flex gap-4">
+                                <div className="space-y-2 flex-1">
+                                    <label className="text-sm font-medium">Target Value</label>
+                                    <Input
+                                        type="number"
+                                        placeholder="5"
+                                        value={newKRTarget}
+                                        onChange={(e) => setNewKRTarget(e.target.value)}
+                                    />
+                                </div>
+                                <div className="space-y-2 flex-1">
+                                    <label className="text-sm font-medium">Unit</label>
+                                    <Input
+                                        placeholder="books"
+                                        value={newKRUnit}
+                                        onChange={(e) => setNewKRUnit(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+                            <DialogFooter>
+                                <Button type="submit">{editingKR ? "Save Changes" : "Save Result"}</Button>
+                            </DialogFooter>
+                        </form>
+                    </DialogContent>
+                </Dialog>
 
-                    </DialogHeader>
+                <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+                    <DialogContent className="!max-w-[65vw] !w-[65vw] h-[90vh] overflow-hidden flex flex-col p-0 gap-0 border-0 shadow-2xl bg-background/95 backdrop-blur-3xl ring-1 ring-white/10">
 
-                    <div className="flex-1 overflow-hidden flex flex-col lg:flex-row divide-y lg:divide-y-0 lg:divide-x bg-background/50">
-                        {/* Main Content (Left) */}
-                        <ScrollArea className="flex-1">
-                            <div className="p-8 space-y-10 max-w-4xl mx-auto">
-
-                                {/* Why / Description */}
-                                <div className="space-y-3 group/desc">
-                                    <div className="flex items-center justify-between">
-                                        <label className="text-sm font-semibold text-foreground/80 flex items-center gap-2">
-                                            <span className="w-1 h-4 rounded-full bg-primary/50 block"></span>
-                                            Why this matters
-                                        </label>
-                                    </div>
+                        {/* Header with Hero Gradient */}
+                        <DialogHeader className="px-8 py-6 border-b shrink-0 bg-gradient-to-r from-violet-500/10 via-fuchsia-500/5 to-transparent">
+                            <DialogTitle className="sr-only">Goal Details</DialogTitle>
+                            <div className="flex items-start justify-between gap-6">
+                                <div className="space-y-2 flex-1 relative">
+                                    <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Objective</label>
                                     {isEditMode ? (
-                                        <textarea
-                                            className="min-h-[120px] w-full rounded-xl border-border/40 bg-card/50 px-4 py-3 text-base leading-relaxed ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:bg-card transition-all resize-none shadow-sm hover:border-primary/20"
-                                            placeholder="Describe the impact of achieving this goal. What's the motivation?"
-                                            value={description}
-                                            onChange={(e) => setDescription(e.target.value)}
+                                        <Input
+                                            value={title}
+                                            onChange={(e) => setTitle(e.target.value)}
+                                            className="font-bold text-3xl md:text-4xl border-transparent px-0 h-auto focus-visible:ring-0 bg-transparent hover:bg-white/5 transition-all text-foreground placeholder:text-muted-foreground/50 tracking-tight"
+                                            placeholder="Enter your ambitious goal..."
                                         />
                                     ) : (
-                                        <p className="min-h-[60px] text-base leading-relaxed text-muted-foreground whitespace-pre-wrap">
-                                            {description || "No description provided."}
-                                        </p>
+                                        <h2 className="font-bold text-3xl md:text-4xl text-foreground tracking-tight py-1">{title}</h2>
                                     )}
+                                    <div className="flex items-center gap-3 pt-1">
+                                        <Badge variant={(selectedGoal?.progress || 0) >= 100 ? "default" : "secondary"} className="rounded-full px-3 py-0.5 font-medium transition-all">
+                                            {(selectedGoal?.progress || 0) >= 100 ? <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> : <Target className="h-3.5 w-3.5 mr-1" />}
+                                            {selectedGoal?.progress}% Achieved
+                                        </Badge>
+                                        <span className="text-sm text-muted-foreground flex items-center gap-1">
+                                            <CalendarIcon className="h-3.5 w-3.5" />
+                                            {isEditMode ? (
+                                                <Input
+                                                    type="date"
+                                                    value={date ? format(date, "yyyy-MM-dd") : ""}
+                                                    onChange={(e) => setDate(e.target.value ? new Date(e.target.value) : undefined)}
+                                                    className="w-auto h-6 text-xs px-2 py-0 inline-flex ml-2"
+                                                />
+                                            ) : (
+                                                <span>{date ? format(date, "MMMM d, yyyy") : "No deadline"}</span>
+                                            )}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            {isEditMode && orgId && (
+                                <div className="pt-2">
+                                    <UserGroupSelect
+                                        orgId={orgId}
+                                        assigneeIds={editAssigneeIds}
+                                        groupIds={editGroupIds}
+                                        onAssigneeChange={setEditAssigneeIds}
+                                        onGroupChange={setEditGroupIds}
+                                        members={members}
+                                    />
+                                </div>
+                            )}
+
+                        </DialogHeader>
+
+                        <div className="flex-1 overflow-hidden flex flex-col lg:flex-row divide-y lg:divide-y-0 lg:divide-x bg-background/50">
+                            {/* Main Content (Left) */}
+                            <ScrollArea className="flex-1">
+                                <div className="p-8 space-y-10 max-w-4xl mx-auto">
+
+                                    {/* Why / Description */}
+                                    <div className="space-y-3 group/desc">
+                                        <div className="flex items-center justify-between">
+                                            <label className="text-sm font-semibold text-foreground/80 flex items-center gap-2">
+                                                <span className="w-1 h-4 rounded-full bg-primary/50 block"></span>
+                                                Why this matters
+                                            </label>
+                                        </div>
+                                        {isEditMode ? (
+                                            <textarea
+                                                className="min-h-[120px] w-full rounded-xl border-border/40 bg-card/50 px-4 py-3 text-base leading-relaxed ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:bg-card transition-all resize-none shadow-sm hover:border-primary/20"
+                                                placeholder="Describe the impact of achieving this goal. What's the motivation?"
+                                                value={description}
+                                                onChange={(e) => setDescription(e.target.value)}
+                                            />
+                                        ) : (
+                                            <p className="min-h-[60px] text-base leading-relaxed text-muted-foreground whitespace-pre-wrap">
+                                                {description || "No description provided."}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <Separator className="opacity-50" />
+
+                                    {/* Key Results */}
+                                    <div className="space-y-5">
+                                        <div className="flex items-center justify-between">
+                                            <h3 className="text-sm font-semibold text-foreground/80 flex items-center gap-2">
+                                                <Target className="h-4 w-4 text-primary" /> Key Results
+                                            </h3>
+                                            {isEditMode && (
+                                                <Button size="sm" variant="outline" className="h-8 rounded-full text-xs font-medium border-dashed" onClick={() => selectedGoal && openAddKR(selectedGoal.id)}>
+                                                    <Plus className="h-3.5 w-3.5 mr-1.5" /> Add Result
+                                                </Button>
+                                            )}
+                                        </div>
+
+                                        <div className="grid gap-3">
+                                            {selectedGoal && selectedGoal.keyResults && selectedGoal.keyResults.length > 0 ? (
+                                                selectedGoal.keyResults.map((kr) => (
+                                                    <div key={kr.id} className="bg-card/40 border border-border/40 rounded-xl p-1 transition-all hover:bg-card/80 hover:shadow-sm hover:border-primary/20">
+                                                        <KeyResultItem
+                                                            goalId={selectedGoal.id}
+                                                            kr={kr}
+                                                            onEdit={isEditMode ? (kr) => openEditKR(selectedGoal.id, kr) : undefined}
+                                                            onDelete={isEditMode ? (krId) => handleDeleteKeyResult(selectedGoal.id, krId) : undefined}
+                                                        />
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="text-center py-12 border-2 border-dashed border-muted/50 rounded-xl bg-muted/5 hover:bg-muted/10 transition-colors cursor-pointer" onClick={() => isEditMode && selectedGoal && openAddKR(selectedGoal.id)}>
+                                                    <Target className="h-10 w-10 mx-auto text-muted-foreground/30 mb-3" />
+                                                    <h3 className="font-medium text-muted-foreground">Define success</h3>
+                                                    <p className="text-xs text-muted-foreground/70">{isEditMode ? "Add key results to track your progress." : "No key results defined."}</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </ScrollArea>
+
+                            {/* Sidebar (Right) */}
+                            <div className="w-full lg:w-[380px] bg-muted/5 flex flex-col h-[400px] lg:h-auto border-l border-border/50">
+
+                                {/* Linked Tasks Section */}
+                                <div className="flex-1 flex flex-col min-h-0">
+                                    <div className="p-4 border-b border-border/40 bg-muted/10">
+                                        <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                                            <Link className="h-3.5 w-3.5" /> Linked Tasks
+                                        </h4>
+                                    </div>
+                                    <ScrollArea className="flex-1">
+                                        <div className="p-4 space-y-2">
+                                            {linkedTasks.length === 0 ? (
+                                                <p className="text-xs text-muted-foreground italic text-center py-4">No tasks linked to this goal yet.</p>
+                                            ) : (
+                                                linkedTasks.map(task => (
+                                                    <div key={task.id} className="flex items-start gap-2 p-2 rounded-lg hover:bg-accent/50 group transition-colors border border-transparent hover:border-border/50">
+                                                        <div className={cn("mt-0.5", task.completed ? "text-green-500" : "text-muted-foreground")}>
+                                                            {task.completed ? <CheckSquare className="h-3.5 w-3.5" /> : <Square className="h-3.5 w-3.5" />}
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className={cn("text-sm truncate", task.completed && "line-through text-muted-foreground")}>{task.title}</p>
+                                                            {task.dueDate && <p className="text-[10px] text-muted-foreground">{task.dueDate}</p>}
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+                                    </ScrollArea>
                                 </div>
 
-                                <Separator className="opacity-50" />
+                                <Separator />
 
-                                {/* Key Results */}
-                                <div className="space-y-5">
-                                    <div className="flex items-center justify-between">
-                                        <h3 className="text-sm font-semibold text-foreground/80 flex items-center gap-2">
-                                            <Target className="h-4 w-4 text-primary" /> Key Results
-                                        </h3>
-                                        {isEditMode && (
-                                            <Button size="sm" variant="outline" className="h-8 rounded-full text-xs font-medium border-dashed" onClick={() => selectedGoal && openAddKR(selectedGoal.id)}>
-                                                <Plus className="h-3.5 w-3.5 mr-1.5" /> Add Result
+                                {/* Activity Section */}
+                                <div className="flex-1 flex flex-col min-h-0 bg-background/30">
+                                    <div className="p-4 border-b border-border/40 bg-muted/10 flex items-center justify-between sticky top-0 backdrop-blur-md">
+                                        <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                                            <MessageSquare className="h-3.5 w-3.5" /> Activity
+                                        </h4>
+                                        <Badge variant="outline" className="text-[10px] h-5 px-1.5">{comments.length}</Badge>
+                                    </div>
+
+                                    <ScrollArea className="flex-1 p-0">
+                                        <div className="p-4 space-y-4">
+                                            {comments.length === 0 ? (
+                                                <div className="text-center py-10">
+                                                    <MessageSquare className="h-8 w-8 mx-auto text-muted-foreground/20 mb-2" />
+                                                    <p className="text-xs text-muted-foreground">Start the conversation.</p>
+                                                </div>
+                                            ) : (
+                                                comments.map(comment => (
+                                                    <GoalCommentItem key={comment.id} comment={comment} goalId={selectedGoal?.id || ""} />
+                                                ))
+                                            )}
+                                        </div>
+                                    </ScrollArea>
+
+                                    <div className="p-3 border-t bg-background/80 backdrop-blur pb-safe">
+                                        <form onSubmit={handleAddComment} className="flex gap-2 relative">
+                                            <Input
+                                                placeholder="Write an update..."
+                                                value={newComment}
+                                                onChange={(e) => setNewComment(e.target.value)}
+                                                className="h-10 text-sm pl-3 pr-10 rounded-full bg-muted/30 border-transparent focus:bg-background focus:border-input transition-all"
+                                            />
+                                            <Button type="submit" size="icon" className="absolute right-1 top-1 h-8 w-8 rounded-full" disabled={!newComment.trim()}>
+                                                <Send className="h-3.5 w-3.5" />
                                             </Button>
-                                        )}
+                                        </form>
                                     </div>
-
-                                    <div className="grid gap-3">
-                                        {selectedGoal && selectedGoal.keyResults && selectedGoal.keyResults.length > 0 ? (
-                                            selectedGoal.keyResults.map((kr) => (
-                                                <div key={kr.id} className="bg-card/40 border border-border/40 rounded-xl p-1 transition-all hover:bg-card/80 hover:shadow-sm hover:border-primary/20">
-                                                    <KeyResultItem
-                                                        goalId={selectedGoal.id}
-                                                        kr={kr}
-                                                        onEdit={isEditMode ? (kr) => openEditKR(selectedGoal.id, kr) : undefined}
-                                                        onDelete={isEditMode ? (krId) => handleDeleteKeyResult(selectedGoal.id, krId) : undefined}
-                                                    />
-                                                </div>
-                                            ))
-                                        ) : (
-                                            <div className="text-center py-12 border-2 border-dashed border-muted/50 rounded-xl bg-muted/5 hover:bg-muted/10 transition-colors cursor-pointer" onClick={() => isEditMode && selectedGoal && openAddKR(selectedGoal.id)}>
-                                                <Target className="h-10 w-10 mx-auto text-muted-foreground/30 mb-3" />
-                                                <h3 className="font-medium text-muted-foreground">Define success</h3>
-                                                <p className="text-xs text-muted-foreground/70">{isEditMode ? "Add key results to track your progress." : "No key results defined."}</p>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-
-                            </div>
-                        </ScrollArea>
-
-                        {/* Sidebar (Right) */}
-                        <div className="w-full lg:w-[380px] bg-muted/5 flex flex-col h-[400px] lg:h-auto border-l border-border/50">
-
-                            {/* Linked Tasks Section */}
-                            <div className="flex-1 flex flex-col min-h-0">
-                                <div className="p-4 border-b border-border/40 bg-muted/10">
-                                    <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                                        <Link className="h-3.5 w-3.5" /> Linked Tasks
-                                    </h4>
-                                </div>
-                                <ScrollArea className="flex-1">
-                                    <div className="p-4 space-y-2">
-                                        {linkedTasks.length === 0 ? (
-                                            <p className="text-xs text-muted-foreground italic text-center py-4">No tasks linked to this goal yet.</p>
-                                        ) : (
-                                            linkedTasks.map(task => (
-                                                <div key={task.id} className="flex items-start gap-2 p-2 rounded-lg hover:bg-accent/50 group transition-colors border border-transparent hover:border-border/50">
-                                                    <div className={cn("mt-0.5", task.completed ? "text-green-500" : "text-muted-foreground")}>
-                                                        {task.completed ? <CheckSquare className="h-3.5 w-3.5" /> : <Square className="h-3.5 w-3.5" />}
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className={cn("text-sm truncate", task.completed && "line-through text-muted-foreground")}>{task.title}</p>
-                                                        {task.dueDate && <p className="text-[10px] text-muted-foreground">{task.dueDate}</p>}
-                                                    </div>
-                                                </div>
-                                            ))
-                                        )}
-                                    </div>
-                                </ScrollArea>
-                            </div>
-
-                            <Separator />
-
-                            {/* Activity Section */}
-                            <div className="flex-1 flex flex-col min-h-0 bg-background/30">
-                                <div className="p-4 border-b border-border/40 bg-muted/10 flex items-center justify-between sticky top-0 backdrop-blur-md">
-                                    <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                                        <MessageSquare className="h-3.5 w-3.5" /> Activity
-                                    </h4>
-                                    <Badge variant="outline" className="text-[10px] h-5 px-1.5">{comments.length}</Badge>
-                                </div>
-
-                                <ScrollArea className="flex-1 p-0">
-                                    <div className="p-4 space-y-4">
-                                        {comments.length === 0 ? (
-                                            <div className="text-center py-10">
-                                                <MessageSquare className="h-8 w-8 mx-auto text-muted-foreground/20 mb-2" />
-                                                <p className="text-xs text-muted-foreground">Start the conversation.</p>
-                                            </div>
-                                        ) : (
-                                            comments.map(comment => (
-                                                <GoalCommentItem key={comment.id} comment={comment} goalId={selectedGoal?.id || ""} />
-                                            ))
-                                        )}
-                                    </div>
-                                </ScrollArea>
-
-                                <div className="p-3 border-t bg-background/80 backdrop-blur pb-safe">
-                                    <form onSubmit={handleAddComment} className="flex gap-2 relative">
-                                        <Input
-                                            placeholder="Write an update..."
-                                            value={newComment}
-                                            onChange={(e) => setNewComment(e.target.value)}
-                                            className="h-10 text-sm pl-3 pr-10 rounded-full bg-muted/30 border-transparent focus:bg-background focus:border-input transition-all"
-                                        />
-                                        <Button type="submit" size="icon" className="absolute right-1 top-1 h-8 w-8 rounded-full" disabled={!newComment.trim()}>
-                                            <Send className="h-3.5 w-3.5" />
-                                        </Button>
-                                    </form>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <DialogFooter className="px-6 py-4 border-t bg-muted/5 shrink-0">
-                        <Button variant="outline" onClick={() => setIsDetailsOpen(false)} className="rounded-full">Close</Button>
-                        {isEditMode && (
-                            <Button onClick={handleSaveDetails} className="rounded-full shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-shadow">Save Changes</Button>
-                        )}
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog >
+                        <DialogFooter className="px-6 py-4 border-t bg-muted/5 shrink-0">
+                            <Button variant="outline" onClick={() => setIsDetailsOpen(false)} className="rounded-full">Close</Button>
+                            {isEditMode && (
+                                <Button onClick={handleSaveDetails} className="rounded-full shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-shadow">Save Changes</Button>
+                            )}
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog >
 
-        </div >
+            </div>
+        </div>
     );
 }

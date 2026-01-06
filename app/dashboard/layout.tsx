@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import { onAuthStateChanged } from "firebase/auth"
 import { auth } from "@/lib/firebase/auth"
 import { Sidebar } from "@/components/shared/sidebar"
@@ -22,6 +22,7 @@ export default function DashboardLayout({
     const [user, setUser] = useState<any>(null)
     const [isCollapsed, setIsCollapsed] = useState(false)
     const router = useRouter()
+    const pathname = usePathname()
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -46,10 +47,13 @@ export default function DashboardLayout({
 
     if (!user) return null
 
-
+    const isFocusMode = pathname?.includes("/focus") || pathname?.includes("/planner")
 
     return (
-        <div className="flex h-screen overflow-hidden bg-background">
+        <div className={cn(
+            "flex h-screen overflow-hidden transition-colors duration-700 ease-in-out",
+            isFocusMode ? "bg-slate-50" : "bg-background"
+        )}>
             <ResizablePanelGroup
                 direction="horizontal"
                 className="hidden md:flex"

@@ -19,7 +19,18 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { createOrganization } from "@/lib/firebase/firestore"
 
 const mainItems = [
     { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
@@ -46,6 +57,24 @@ export function Sidebar({ isCollapsed = false }: { isCollapsed?: boolean }) {
     const [user, setUser] = useState(auth.currentUser)
     const [userData, setUserData] = useState<any>(null)
     const [todayTaskCount, setTodayTaskCount] = useState(0)
+
+    // Create Team Dialog State
+    const [isCreateTeamOpen, setIsCreateTeamOpen] = useState(false)
+    const [newTeamName, setNewTeamName] = useState("")
+
+    const handleCreateTeam = async () => {
+        if (!newTeamName.trim()) return;
+        try {
+            await createOrganization(newTeamName, false);
+            toast.success("Team created successfully!");
+            setIsCreateTeamOpen(false);
+            setNewTeamName("");
+            window.location.reload();
+        } catch (error) {
+            console.error("Failed to create team", error);
+            toast.error("Failed to create team");
+        }
+    };
 
     useEffect(() => {
         let unsubOrgs: () => void = () => { }
@@ -187,13 +216,33 @@ export function Sidebar({ isCollapsed = false }: { isCollapsed?: boolean }) {
                         )}
 
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem asChild className="cursor-pointer">
-                            <Link href="/dashboard/team">
-                                <Plus className="h-4 w-4 mr-2" /> CREATE NEW TEAM
-                            </Link>
+                        <DropdownMenuItem onSelect={() => setIsCreateTeamOpen(true)} className="cursor-pointer">
+                            <Plus className="h-4 w-4 mr-2" /> CREATE NEW TEAM
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
+
+                <Dialog open={isCreateTeamOpen} onOpenChange={setIsCreateTeamOpen}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Create New Team</DialogTitle>
+                            <DialogDescription>Create a shared workspace to collaborate with others.</DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4 py-4">
+                            <div className="space-y-2">
+                                <Label>Team Name</Label>
+                                <Input
+                                    value={newTeamName}
+                                    onChange={e => setNewTeamName(e.target.value)}
+                                    placeholder="e.g. Acme Corp, Design Team"
+                                />
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <Button onClick={handleCreateTeam}>Create Team</Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </div>
             <div className="flex-1 overflow-auto py-6 px-3">
                 <nav className="grid gap-1.5">
@@ -262,6 +311,6 @@ export function Sidebar({ isCollapsed = false }: { isCollapsed?: boolean }) {
 
 
             </div>
-        </aside>
+        </aside >
     )
 }

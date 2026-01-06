@@ -26,7 +26,8 @@ import {
     Zap,
     Loader2,
     CheckCircle2,
-    GripVertical
+    GripVertical,
+    Target
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -107,7 +108,7 @@ export default function MVSPage() {
                 strategies: editStrategies
             });
             setIsEditing(false);
-            toast.success("MVS updated successfully!");
+            toast.success("MVS North Star updated!");
         } catch (error) {
             console.error("Failed to save MVS:", error);
             toast.error("Failed to save changes. Please try again.");
@@ -137,12 +138,12 @@ export default function MVSPage() {
 
     const removeStrategy = (id: string) => {
         setEditStrategies(editStrategies.filter(s => s.id !== id));
-        toast.info("Strategy removed from list (Save to apply)");
+        toast.info("Strategy removed (Save to apply)");
     };
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center min-h-[400px]">
+            <div className="flex items-center justify-center min-h-screen bg-slate-50">
                 <Loader2 className="h-8 w-8 animate-spin text-primary/50" />
             </div>
         );
@@ -151,236 +152,210 @@ export default function MVSPage() {
     const canEdit = userRole === 'owner' || userRole === 'member';
 
     return (
-        <div className="max-w-6xl mx-auto px-4 py-8 space-y-12">
-            {/* Header */}
-            <div className="flex justify-between items-end border-b border-border/50 pb-6">
+        <div className="min-h-screen bg-slate-50/50 pb-20">
+            {/* Top Toolbar */}
+            <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 px-6 py-4 flex justify-between items-center">
                 <div>
-                    <h1 className="text-4xl font-bold tracking-tight text-foreground">MVS</h1>
-                    <p className="text-muted-foreground mt-2">Mission, Vision, and Strategy for your organization.</p>
+                    <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Organization DNA</span>
+                    <h1 className="text-xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text text-transparent">The North Star</h1>
                 </div>
                 {canEdit && (
                     <div className="flex gap-3">
                         {isEditing ? (
                             <>
-                                <Button variant="ghost" onClick={handleCancel} disabled={isSaving}>
+                                <Button variant="ghost" size="sm" onClick={handleCancel} disabled={isSaving} className="text-slate-500 hover:text-slate-900">
                                     <X className="h-4 w-4 mr-2" /> Cancel
                                 </Button>
-                                <Button onClick={handleSave} disabled={isSaving} className="bg-emerald-600 hover:bg-emerald-700 text-white min-w-[120px]">
+                                <Button size="sm" onClick={handleSave} disabled={isSaving} className="bg-slate-900 text-white hover:bg-slate-800 shadow-md">
                                     {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
                                     Save Changes
                                 </Button>
                             </>
                         ) : (
-                            <Button variant="outline" onClick={handleEdit} className="hover:bg-accent/50">
-                                <Pencil className="h-4 w-4 mr-2" /> Edit MVS
+                            <Button size="sm" variant="outline" onClick={handleEdit} className="hover:bg-slate-100 border-dashed border-slate-300">
+                                <Pencil className="h-3.5 w-3.5 mr-2" /> Edit MVS
                             </Button>
                         )}
                     </div>
                 )}
             </div>
 
-            {/* Mission & Vision Row */}
-            <div className="grid md:grid-cols-2 gap-8">
-                {/* Mission Card */}
-                <Card className={cn(
-                    "relative overflow-hidden border-border/40 transition-all duration-300",
-                    isEditing ? "ring-2 ring-primary/20 bg-muted/5" : "hover:shadow-lg hover:border-primary/20 shadow-sm"
-                )}>
-                    <CardHeader className="flex flex-row items-center gap-4 pb-2">
-                        <div className="h-10 w-10 rounded-xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-orange-600 dark:text-orange-400">
-                            <Rocket className="h-6 w-6" />
+            <div className="max-w-5xl mx-auto px-6 py-10 space-y-16">
+
+                {/* HERO SECTION: MISSION */}
+                <section className="relative group">
+                    <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/10 via-purple-500/5 to-white rounded-3xl blur-3xl -z-10" />
+                    <div className={cn(
+                        "relative rounded-3xl p-8 md:p-12 transition-all duration-300 border border-white/50 shadow-sm",
+                        isEditing ? "bg-white/80 ring-2 ring-indigo-500/20" : "bg-white/60 backdrop-blur-sm"
+                    )}>
+                        <div className="flex items-center gap-4 mb-6">
+                            <div className="h-12 w-12 rounded-2xl bg-indigo-500 text-white flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                                <Rocket className="h-6 w-6" />
+                            </div>
+                            <h2 className="text-sm font-bold uppercase tracking-widest text-indigo-600">Our Mission</h2>
                         </div>
-                        <CardTitle className="text-2xl font-bold">Mission</CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-4">
+
                         {isEditing ? (
                             <Textarea
                                 value={editMission}
                                 onChange={(e) => setEditMission(e.target.value)}
-                                placeholder="What is your organization's core purpose? (e.g., To accelerate the world's transition to sustainable energy)"
-                                className="min-h-[160px] text-lg leading-relaxed resize-none focus-visible:ring-primary/30 border-border/50 bg-white dark:bg-slate-950"
+                                placeholder="State your core purpose..."
+                                className="text-3xl md:text-5xl font-black tracking-tight leading-tight min-h-[140px] bg-transparent border-none p-0 focus-visible:ring-0 placeholder:text-slate-300 resize-none"
                             />
                         ) : (
-                            <p className={cn(
-                                "text-lg leading-relaxed text-foreground/80 min-h-[100px] whitespace-pre-wrap",
-                                !mvs?.mission && "text-muted-foreground italic font-light"
+                            <h2 className={cn(
+                                "text-3xl md:text-5xl font-black tracking-tight leading-tight text-slate-900",
+                                !mvs?.mission && "text-slate-300 italic"
                             )}>
-                                {mvs?.mission || "Define your mission to help your team stay focused on the core objective."}
-                            </p>
+                                {mvs?.mission || "What is your reason for being?"}
+                            </h2>
                         )}
-                    </CardContent>
-                </Card>
 
-                {/* Vision Card */}
-                <Card className={cn(
-                    "relative overflow-hidden border-border/40 transition-all duration-300",
-                    isEditing ? "ring-2 ring-primary/20 bg-muted/5" : "hover:shadow-lg hover:border-primary/20 shadow-sm"
-                )}>
-                    <CardHeader className="flex flex-row items-center gap-4 pb-2">
-                        <div className="h-10 w-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
-                            <Telescope className="h-6 w-6" />
-                        </div>
-                        <CardTitle className="text-2xl font-bold">Vision</CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-4">
-                        {isEditing ? (
-                            <Textarea
-                                value={editVision}
-                                onChange={(e) => setEditVision(e.target.value)}
-                                placeholder="Where do you see the organization in 5-10 years? (e.g., To be the world's most customer-centric company)"
-                                className="min-h-[160px] text-lg leading-relaxed resize-none focus-visible:ring-primary/30 border-border/50 bg-white dark:bg-slate-950"
-                            />
-                        ) : (
-                            <p className={cn(
-                                "text-lg leading-relaxed text-foreground/80 min-h-[100px] whitespace-pre-wrap",
-                                !mvs?.vision && "text-muted-foreground italic font-light"
-                            )}>
-                                {mvs?.vision || "Set a bold vision to inspire your team for the long-term journey."}
-                            </p>
-                        )}
-                    </CardContent>
-                </Card>
-            </div>
-
-            {/* Strategies Section */}
-            <div className="space-y-6 pt-4">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
-                            <Zap className="h-5 w-5" />
-                        </div>
-                        <h2 className="text-2xl font-bold tracking-tight">Core Strategies</h2>
+                        <p className="mt-6 text-slate-500 max-w-2xl font-medium">
+                            This is our "Why". It guides every decision we make.
+                        </p>
                     </div>
-                    {isEditing && (
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={addStrategy}
-                            className="text-primary border-primary/20 hover:bg-primary/5"
-                        >
-                            <Plus className="h-4 w-4 mr-2" /> Add Strategy
-                        </Button>
-                    )}
-                </div>
+                </section>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <AnimatePresence mode="popLayout">
-                        {(isEditing ? editStrategies : (mvs?.strategies || [])).map((strategy, index) => (
-                            <motion.div
-                                key={strategy.id}
-                                layout
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.95 }}
-                                transition={{ duration: 0.2 }}
-                            >
-                                <Card className={cn(
-                                    "relative group border-border/40 h-full flex flex-col transition-all duration-300",
-                                    isEditing ? "bg-muted/5 border-dashed" : "hover:scale-[1.02] hover:shadow-md hover:border-primary/30"
-                                )}>
-                                    {isEditing && (
-                                        <button
-                                            onClick={() => removeStrategy(strategy.id)}
-                                            className="absolute -top-2 -right-2 h-7 w-7 rounded-full bg-rose-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg z-10 hover:bg-rose-600"
-                                        >
-                                            <Trash2 className="h-3.5 w-3.5" />
-                                        </button>
-                                    )}
-                                    <CardHeader className="pb-2">
-                                        <div className="flex items-start justify-between">
-                                            <div className="h-10 w-10 rounded-full bg-primary/5 flex items-center justify-center text-primary font-bold border border-primary/10">
-                                                {index + 1}
-                                            </div>
-                                            {isEditing && (
-                                                <GripVertical className="h-4 w-4 text-muted-foreground/30" />
-                                            )}
-                                        </div>
-                                        {isEditing ? (
-                                            <Input
-                                                value={strategy.title}
-                                                onChange={(e) => updateStrategy(strategy.id, 'title', e.target.value)}
-                                                placeholder="Strategy Title"
-                                                className="mt-4 font-bold border-transparent px-0 focus-visible:ring-0 bg-transparent text-lg placeholder:text-muted-foreground/40"
-                                            />
-                                        ) : (
-                                            <CardTitle className="mt-4 text-xl">
-                                                {strategy.title || "Untitled Strategy"}
-                                            </CardTitle>
-                                        )}
-                                    </CardHeader>
-                                    <CardContent className="flex-1">
-                                        {isEditing ? (
-                                            <Textarea
-                                                value={strategy.description}
-                                                onChange={(e) => updateStrategy(strategy.id, 'description', e.target.value)}
-                                                placeholder="How will you achieve this strategy?"
-                                                className="min-h-[100px] border-transparent px-0 focus-visible:ring-0 bg-transparent resize-none leading-relaxed placeholder:text-muted-foreground/40"
-                                            />
-                                        ) : (
-                                            <p className={cn(
-                                                "text-muted-foreground leading-relaxed",
-                                                !strategy.description && "italic text-muted-foreground/50"
-                                            )}>
-                                                {strategy.description || "Describe your strategic approach here."}
-                                            </p>
-                                        )}
-                                    </CardContent>
-                                </Card>
-                            </motion.div>
-                        ))}
+                {/* VISION SECTION */}
+                <section className="relative md:pl-20">
+                    {/* Connecting Line */}
+                    <div className="absolute left-8 md:left-[3.5rem] top-[-4rem] h-24 w-0.5 bg-gradient-to-b from-indigo-200 to-cyan-200 -z-10 hidden md:block" />
 
-                        {isEditing && editStrategies.length === 0 && (
-                            <div className="col-span-full py-12 border-2 border-dashed border-muted rounded-2xl flex flex-col items-center justify-center text-muted-foreground">
-                                <Zap className="h-10 w-10 mb-4 opacity-20" />
-                                <p>No strategies defined yet.</p>
-                                <Button variant="link" onClick={addStrategy} className="mt-2">Add your first strategy</Button>
+                    <div className={cn(
+                        "relative rounded-3xl p-8 transition-all duration-300 border border-slate-100",
+                        isEditing ? "bg-white ring-2 ring-cyan-500/20" : "bg-gradient-to-br from-white to-cyan-50/30 hover:shadow-md"
+                    )}>
+                        <div className="flex items-start gap-6">
+                            <div className="h-10 w-10 shrink-0 rounded-2xl bg-cyan-100 text-cyan-600 flex items-center justify-center">
+                                <Telescope className="h-5 w-5" />
                             </div>
-                        )}
-
-                        {!isEditing && (!mvs?.strategies || mvs.strategies.length === 0) && (
-                            <div className="col-span-full py-12 border border-border/40 rounded-2xl bg-muted/5 flex flex-col items-center justify-center text-muted-foreground">
-                                <Zap className="h-10 w-10 mb-4 opacity-20" />
-                                <p>No strategies defined yet.</p>
-                                {canEdit && (
-                                    <Button variant="link" onClick={handleEdit} className="mt-2">Start defining your strategies</Button>
+                            <div className="flex-1">
+                                <h3 className="text-sm font-bold uppercase tracking-widest text-cyan-600 mb-3">Our Vision</h3>
+                                {isEditing ? (
+                                    <Textarea
+                                        value={editVision}
+                                        onChange={(e) => setEditVision(e.target.value)}
+                                        placeholder="Where are we going?"
+                                        className="text-xl md:text-2xl font-medium leading-relaxed min-h-[100px] bg-transparent border-none p-0 focus-visible:ring-0 placeholder:text-slate-300 resize-none"
+                                    />
+                                ) : (
+                                    <p className={cn(
+                                        "text-xl md:text-2xl font-medium leading-relaxed text-slate-700",
+                                        !mvs?.vision && "text-slate-300 italic"
+                                    )}>
+                                        {mvs?.vision || "Paint a picture of the future we are building."}
+                                    </p>
                                 )}
                             </div>
-                        )}
-                    </AnimatePresence>
-
-                    {/* Add Strategy Button (Visual Cue in Edit Mode) */}
-                    {isEditing && (
-                        <button
-                            onClick={addStrategy}
-                            className="group border-2 border-dashed border-muted rounded-2xl p-6 flex flex-col items-center justify-center gap-3 transition-all hover:border-primary/30 hover:bg-primary/5 min-h-[220px]"
-                        >
-                            <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-primary group-hover:text-white transition-all">
-                                <Plus className="h-6 w-6" />
-                            </div>
-                            <span className="font-medium text-muted-foreground group-hover:text-primary transition-colors">Add New Strategy</span>
-                        </button>
-                    )}
-                </div>
-            </div>
-
-            {/* Empty State / Instructional State */}
-            {!isLoading && !mvs && !isEditing && (
-                <div className="rounded-3xl bg-primary/5 border border-primary/10 p-12 text-center max-w-2xl mx-auto mt-12">
-                    <div className="h-20 w-20 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-6">
-                        <Rocket className="h-10 w-10" />
+                        </div>
                     </div>
-                    <h2 className="text-3xl font-bold text-foreground mb-4">Master Your Vision</h2>
-                    <p className="text-muted-foreground text-lg mb-8 leading-relaxed">
-                        A clear mission and vision are the foundation of every successful organization.
-                        Define yours today and start mapping out the strategies to get there.
-                    </p>
-                    {canEdit && (
-                        <Button size="lg" onClick={handleEdit} className="h-14 px-8 text-lg font-semibold shadow-xl shadow-primary/20">
-                            Set up MVS Profile
-                        </Button>
-                    )}
-                </div>
-            )}
+                </section>
+
+                {/* STRATEGIES SECTION */}
+                <section>
+                    <div className="flex items-center gap-4 mb-8">
+                        <div className="h-px bg-slate-200 flex-1" />
+                        <span className="text-sm font-bold uppercase tracking-widest text-slate-400">Core Strategies</span>
+                        <div className="h-px bg-slate-200 flex-1" />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <AnimatePresence mode="popLayout">
+                            {(isEditing ? editStrategies : (mvs?.strategies || [])).map((strategy, index) => (
+                                <motion.div
+                                    key={strategy.id}
+                                    layout
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.95 }}
+                                    transition={{ duration: 0.2, delay: index * 0.05 }}
+                                >
+                                    <div className={cn(
+                                        "relative h-full rounded-2xl p-6 border transition-all duration-300 flex flex-col group",
+                                        isEditing ? "bg-white border-dashed border-slate-300" : "bg-white border-slate-100 hover:shadow-lg hover:-translate-y-1 shadow-sm"
+                                    )}>
+                                        {isEditing && (
+                                            <button
+                                                onClick={() => removeStrategy(strategy.id)}
+                                                className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10 hover:bg-rose-600 hover:text-white"
+                                            >
+                                                <X className="h-3 w-3" />
+                                            </button>
+                                        )}
+
+                                        <div className="mb-4 flex items-center justify-between">
+                                            <div className="text-4xl font-black text-slate-100 select-none">
+                                                0{index + 1}
+                                            </div>
+                                            <div className="h-8 w-8 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600">
+                                                <Target className="h-4 w-4" />
+                                            </div>
+                                        </div>
+
+                                        {isEditing ? (
+                                            <>
+                                                <Input
+                                                    value={strategy.title}
+                                                    onChange={(e) => updateStrategy(strategy.id, 'title', e.target.value)}
+                                                    placeholder="Strategy Title"
+                                                    className="font-bold text-lg border-none px-0 focus-visible:ring-0 p-0 h-auto"
+                                                />
+                                                <Textarea
+                                                    value={strategy.description}
+                                                    onChange={(e) => updateStrategy(strategy.id, 'description', e.target.value)}
+                                                    placeholder="Brief description..."
+                                                    className="mt-2 text-sm text-slate-500 border-none px-0 focus-visible:ring-0 min-h-[80px] resize-none"
+                                                />
+                                            </>
+                                        ) : (
+                                            <>
+                                                <h3 className="font-bold text-lg text-slate-800 mb-2">
+                                                    {strategy.title || "Untitled"}
+                                                </h3>
+                                                <p className="text-sm text-slate-500 leading-relaxed">
+                                                    {strategy.description || "No description provided."}
+                                                </p>
+                                            </>
+                                        )}
+                                    </div>
+                                </motion.div>
+                            ))}
+
+                            {/* Add Button */}
+                            {isEditing && (
+                                <motion.button
+                                    layout
+                                    onClick={addStrategy}
+                                    className="h-full min-h-[200px] rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 flex flex-col items-center justify-center gap-2 text-slate-400 hover:text-slate-600 hover:border-slate-300 hover:bg-slate-100 transition-all"
+                                >
+                                    <Plus className="h-8 w-8" />
+                                    <span className="font-medium text-sm">Add Strategy</span>
+                                </motion.button>
+                            )}
+                        </AnimatePresence>
+                    </div>
+                </section>
+
+                {/* Empty State (Read Mode) */}
+                {!isEditing && (!mvs?.mission && !mvs?.vision && (!mvs?.strategies || mvs.strategies.length === 0)) && (
+                    <div className="text-center py-20">
+                        <div className="h-16 w-16 mx-auto bg-slate-100 rounded-full flex items-center justify-center mb-4">
+                            <Rocket className="h-8 w-8 text-slate-400" />
+                        </div>
+                        <h3 className="text-xl font-bold text-slate-700">Set your North Star</h3>
+                        <p className="text-slate-500 max-w-md mx-auto mt-2 mb-6">
+                            Define your mission, vision, and core strategies to align your team and drive execution.
+                        </p>
+                        {canEdit && (
+                            <Button onClick={handleEdit}>
+                                Start Defining MVS
+                            </Button>
+                        )}
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

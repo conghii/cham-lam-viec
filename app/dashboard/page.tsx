@@ -2,6 +2,7 @@ import { ThreeWins } from "@/components/dashboard/three-wins"
 import { GoalOverview } from "@/components/dashboard/goal-overview"
 import { StatsOverview } from "@/components/dashboard/stats-overview"
 import { TasksView } from "@/components/dashboard/tasks-view"
+import { InvitationAlert } from "@/components/dashboard/invitation-alert"
 
 export default function DashboardPage() {
     return (
@@ -9,6 +10,8 @@ export default function DashboardPage() {
             {/* <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold tracking-tight">Dashboard</h2>
             </div> */}
+
+            <InvitationAlert />
 
             <StatsOverview />
 

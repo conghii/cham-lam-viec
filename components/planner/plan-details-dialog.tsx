@@ -95,11 +95,14 @@ export function PlanDetailsDialog({ plan, open, onOpenChange }: PlanDetailsDialo
                 <DialogHeader className="p-6 pb-4 border-b">
                     <div className="flex items-center justify-between">
                         {isEditing ? (
-                            <Input
-                                value={title}
-                                onChange={(e) => setTitle(e.target.value)}
-                                className="text-xl font-bold h-auto py-1 px-2 -ml-2"
-                            />
+                            <>
+                                <DialogTitle className="sr-only">{title}</DialogTitle>
+                                <Input
+                                    value={title}
+                                    onChange={(e) => setTitle(e.target.value)}
+                                    className="text-xl font-bold h-auto py-1 px-2 -ml-2"
+                                />
+                            </>
                         ) : (
                             <DialogTitle className="text-2xl">{title}</DialogTitle>
                         )}

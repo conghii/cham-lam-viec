@@ -75,7 +75,20 @@ export function ViewAttachmentDialog({ attachment, children }: ViewAttachmentDia
                             <span className="text-xs text-muted-foreground block mb-1">Target Date</span>
                             <span className="text-sm font-medium flex items-center gap-2">
                                 <Calendar className="h-4 w-4" />
-                                {goal.targetDate ? format((goal.targetDate as unknown as Timestamp).toDate(), "PPP") : "No date"}
+                                {(() => {
+                                    if (!goal.targetDate) return "No date"
+                                    const d = goal.targetDate as any
+                                    let dateObj
+                                    if (typeof d.toDate === "function") dateObj = d.toDate()
+                                    else if (d.seconds) dateObj = new Date(d.seconds * 1000)
+                                    else dateObj = new Date(d)
+
+                                    try {
+                                        return format(dateObj, "PPP")
+                                    } catch (e) {
+                                        return "Invalid Date"
+                                    }
+                                })()}
                             </span>
                         </div>
                     </div>

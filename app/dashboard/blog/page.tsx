@@ -3,12 +3,24 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Plus, Trash2, Pencil, Shield } from "lucide-react"
-import { subscribeToBlogPosts, deleteBlogPost, type BlogPost, subscribeToGroups, Group, getOrganizationMembers, getUserOrganization, OrganizationMember } from "@/lib/firebase/firestore"
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Plus, Trash2, Pencil, Shield, Search, Pin, LayoutGrid, Book, Star, FileText, MoreHorizontal, BookOpen } from "lucide-react"
+import { subscribeToBlogPosts, deleteBlogPost, updateBlogPost, type BlogPost, subscribeToGroups, Group, getOrganizationMembers, getUserOrganization, OrganizationMember } from "@/lib/firebase/firestore"
 import { auth } from "@/lib/firebase/auth"
 import { AssigneeDisplay } from "@/components/dashboard/assignee-display"
 import { toast } from "sonner"
+import { cn } from "@/lib/utils"
+import { format } from "date-fns"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { ScrollArea } from "@/components/ui/scroll-area"
+
+const SAMPLE_TAGS = ["Productivity", "Tech", "Life", "Journal", "Ideas", "Reactor"]
 
 export default function BlogListPage() {
     const [posts, setPosts] = useState<BlogPost[]>([])
@@ -17,6 +29,11 @@ export default function BlogListPage() {
     const [loading, setLoading] = useState(true)
     const [userRole, setUserRole] = useState<'owner' | 'member' | 'viewer' | 'restricted' | null>(null);
     const [members, setMembers] = useState<OrganizationMember[]>([])
+
+    // Filters
+    const [searchQuery, setSearchQuery] = useState("")
+    const [sortOption, setSortOption] = useState<"date" | "title">("date")
+    const [activeTab, setActiveTab] = useState<"all" | "favorites" | "journal">("all")
 
     useEffect(() => {
         const fetchUserRole = async (userId: string) => {
@@ -56,37 +73,57 @@ export default function BlogListPage() {
     const filteredPosts = posts.filter(post => {
         if (!currentUser) return false
 
-        // 1. Author
-        if (post.userId === currentUser.uid) return true
+        // Access Control
+        let hasAccess = false;
+        if (post.userId === currentUser.uid) hasAccess = true
+        else if (post.assigneeIds?.includes(currentUser.uid)) hasAccess = true
+        else {
+            const userGroupIds = groups.filter(g => g.memberIds.includes(currentUser.uid)).map(g => g.id)
+            if (post.groupIds?.some(gid => userGroupIds.includes(gid))) hasAccess = true
+            else {
+                const hasAssignments = (post.assigneeIds && post.assigneeIds.length > 0) || (post.groupIds && post.groupIds.length > 0)
+                if (!hasAssignments) hasAccess = true
+            }
+        }
+        if (!hasAccess) return false;
 
-        // 2. Assigned
-        if (post.assigneeIds?.includes(currentUser.uid)) return true
+        // Search
+        if (searchQuery) {
+            const lowerQuery = searchQuery.toLowerCase();
+            if (!post.title.toLowerCase().includes(lowerQuery) && !post.content.toLowerCase().includes(lowerQuery)) return false;
+        }
 
-        // 3. Group Assigned (User is member of group)
-        const userGroupIds = groups.filter(g => g.memberIds.includes(currentUser.uid)).map(g => g.id)
-        if (post.groupIds?.some(gid => userGroupIds.includes(gid))) return true
+        // Tab Filter (Mock logic for now as tags aren't widely populated)
+        // In real app, check post.tags include "Journal" etc.
+        if (activeTab === "favorites" && !post.pinned) return false; // Using Pinned as "Favorites" for now
 
-        // 4. Unassigned/Public (Policy: If no explicit assignments, visible to all in Org)
-        const hasAssignments = (post.assigneeIds && post.assigneeIds.length > 0) || (post.groupIds && post.groupIds.length > 0)
-        if (!hasAssignments) return true
+        return true;
+    }).sort((a, b) => {
+        if (sortOption === "title") return a.title.localeCompare(b.title);
+        // Date sort is default from firestore subscription (desc), but let's reinforce
+        return (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0);
+    });
 
-        return false
-    })
+    const pinnedPosts = filteredPosts.filter(p => p.pinned);
+    const unpinnedPosts = filteredPosts.filter(p => !p.pinned);
 
-    const formatDate = (timestamp: any) => {
-        if (!timestamp) return ""
-        return new Date(timestamp.toMillis()).toLocaleDateString()
+    const togglePin = async (e: React.MouseEvent, post: BlogPost) => {
+        e.preventDefault();
+        e.stopPropagation();
+        try {
+            await updateBlogPost(post.id, { pinned: !post.pinned });
+            toast.success(post.pinned ? "Unpinned" : "Pinned to top");
+        } catch (error) {
+            toast.error("Failed to update pin");
+        }
     }
 
     if (userRole === 'restricted') {
         return (
             <div className="flex h-[80vh] items-center justify-center">
                 <div className="text-center space-y-4 max-w-md">
-                    <div className="bg-destructive/10 p-4 rounded-full w-fit mx-auto">
-                        <Shield className="h-10 w-10 text-destructive" />
-                    </div>
+                    <Shield className="h-12 w-12 text-destructive mx-auto" />
                     <h2 className="text-2xl font-bold">Access Restricted</h2>
-                    <p className="text-muted-foreground">You do not have permission to view blog entries. Please contact your organization owner.</p>
                 </div>
             </div>
         );
@@ -95,79 +132,240 @@ export default function BlogListPage() {
     const canEdit = userRole === 'owner' || userRole === 'member';
 
     return (
-        <div className="space-y-6 max-w-6xl mx-auto">
-            <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                    <h2 className="text-3xl font-bold tracking-tight">Knowledge Base</h2>
-                    <p className="text-muted-foreground">Document your journey, learnings, and reflections.</p>
+        <div className="flex h-[calc(100vh-4rem)] bg-slate-50/50 -m-6 p-6 overflow-hidden">
+            {/* Left Sidebar */}
+            <div className="w-64 hidden xl:flex flex-col gap-6 pr-6 border-r border-slate-200/60 sticky top-0 h-full">
+                <div className="flex items-center gap-2 px-2 py-1">
+                    <div className="h-8 w-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white shadow-lg shadow-indigo-200">
+                        <BookOpen className="h-5 w-5" />
+                    </div>
+                    <div>
+                        <h2 className="font-bold text-slate-800 leading-none">Knowledge</h2>
+                        <span className="text-[10px] text-slate-400 font-medium tracking-wide uppercase">Garden</span>
+                    </div>
                 </div>
-                {canEdit && (
-                    <Link href="/dashboard/blog/new">
-                        <Button className="gap-2">
-                            <Plus className="h-4 w-4" />
-                            New Entry
-                        </Button>
-                    </Link>
-                )}
+
+                <div className="space-y-1">
+                    {[
+                        { id: "all", label: "All Entries", icon: LayoutGrid },
+                        { id: "favorites", label: "Favorites", icon: Star },
+                        { id: "journal", label: "Journal", icon: Book },
+                        { id: "docs", label: "Tech Docs", icon: FileText },
+                    ].map(item => (
+                        <button
+                            key={item.id}
+                            //@ts-ignore
+                            onClick={() => setActiveTab(item.id)}
+                            className={cn(
+                                "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+                                activeTab === item.id
+                                    ? "bg-white text-indigo-600 shadow-sm ring-1 ring-slate-100"
+                                    : "text-slate-600 hover:bg-white/50 hover:text-slate-900"
+                            )}
+                        >
+                            <item.icon className={cn("h-4 w-4", activeTab === item.id ? "text-indigo-600" : "text-slate-400")} />
+                            {item.label}
+                        </button>
+                    ))}
+                </div>
+
+                <div className="mt-auto">
+                    <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl p-4 border border-indigo-100/50">
+                        <p className="text-xs font-semibold text-indigo-900 mb-1">Weekly Insight</p>
+                        <p className="text-xs text-indigo-700/80 leading-relaxed">
+                            "Writing is the painting of the voice." – Voltaire
+                        </p>
+                    </div>
+                </div>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {loading ? (
-                    <div className="col-span-full text-center py-10 text-muted-foreground">Loading entries...</div>
-                ) : filteredPosts.length === 0 ? (
-                    <div className="col-span-full text-center py-20 border rounded-lg bg-muted/20 border-dashed">
-                        <div className="text-muted-foreground">No entries visible to you.</div>
-                    </div>
-                ) : (
-                    filteredPosts.map((post) => (
-                        <Card key={post.id} className="group relative flex flex-col justify-between hover:border-primary/50 transition-colors">
-                            <CardHeader>
-                                <div className="text-xs text-muted-foreground mb-2 flex justify-between items-center">
-                                    {formatDate(post.createdAt)}
+            {/* Main Content */}
+            <ScrollArea className="flex-1 h-full">
+                <div className="max-w-7xl mx-auto pl-0 xl:pl-8 pb-10">
+
+                    {/* Header */}
+                    <div className="flex flex-col gap-6 mb-10">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div className="relative flex-1 max-w-2xl">
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                                <Input
+                                    placeholder="Search your mind..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="pl-12 h-14 rounded-2xl border-slate-200 bg-white shadow-sm text-base focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500 transition-all font-medium placeholder:text-slate-400"
+                                />
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <div className="hidden md:flex items-center gap-1 bg-white p-1 rounded-xl border border-slate-200/60 shadow-sm">
+                                    <button
+                                        onClick={() => setSortOption("date")}
+                                        className={cn("px-3 py-1.5 rounded-lg text-xs font-medium transition-all", sortOption === "date" ? "bg-slate-100 text-slate-900" : "text-slate-500 hover:text-slate-700")}
+                                    >
+                                        Date
+                                    </button>
+                                    <button
+                                        onClick={() => setSortOption("title")}
+                                        className={cn("px-3 py-1.5 rounded-lg text-xs font-medium transition-all", sortOption === "title" ? "bg-slate-100 text-slate-900" : "text-slate-500 hover:text-slate-700")}
+                                    >
+                                        A-Z
+                                    </button>
                                 </div>
-                                <Link href={`/dashboard/blog/view/${post.id}`}>
-                                    <CardTitle className="text-xl line-clamp-2 hover:text-primary transition-colors cursor-pointer capitalize">
-                                        {post.title}
-                                    </CardTitle>
-                                </Link>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-muted-foreground line-clamp-3 mb-4">
-                                    {post.excerpt || post.content.replace(/<[^>]*>/g, '').substring(0, 100) + "..."}
-                                </p>
                                 {canEdit && (
-                                    <div className="flex justify-between items-center w-full">
-                                        <AssigneeDisplay
-                                            assigneeIds={post.assigneeIds}
-                                            groupIds={post.groupIds}
-                                            members={members}
-                                            groups={groups}
-                                        />
-                                        <div className="flex gap-2">
-                                            <Link href={`/dashboard/blog/${post.id}`}>
-                                                <Button variant="secondary" size="sm" className="h-8">
-                                                    <Pencil className="h-3.5 w-3.5 mr-1" /> Edit
-                                                </Button>
-                                            </Link>
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                className="h-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                                                onClick={() => {
-                                                    deleteBlogPost(post.id)
-                                                    toast.success("Entry deleted")
-                                                }}
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        </div>
-                                    </div>
+                                    <Link href="/dashboard/blog/new">
+                                        <Button size="lg" className="h-14 rounded-2xl px-6 shadow-lg shadow-indigo-200 hover:shadow-indigo-300 transition-all bg-indigo-600 hover:bg-indigo-700 text-white font-semibold">
+                                            <Plus className="h-5 w-5 mr-2" /> New Entry
+                                        </Button>
+                                    </Link>
                                 )}
-                            </CardContent>
-                        </Card>
-                    ))
-                )}
-            </div>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 text-xs text-slate-400 font-medium px-1">
+                            <span>Total {posts.length} entries</span>
+                            <span>•</span>
+                            <span>Last updated today</span>
+                        </div>
+                    </div>
+
+                    {/* Pinned Section */}
+                    {pinnedPosts.length > 0 && (
+                        <div className="mb-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                            <div className="flex items-center gap-2 mb-4 text-sm font-bold text-slate-700 uppercase tracking-wider">
+                                <Pin className="h-4 w-4 text-indigo-500 fill-indigo-500" /> Pinned
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {pinnedPosts.map(post => (
+                                    <BlogCard key={post.id} post={post} canEdit={canEdit} onTogglePin={togglePin} onDelete={deleteBlogPost} isPinned />
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Masonry Grid */}
+                    <div className="mt-8">
+                        <div className="flex items-center gap-2 mb-4 text-sm font-bold text-slate-700 uppercase tracking-wider">
+                            <LayoutGrid className="h-4 w-4 text-slate-400" /> Recent Entries
+                        </div>
+                        {loading ? (
+                            <div className="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6 space-y-6">
+                                {[1, 2, 3, 4, 5, 6].map(i => <div key={i} className="h-64 bg-slate-200 rounded-3xl animate-pulse break-inside-avoid" />)}
+                            </div>
+                        ) : unpinnedPosts.length === 0 && pinnedPosts.length === 0 ? (
+                            <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-200">
+                                <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <BookOpen className="h-10 w-10 text-indigo-400" />
+                                </div>
+                                <h3 className="text-xl font-bold text-slate-900">Your garden is empty</h3>
+                                <p className="text-slate-500 mt-2">Plant your first seed of knowledge today.</p>
+                            </div>
+                        ) : (
+                            <div className="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6 space-y-6 pb-20">
+                                {unpinnedPosts.map(post => (
+                                    <div key={post.id} className="break-inside-avoid">
+                                        <BlogCard post={post} canEdit={canEdit} onTogglePin={togglePin} onDelete={deleteBlogPost} />
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </ScrollArea>
         </div>
+    )
+}
+
+function BlogCard({ post, canEdit, onTogglePin, onDelete, isPinned }: { post: BlogPost, canEdit: boolean, onTogglePin: any, onDelete: any, isPinned?: boolean }) {
+
+    // Determine gradient based on title length/char to make it consistent but varied
+    const gradients = [
+        "from-indigo-400 to-cyan-400",
+        "from-fuchsia-400 to-pink-400",
+        "from-amber-400 to-orange-400",
+        "from-emerald-400 to-teal-400",
+        "from-blue-400 to-indigo-400",
+    ]
+    const gradient = gradients[post.title.length % gradients.length];
+
+    const tags = post.tags && post.tags.length > 0 ? post.tags : [post.title.split(' ')[0] || "General"];
+
+    return (
+        <Link href={`/dashboard/blog/view/${post.id}`}>
+            <div className={cn(
+                "group relative bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-[0_2px_10px_-2px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.1)] hover:-translate-y-1 transition-all duration-300",
+                isPinned ? "ring-2 ring-indigo-500/10" : ""
+            )}>
+                {/* Cover Image Area */}
+                <div className={cn("h-32 w-full bg-gradient-to-br relative p-4 flex flex-col justify-between", gradient)}>
+                    {/* Overlay Icons */}
+                    <div className="absolute top-0 left-0 w-full h-full bg-black/5 group-hover:bg-black/0 transition-colors" />
+
+                    <div className="relative z-10 flex justify-between items-start opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        {canEdit && (
+                            <button
+                                onClick={(e) => onTogglePin(e, post)}
+                                className={cn("p-1.5 rounded-full backdrop-blur-md transition-colors", post.pinned ? "bg-white text-indigo-600" : "bg-white/20 text-white hover:bg-white/40")}
+                            >
+                                <Pin className="h-3.5 w-3.5 fill-current" />
+                            </button>
+                        )}
+                        {canEdit && (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <button onClick={e => e.preventDefault()} className="p-1.5 rounded-full bg-white/20 text-white hover:bg-white/40 backdrop-blur-md">
+                                        <MoreHorizontal className="h-3.5 w-3.5" />
+                                    </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-40 rounded-xl p-2 gap-1">
+                                    <Link href={`/dashboard/blog/${post.id}`} onClick={e => e.stopPropagation()}>
+                                        <DropdownMenuItem className="rounded-lg cursor-pointer">
+                                            <Pencil className="h-4 w-4 mr-2 text-slate-400" /> Edit
+                                        </DropdownMenuItem>
+                                    </Link>
+                                    <DropdownMenuItem
+                                        onClick={(e) => { e.stopPropagation(); onDelete(post.id); toast.success("Deleted") }}
+                                        className="rounded-lg cursor-pointer text-red-600 focus:text-red-700 focus:bg-red-50"
+                                    >
+                                        <Trash2 className="h-4 w-4 mr-2" /> Delete
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        )}
+                    </div>
+
+                    {/* Default Icon if no cover image (simulated) */}
+                    <div className="self-center mt-2 transform group-hover:scale-110 transition-transform duration-500">
+                        {post.title.toLowerCase().includes("code") ? <FileText className="h-10 w-10 text-white/90 drop-shadow-md" /> :
+                            post.title.toLowerCase().includes("idea") ? <Star className="h-10 w-10 text-white/90 drop-shadow-md" /> :
+                                <BookOpen className="h-10 w-10 text-white/90 drop-shadow-md" />}
+                    </div>
+                </div>
+
+                <div className="p-5">
+                    <div className="flex flex-wrap gap-1.5 mb-3">
+                        {tags.map((tag, i) => (
+                            <span key={i} className="px-2 py-0.5 rounded-md bg-slate-50 border border-slate-100 text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
+                                #{tag}
+                            </span>
+                        ))}
+                    </div>
+
+                    <h3 className="text-xl font-bold text-slate-900 leading-tight mb-2 group-hover:text-indigo-600 transition-colors line-clamp-2">
+                        {post.title}
+                    </h3>
+                    <p className="text-sm text-slate-500 line-clamp-2 leading-relaxed mb-4">
+                        {post.excerpt || post.content.replace(/<[^>]*>/g, '').substring(0, 100)}
+                    </p>
+
+                    <div className="flex items-center justify-between pt-4 border-t border-slate-50">
+                        <span className="text-xs font-medium text-slate-400">
+                            {post.createdAt ? format(post.createdAt.toDate(), 'MMMM d') : 'Just now'}
+                        </span>
+                        <div className="h-6 w-6 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-500">
+                            {post.title.charAt(0)}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Link>
     )
 }

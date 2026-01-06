@@ -132,7 +132,7 @@ export const addTask = async (title: string, tag: string = "general", dueDate?: 
         userId: user.uid,
         orgId: orgId || null,
         tag,
-        dueDate,
+        dueDate: dueDate || null,
         priority,
         status: "backlog",
         createdAt: serverTimestamp(),
@@ -532,9 +532,11 @@ export type BlogPost = {
     createdAt: Timestamp;
     assigneeIds?: string[];
     groupIds?: string[];
+    tags?: string[];
+    pinned?: boolean;
 }
 
-export const addBlogPost = async (title: string, excerpt: string, content: string, coverImage?: string, assigneeIds: string[] = [], groupIds: string[] = []) => {
+export const addBlogPost = async (title: string, excerpt: string, content: string, coverImage?: string, assigneeIds: string[] = [], groupIds: string[] = [], tags: string[] = [], pinned: boolean = false) => {
     const { getCurrentUser } = await import("./auth");
     const user = await getCurrentUser();
     if (!user) throw new Error("User not authenticated");
@@ -552,7 +554,9 @@ export const addBlogPost = async (title: string, excerpt: string, content: strin
         orgId: orgId || null,
         createdAt: serverTimestamp(),
         assigneeIds,
-        groupIds
+        groupIds,
+        tags,
+        pinned
     });
 };
 
@@ -817,7 +821,19 @@ export const subscribeToTasks = (callback: (tasks: Task[]) => void) => {
                 id: doc.id,
                 ...doc.data()
             })) as Task[];
-            callback(tasks);
+
+            // Filter out corrupt tasks where title is not a string (from previous bug)
+            const validTasks = tasks.filter(t => {
+                if (typeof t.title !== 'string') {
+                    console.warn("Found corrupt task, deleting:", t);
+                    // Async delete to clean up database
+                    deleteDoc(doc(db, "tasks", t.id)).catch(e => console.error("Auto-delete failed", e));
+                    return false;
+                }
+                return true;
+            });
+
+            callback(validTasks);
         });
     });
 
@@ -870,6 +886,9 @@ export type Organization = {
     createdAt: Timestamp;
     isPersonal?: boolean;
     tags?: Tag[];
+    tagline?: string;
+    photoURL?: string;
+    coverImage?: string;
 }
 
 export type OrganizationMember = {
@@ -970,46 +989,134 @@ export const switchOrganization = async (userId: string, orgId: string) => {
     });
 };
 
+
+
+export type Invitation = {
+    id: string;
+    orgId: string;
+    orgName: string;
+    inviterId: string;
+    email: string;
+    status: 'pending' | 'accepted' | 'rejected';
+    createdAt: Timestamp;
+}
+
 export const addMemberToOrganization = async (orgId: string, email: string) => {
-    // 1. Find user by email
+    // 1. Validate inputs
+    if (!email || !orgId) throw new Error("Missing email or orgId");
+
+    const { getCurrentUser } = await import("./auth");
+    const currentUser = await getCurrentUser();
+    if (!currentUser) throw new Error("User not authenticated");
+
+    // 2. Check if user is already a member
     const usersRef = collection(db, "users");
-    const q = query(usersRef, where("email", "==", email));
-    const snap = await getDocs(q);
+    const qUser = query(usersRef, where("email", "==", email));
+    const userSnap = await getDocs(qUser);
 
-    if (snap.empty) {
-        throw new Error("User with this email not found. They must register first.");
+    if (!userSnap.empty) {
+        const userDoc = userSnap.docs[0];
+        const userData = userDoc.data();
+        if (userData.orgId === orgId) {
+            throw new Error("User is already a member of this organization.");
+        }
     }
 
-    const userDoc = snap.docs[0];
-    const newMemberId = userDoc.id;
+    // 3. Check if invite already exists
+    const qInvite = query(
+        collection(db, "invitations"),
+        where("orgId", "==", orgId),
+        where("email", "==", email),
+        where("status", "==", "pending")
+    );
+    const inviteSnap = await getDocs(qInvite);
+    if (!inviteSnap.empty) {
+        throw new Error("An active invitation already exists for this email.");
+    }
 
-    // Check if already member
+    // 4. Get Org Name
     const orgSnap = await getDoc(doc(db, "organizations", orgId));
-    if (!orgSnap.exists()) throw new Error("Organization not found.");
+    if (!orgSnap.exists()) throw new Error("Organization not found");
+    const orgName = orgSnap.data().name;
 
-    const orgData = orgSnap.data();
-    if (orgData.isPersonal) {
-        throw new Error("This is a Personal Workspace. Members cannot be added. Please convert it to a Shared Team first.");
-    }
-
-    if (orgData.members.includes(newMemberId)) {
-        throw new Error("User is already a member of this organization.");
-    }
-
-    // 2. Add to Org members array and roles
-    const orgRef = doc(db, "organizations", orgId);
-    await updateDoc(orgRef, {
-        members: arrayUnion(newMemberId),
-        [`roles.${newMemberId}`]: 'member' // Default role
+    // 5. Create Invitation
+    await addDoc(collection(db, "invitations"), {
+        orgId,
+        orgName,
+        inviterId: currentUser.uid,
+        email,
+        status: 'pending',
+        createdAt: serverTimestamp()
     });
-
-    // 3. Link user to Org (lazily create user doc if missing)
-    await setDoc(doc(db, "users", newMemberId), {
-        orgId: orgId
-    }, { merge: true });
 };
 
-export const updateMemberRole = async (orgId: string, memberId: string, role: 'member' | 'viewer' | 'restricted') => {
+export const getOrganizationInvitations = (orgId: string, callback: (invites: Invitation[]) => void) => {
+    const q = query(
+        collection(db, "invitations"),
+        where("orgId", "==", orgId),
+        where("status", "==", "pending")
+    );
+    return onSnapshot(q, (snapshot) => {
+        const invites = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Invitation));
+        callback(invites);
+    });
+};
+
+export const getUserInvitations = (email: string, callback: (invites: Invitation[]) => void) => {
+    const q = query(
+        collection(db, "invitations"),
+        where("email", "==", email),
+        where("status", "==", "pending")
+    );
+    return onSnapshot(q, (snapshot) => {
+        const invites = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Invitation));
+        callback(invites);
+    });
+};
+
+export const acceptInvitation = async (invitationId: string) => {
+    const { getCurrentUser } = await import("./auth");
+    const user = await getCurrentUser();
+    if (!user) throw new Error("User not authenticated");
+
+    const inviteRef = doc(db, "invitations", invitationId);
+    const inviteSnap = await getDoc(inviteRef);
+    if (!inviteSnap.exists()) throw new Error("Invitation not found");
+    const invite = inviteSnap.data() as Invitation;
+
+    if (invite.status !== 'pending') throw new Error("Invitation is no longer valid");
+    // Verify email matches current user (optional but recommended for security)
+    if (user.email !== invite.email) throw new Error("This invitation was sent to a different email address.");
+
+    const batch = writeBatch(db);
+
+    // 1. Update Invitation Status
+    batch.update(inviteRef, { status: 'accepted' });
+
+    // 2. Add to Organization
+    const orgRef = doc(db, "organizations", invite.orgId);
+    batch.update(orgRef, {
+        members: arrayUnion(user.uid),
+        [`roles.${user.uid}`]: 'member'
+    });
+
+    // 3. Update User Org
+    const userRef = doc(db, "users", user.uid);
+    batch.set(userRef, { orgId: invite.orgId }, { merge: true });
+
+    await batch.commit();
+};
+
+export const rejectInvitation = async (invitationId: string) => {
+    const inviteRef = doc(db, "invitations", invitationId);
+    await updateDoc(inviteRef, { status: 'rejected' });
+};
+
+export const cancelInvitation = async (invitationId: string) => {
+    await deleteDoc(doc(db, "invitations", invitationId));
+}
+
+export const updateMemberRole = async (orgId: string, memberId: string, role: 'owner' | 'member' | 'viewer' | 'restricted') => {
     const orgRef = doc(db, "organizations", orgId);
     await updateDoc(orgRef, {
         [`roles.${memberId}`]: role
@@ -1293,9 +1400,11 @@ export type Note = {
     updatedAt: Timestamp;
     assigneeIds?: string[];
     groupIds?: string[];
+    color?: string;
+    category?: string;
 }
 
-export const addNote = async (title: string, content: string, assigneeIds: string[] = [], groupIds: string[] = []) => {
+export const addNote = async (title: string, content: string, assigneeIds: string[] = [], groupIds: string[] = [], color: string = "bg-white", category: string = "general") => {
     const { getCurrentUser } = await import("./auth");
     const user = await getCurrentUser();
     if (!user) throw new Error("User not authenticated");
@@ -1312,18 +1421,22 @@ export const addNote = async (title: string, content: string, assigneeIds: strin
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
         assigneeIds,
-        groupIds
+        groupIds,
+        color,
+        category
     });
 };
 
-export const updateNote = async (noteId: string, title: string, content: string, assigneeIds?: string[], groupIds?: string[]) => {
+export const updateNote = async (noteId: string, title: string, content: string, assigneeIds?: string[], groupIds?: string[], color?: string, category?: string) => {
     const noteRef = doc(db, "notes", noteId);
     await updateDoc(noteRef, {
         title,
         content,
         updatedAt: serverTimestamp(),
         ...(assigneeIds ? { assigneeIds } : {}),
-        ...(groupIds ? { groupIds } : {})
+        ...(groupIds ? { groupIds } : {}),
+        ...(color ? { color } : {}),
+        ...(category ? { category } : {})
     });
 };
 
@@ -1377,7 +1490,8 @@ export const addBatchTasks = async (tasks: Partial<Task>[]) => {
             tag: "backlog",
             priority: "medium",
             createdAt: serverTimestamp(),
-            ...task
+            ...task,
+            dueDate: task.dueDate || null,
         });
     });
 
@@ -1387,6 +1501,11 @@ export const addBatchTasks = async (tasks: Partial<Task>[]) => {
 export const updateOrganizationName = async (orgId: string, name: string) => {
     const orgRef = doc(db, "organizations", orgId);
     await updateDoc(orgRef, { name });
+};
+
+export const updateOrganization = async (orgId: string, data: Partial<Organization>) => {
+    const orgRef = doc(db, "organizations", orgId);
+    await updateDoc(orgRef, data);
 };
 
 export const subscribeToUserOrganizations = (userId: string, callback: (orgs: Organization[]) => void) => {

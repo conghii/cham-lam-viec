@@ -73,6 +73,7 @@ import {
     AlertCircle,
 } from "lucide-react";
 import { Skeleton } from "../ui/skeleton";
+import { TasksMetrics } from "./tasks-metrics";
 import {
     Select,
     SelectContent,
@@ -82,6 +83,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import confetti from "canvas-confetti";
 import { format, isBefore, addDays, isToday, isSameWeek } from "date-fns";
 import {
     Popover,
@@ -361,77 +363,58 @@ function TaskCard({
             <div
                 {...(dragHandleProps || {})}
                 className={cn(
-                    "group flex items-center gap-3 p-3 rounded-xl border border-border/30 bg-card hover:border-primary/20 hover:shadow-md ",
-                    isDragging ? "transition-none shadow-xl border-primary/50 z-50" : "",
-                    "border-l-[3px]",
+                    "group flex flex-col gap-2 p-4 rounded-xl bg-white border border-gray-100 transition-all duration-300",
+                    "hover:shadow-md hover:scale-[1.01] hover:border-primary/20",
+                    isDragging ? "transition-none shadow-xl border-primary/50 z-50 scale-105" : "",
+                    "border-l-[4px]",
                     priorityStyle.borderColor,
                     task.completed &&
-                    "opacity-60 bg-muted/10 border-transparent hover:border-border/30 hover:shadow-none border-l-muted-foreground/30",
+                    "opacity-75 bg-gray-50/50 border-gray-100 hover:border-gray-200 hover:shadow-none hover:scale-100 border-l-gray-300 contrast-75 saturate-50",
                     dragHandleProps && "cursor-grab active:cursor-grabbing",
                 )}
             >
-                <Checkbox
-                    checked={task.completed}
-                    onCheckedChange={(checked) => {
-                        toggleTaskCompletion(task.id, task.completed);
-                        if (checked && columns) {
-                            const doneCol = columns.find((c) => c.title === "Done");
-                            if (doneCol) onMove?.(task.id, doneCol.id);
-                        }
-                    }}
-                    disabled={isReadOnly}
-                    className={cn(
-                        "h-5 w-5 rounded-full border-2 data-[state=checked]:bg-primary data-[state=checked]:border-primary ",
-                        !task.completed && "border-muted-foreground/30",
-                        isReadOnly && "opacity-50 cursor-not-allowed",
-                    )}
-                />
-
-                <div
-                    className="flex-1 min-w-0 flex flex-col justify-between gap-1 cursor-pointer"
-                    onClick={() => openDetails(false)}
-                >
-                    <span
+                <div className="flex items-start gap-3">
+                    <Checkbox
+                        checked={task.completed}
+                        onCheckedChange={(checked) => {
+                            if (checked) {
+                                // Trigger confetti
+                                const element = document.activeElement as HTMLElement;
+                                const rect = element?.getBoundingClientRect();
+                                if (rect) {
+                                    const x = (rect.left + rect.width / 2) / window.innerWidth;
+                                    const y = (rect.top + rect.height / 2) / window.innerHeight;
+                                    confetti({
+                                        particleCount: 60,
+                                        spread: 60,
+                                        origin: { x, y },
+                                        colors: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'],
+                                        disableForReducedMotion: true,
+                                        zIndex: 9999,
+                                    });
+                                }
+                            }
+                            toggleTaskCompletion(task.id, task.completed);
+                            if (checked && columns) {
+                                const doneCol = columns.find((c) => c.title === "Done");
+                                if (doneCol) onMove?.(task.id, doneCol.id);
+                            }
+                        }}
+                        disabled={isReadOnly}
                         className={cn(
-                            "font-medium truncate block ",
-                            compact ? "text-sm" : "text-base",
-                            task.completed && "line-through text-muted-foreground",
+                            "mt-1 h-5 w-5 rounded-full border-2 transition-all duration-300",
+                            "data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500 data-[state=checked]:scale-110",
+                            !task.completed && "border-slate-300 hover:border-emerald-400 hover:bg-emerald-50",
+                            isReadOnly && "opacity-50 cursor-not-allowed",
                         )}
+                    />
+
+                    <div
+                        className="flex-1 min-w-0 flex flex-col gap-1.5 cursor-pointer"
+                        onClick={() => openDetails(false)}
                     >
-                        {task.title}
-                    </span>
-
-                    <div className="flex flex-wrap items-center gap-2 text-xs">
-                        {task.dueDate && (
-                            <span
-                                className={cn(
-                                    "px-1.5 py-0.5 rounded-full font-medium flex items-center gap-1",
-                                    new Date(task.dueDate) < new Date() && !task.completed
-                                        ? "text-rose-600 bg-rose-50"
-                                        : "text-muted-foreground bg-muted/50",
-                                )}
-                            >
-                                {new Date(task.dueDate) < new Date() && !task.completed && "!"}
-                                {format(
-                                    new Date(task.dueDate),
-                                    compact ? "MMM d" : "MMM d, yyyy",
-                                )}
-                            </span>
-                        )}
-                        {!compact && task.priority && task.priority !== "medium" && (
-                            <Badge
-                                variant="outline"
-                                className={cn(
-                                    "rounded-md border-0 px-1.5 font-normal capitalize h-5",
-                                    priorityConfig[task.priority as keyof typeof priorityConfig]
-                                        ?.color,
-                                )}
-                            >
-                                {task.priority}
-                            </Badge>
-                        )}
-
-                        <div className="flex items-center gap-1">
+                        {/* Tags and Date Row (Moved above title for hierarchy) */}
+                        <div className="flex flex-wrap items-center gap-2 text-xs">
                             {(() => {
                                 const availableTags = tags.length > 0 ? tags : defaultTags;
                                 const currentTag =
@@ -446,96 +429,155 @@ function TaskCard({
                                     <Badge
                                         variant="outline"
                                         className={cn(
-                                            "rounded-md border px-1.5 font-normal capitalize h-5",
-                                            currentTag?.color,
+                                            "rounded-md border-0 px-2 py-0.5 font-medium capitalize",
+                                            currentTag.color || "bg-slate-100 text-slate-600",
                                         )}
                                     >
-                                        {currentTag?.label || task.tag || "General"}
+                                        <TagIcon className="h-3 w-3 mr-1 opacity-70" />
+                                        {currentTag.label}
                                     </Badge>
                                 );
                             })()}
+
+                            {task.dueDate && (
+                                <span
+                                    className={cn(
+                                        "px-2 py-0.5 rounded-full font-medium flex items-center gap-1 transition-colors",
+                                        new Date(task.dueDate) < new Date() && !task.completed
+                                            ? "text-rose-600 bg-rose-50 border border-rose-100"
+                                            : "text-slate-500 bg-slate-50 border border-slate-100",
+                                    )}
+                                >
+                                    <CalendarIcon className="h-3 w-3" />
+                                    {new Date(task.dueDate) < new Date() && !task.completed && "!"}
+                                    {format(
+                                        new Date(task.dueDate),
+                                        compact ? "MMM d" : "MMM d",
+                                    )}
+                                </span>
+                            )}
+
+                            {!compact && task.priority && task.priority !== "medium" && (
+                                <Badge
+                                    variant="outline"
+                                    className={cn(
+                                        "rounded-md border-0 px-1.5 font-normal capitalize h-5",
+                                        priorityConfig[task.priority as keyof typeof priorityConfig]
+                                            ?.color,
+                                    )}
+                                >
+                                    {task.priority}
+                                </Badge>
+                            )}
                         </div>
-                        {/* Subtask Indicator */}
-                        {subtasksTotal > 0 && (
-                            <span className="flex items-center gap-1 text-muted-foreground bg-muted/30 px-1.5 py-0.5 rounded-md">
-                                <CheckCircle2 className="h-3 w-3" />
-                                {subtasksCompleted}/{subtasksTotal}
-                            </span>
+
+                        <span
+                            className={cn(
+                                "font-semibold text-foreground leading-tight transition-all",
+                                compact ? "text-sm" : "text-[15px]",
+                                task.completed && "line-through text-muted-foreground",
+                            )}
+                        >
+                            {task.title}
+                        </span>
+
+                        {/* Progress Bar for Subtasks */}
+                        {task.subtasks && task.subtasks.length > 0 && (
+                            <div className="w-full mt-1">
+                                <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-1">
+                                    <span className="flex items-center gap-1">
+                                        <div className="h-1.5 w-1.5 rounded-full bg-primary/40"></div>
+                                        Subtasks
+                                    </span>
+                                    <span>{subtasksCompleted}/{subtasksTotal}</span>
+                                </div>
+                                <div className="h-1 bg-slate-100 rounded-full overflow-hidden w-full">
+                                    <div
+                                        className={cn(
+                                            "h-full rounded-full transition-all duration-500 ease-out",
+                                            progress === 100 ? "bg-emerald-500" : "bg-primary/80"
+                                        )}
+                                        style={{ width: `${progress}%` }}
+                                    />
+                                </div>
+                            </div>
                         )}
-                        {/* Assignee & Group Display */}
-                        <AssigneeDisplay
-                            assigneeIds={
-                                task.assigneeIds || (task.assigneeId ? [task.assigneeId] : [])
-                            }
-                            groupIds={task.groupIds}
-                            members={members}
-                            groups={groups}
-                            className="ml-auto"
-                        />
+                    </div>
+                </div>
+                {/* Assignees & Actions */}
+                <div className="flex items-center justify-between mt-1">
+                    <AssigneeDisplay
+                        assigneeIds={
+                            task.assigneeIds || (task.assigneeId ? [task.assigneeId] : [])
+                        }
+                        groupIds={task.groupIds}
+                        members={members}
+                        groups={groups}
+                        className="scale-90 origin-left"
+                    />
+                    {/* Quick Actions */}
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-muted-foreground hover:text-primary hover:bg-primary/10 h-7 w-7"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                openDetails(true);
+                            }}
+                            title="Edit Task"
+                        >
+                            <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="text-muted-foreground h-7 w-7"
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    <MoreVertical className="h-3.5 w-3.5" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        openDetails(true);
+                                    }}
+                                >
+                                    <Edit2 className="h-4 w-4 mr-2" /> Edit Task
+                                </DropdownMenuItem>
+                                {columns && onMove && !dragHandleProps && (
+                                    <>
+                                        <DropdownMenuSeparator />
+                                        {columns.map((col) => (
+                                            <DropdownMenuItem
+                                                key={col.id}
+                                                onClick={() => onMove(task.id, col.id)}
+                                            >
+                                                Move to {col.title}
+                                            </DropdownMenuItem>
+                                        ))}
+                                        <DropdownMenuSeparator />
+                                    </>
+                                )}
+                                <DropdownMenuItem
+                                    className="text-destructive focus:text-destructive"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        deleteTask(task.id);
+                                    }}
+                                >
+                                    <Trash2 className="h-4 w-4 mr-2" /> Delete
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
                 </div>
 
-                {/* Quick Actions */}
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100  ml-auto">
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-muted-foreground hover:text-primary hover:bg-primary/10 h-8 w-8"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            openDetails(true);
-                        }}
-                        title="Edit Task"
-                    >
-                        <Pencil className="h-4 w-4" />
-                    </Button>
-
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="text-muted-foreground h-8 w-8"
-                                onClick={(e) => e.stopPropagation()}
-                            >
-                                <MoreVertical className="h-4 w-4" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuItem
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    openDetails(true);
-                                }}
-                            >
-                                <Edit2 className="h-4 w-4 mr-2" /> Edit Task
-                            </DropdownMenuItem>
-                            {columns && onMove && !dragHandleProps && (
-                                <>
-                                    <DropdownMenuSeparator />
-                                    {columns.map((col) => (
-                                        <DropdownMenuItem
-                                            key={col.id}
-                                            onClick={() => onMove(task.id, col.id)}
-                                        >
-                                            Move to {col.title}
-                                        </DropdownMenuItem>
-                                    ))}
-                                    <DropdownMenuSeparator />
-                                </>
-                            )}
-                            <DropdownMenuItem
-                                className="text-destructive focus:text-destructive"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    deleteTask(task.id);
-                                }}
-                            >
-                                <Trash2 className="h-4 w-4 mr-2" /> Delete
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
             </div>
 
             {/* Task Details Dialog */}
@@ -1015,7 +1057,7 @@ function TaskCard({
                         )}
                     </DialogFooter>
                 </DialogContent>
-            </Dialog>
+            </Dialog >
         </>
     );
 }
@@ -1141,6 +1183,7 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
     >("medium");
     const [loading, setLoading] = useState(true);
     const [view, setView] = useState("list");
+    const [timeFilter, setTimeFilter] = useState<"today" | "week" | "month">("today");
     const [members, setMembers] = useState<any[]>([]);
     const [role, setRole] = useState<"owner" | "member" | "viewer">("member");
     const [currentUser, setCurrentUser] = useState<any>(null);
@@ -1466,7 +1509,7 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
 
     return (
         <DragDropContext onDragEnd={onDragEnd}>
-            <div className={cn("space-y-6", className)}>
+            <div className={cn("space-y-6 p-6 bg-slate-50/30 rounded-2xl", className)}>
                 {/* Header & Controls */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                     <div>
@@ -1501,8 +1544,17 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
                     </Tabs>
                 </div>
 
+                {/* Tasks Metrics Dashboard */}
+                {!compact && (
+                    <TasksMetrics
+                        tasks={tasks}
+                        timeFilter={timeFilter}
+                        onTimeFilterChange={setTimeFilter}
+                    />
+                )}
+
                 {/* Add Task Bar */}
-                <div className="bg-card border border-border/40 shadow-sm rounded-2xl p-2 md:p-3 relative z-10">
+                <div className="bg-white border border-border/40 shadow-sm hover:shadow-md focus-within:shadow-md focus-within:ring-2 focus-within:ring-primary/10 transition-all rounded-2xl p-2 md:p-3 relative z-10">
                     <form
                         onSubmit={handleAddTask}
                         className="flex flex-col md:flex-row gap-2 items-center"
@@ -1523,8 +1575,9 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
                                         variant={"outline"}
                                         size="sm"
                                         className={cn(
-                                            "h-9 w-[130px] justify-start text-left font-normal border-border/50 bg-muted/30 hover:bg-muted/50",
+                                            "h-9 w-[130px] justify-start text-left font-normal border-blue-200/50 bg-blue-50/50 hover:bg-blue-100/50 hover:border-blue-300/50 transition-colors",
                                             !newTaskDate && "text-muted-foreground",
+                                            newTaskDate && "text-blue-700 border-blue-300/70 bg-blue-100/70"
                                         )}
                                     >
                                         <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
@@ -1549,7 +1602,12 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
                                 value={newTaskPriority}
                                 onValueChange={(v: any) => setNewTaskPriority(v)}
                             >
-                                <SelectTrigger className="h-9 w-[100px] border-border/50 bg-muted/30 hover:bg-muted/50 text-muted-foreground">
+                                <SelectTrigger className={cn(
+                                    "h-9 w-[100px] border transition-colors",
+                                    newTaskPriority === "low" && "border-slate-200/50 bg-slate-50/50 hover:bg-slate-100/50 text-slate-700",
+                                    newTaskPriority === "medium" && "border-amber-200/50 bg-amber-50/50 hover:bg-amber-100/50 text-amber-700",
+                                    newTaskPriority === "high" && "border-rose-200/50 bg-rose-50/50 hover:bg-rose-100/50 text-rose-700"
+                                )}>
                                     <SelectValue placeholder="Priority" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -1776,12 +1834,20 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
                         </div>
                     </div>
                 ) : tasks.length === 0 && columns.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-20 border-2 border-dashed border-muted rounded-2xl bg-muted/5">
-                        <div className="h-16 w-16 bg-muted/50 rounded-full flex items-center justify-center mb-4"></div>
-                        <h3 className="text-lg font-medium">No tasks yet</h3>
-                        <p className="text-muted-foreground max-w-sm text-center mt-1">
-                            Use the bar above to add your first task.
+                    <div className="flex flex-col items-center justify-center py-20 border-2 border-dashed border-primary/20 rounded-2xl bg-gradient-to-br from-primary/5 to-transparent">
+                        <div className="text-6xl mb-4">🎯</div>
+                        <h3 className="text-xl font-bold text-foreground mb-2">Chào mừng đến với Tasks!</h3>
+                        <p className="text-muted-foreground max-w-sm text-center mb-4">
+                            Hãy bắt đầu hành trình quản lý công việc hiệu quả của bạn
                         </p>
+                        <Button
+                            size="sm"
+                            className="shadow-md"
+                            onClick={() => document.querySelector<HTMLInputElement>('input[placeholder="What needs to be done?"]')?.focus()}
+                        >
+                            <Plus className="h-4 w-4 mr-2" />
+                            Tạo task đầu tiên
+                        </Button>
                     </div>
                 ) : (
                     <>
@@ -1854,7 +1920,7 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
                                                                 <div
                                                                     ref={provided.innerRef}
                                                                     {...provided.draggableProps}
-                                                                    className="min-w-[300px] w-[300px] flex flex-col gap-4 bg-muted/10 rounded-xl p-2"
+                                                                    className="min-w-[300px] w-[300px] flex flex-col gap-4 bg-gray-50/50 rounded-xl p-3 border border-border/30"
                                                                     style={provided.draggableProps.style}
                                                                 >
                                                                     <div
@@ -1862,10 +1928,19 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
                                                                         className="flex items-center justify-between px-2 cursor-grab active:cursor-grabbing group"
                                                                     >
                                                                         <div className="flex items-center gap-2">
-                                                                            <h3 className="font-semibold text-sm text-foreground/80">
+                                                                            {/* Color Indicator */}
+                                                                            <div className={cn(
+                                                                                "h-2.5 w-2.5 rounded-full",
+                                                                                col.title === "Backlog" && "bg-gray-400",
+                                                                                col.title === "This Week" && "bg-blue-500",
+                                                                                col.title === "Today" && "bg-orange-500",
+                                                                                col.title === "Done" && "bg-purple-500",
+                                                                                !["Backlog", "This Week", "Today", "Done"].includes(col.title) && "bg-emerald-500"
+                                                                            )} />
+                                                                            <h3 className="font-bold text-sm text-foreground">
                                                                                 {col.title}
                                                                             </h3>
-                                                                            <span className="text-[10px] font-bold text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">
+                                                                            <span className="text-[10px] font-bold text-muted-foreground bg-white px-2 py-0.5 rounded-full shadow-sm">
                                                                                 {
                                                                                     getTasksByColumn(col.id, col.title)
                                                                                         .length
@@ -1909,11 +1984,37 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
                                                                             >
                                                                                 {getTasksByColumn(col.id, col.title)
                                                                                     .length === 0 ? (
-                                                                                    <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground/40 border-2 border-dashed border-muted/30 rounded-lg mx-1">
-                                                                                        <AlertCircle className="h-6 w-6 mb-1 opacity-50" />
-                                                                                        <span className="text-xs font-medium">
-                                                                                            No tasks yet
-                                                                                        </span>
+                                                                                    <div className="flex flex-col items-center justify-center py-10 px-4 text-center border-2 border-dashed border-muted/30 rounded-xl mx-1 bg-white/50">
+                                                                                        <div className="text-4xl mb-3">
+                                                                                            {col.title === "Backlog" && "☕"}
+                                                                                            {col.title === "This Week" && "🚀"}
+                                                                                            {col.title === "Today" && "✨"}
+                                                                                            {col.title === "Done" && "💪"}
+                                                                                            {!["Backlog", "This Week", "Today", "Done"].includes(col.title) && "🎯"}
+                                                                                        </div>
+                                                                                        <p className="text-sm font-medium text-foreground/70 mb-1">
+                                                                                            {col.title === "Backlog" && "Sạch banh!"}
+                                                                                            {col.title === "This Week" && "Tuần này nhàn quá!"}
+                                                                                            {col.title === "Today" && "Hôm nay rảnh rỗi!"}
+                                                                                            {col.title === "Done" && "Chưa có gì hoàn thành..."}
+                                                                                            {!["Backlog", "This Week", "Today", "Done"].includes(col.title) && "Chưa có việc gì"}
+                                                                                        </p>
+                                                                                        <p className="text-xs text-muted-foreground/60 mb-3">
+                                                                                            {col.title === "Backlog" && "Tận hưởng cà phê thôi"}
+                                                                                            {col.title === "This Week" && "Lên kế hoạch chinh phục thế giới nào"}
+                                                                                            {col.title === "Today" && "Thời gian hoàn hảo để làm điều gì đó tuyệt vời"}
+                                                                                            {col.title === "Done" && "nhưng sắp rồi!"}
+                                                                                            {!["Backlog", "This Week", "Today", "Done"].includes(col.title) && "Hãy thêm task đầu tiên!"}
+                                                                                        </p>
+                                                                                        <Button
+                                                                                            size="sm"
+                                                                                            variant="outline"
+                                                                                            className="text-xs h-8 border-primary/20 bg-primary/5 hover:bg-primary/10 text-primary"
+                                                                                            onClick={() => document.querySelector<HTMLInputElement>('input[placeholder="What needs to be done?"]')?.focus()}
+                                                                                        >
+                                                                                            <Plus className="h-3 w-3 mr-1" />
+                                                                                            Thêm việc mới
+                                                                                        </Button>
                                                                                     </div>
                                                                                 ) : (
                                                                                     getTasksByColumn(

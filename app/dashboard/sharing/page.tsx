@@ -10,7 +10,7 @@ import {
 import { auth } from "@/lib/firebase/auth"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { Share2, BookOpen, TrendingUp, Users } from "lucide-react"
+import { BookOpen, Users, Image as ImageIcon, Link as LinkIcon, Lightbulb } from "lucide-react"
 import { CreatePostDialog } from "@/components/dashboard/sharing/create-post-dialog"
 import { PostCard } from "@/components/dashboard/sharing/post-card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -18,6 +18,7 @@ import { TrendingSidebar } from "@/components/dashboard/sharing/trending-sidebar
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Badge } from "@/components/ui/badge"
 import { subscribeToGlobalFeed } from "@/lib/firebase/firestore"
+import { cn } from "@/lib/utils"
 
 export default function SharingPage() {
     const [user, setUser] = useState(auth.currentUser)
@@ -72,104 +73,134 @@ export default function SharingPage() {
     }, [user, friendships, viewMode])
 
     if (loading) return (
-        <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
+        <div className="flex h-[calc(100vh-4rem)] items-center justify-center bg-slate-50">
             <div className="animate-pulse flex flex-col items-center gap-4">
-                <div className="h-12 w-12 bg-muted rounded-full" />
-                <div className="h-4 w-32 bg-muted rounded" />
+                <div className="h-12 w-12 bg-slate-200 rounded-full" />
+                <div className="h-4 w-32 bg-slate-200 rounded" />
             </div>
         </div>
     )
 
     return (
-        <div className="container max-w-6xl mx-auto h-[calc(100vh-4rem)] flex gap-6 py-6 overflow-hidden">
-            {/* Left Sidebar - Navigation & Trending */}
-            <div className="hidden lg:block w-64 shrink-0 h-full">
-                <ScrollArea className="h-full pr-4">
-                    <div className="flex flex-col gap-6">
-                        <div className="space-y-4">
-                            <h2 className="text-xl font-bold font-serif px-2">Knowledge Hub</h2>
+        <div className="min-h-[calc(100vh-4rem)] bg-slate-50/50">
+            <div className="container max-w-6xl mx-auto flex gap-8 py-8 items-start">
+                {/* Left Sidebar - Navigation & Trending */}
+                {/* STICKY positioning applied here */}
+                <div className="hidden lg:block w-72 shrink-0 sticky top-24 self-start">
+                    <div className="flex flex-col gap-8">
+                        {/* Navigation Card */}
+                        <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100/60">
+                            <h2 className="text-xl font-bold font-serif mb-4 px-2 text-slate-800">Knowledge Hub</h2>
                             <div className="space-y-1">
                                 <Button
                                     variant={viewMode === 'global' ? "secondary" : "ghost"}
-                                    className="w-full justify-start gap-3"
+                                    className={cn("w-full justify-start gap-3 rounded-xl font-medium", viewMode === 'global' ? "bg-slate-100 text-slate-900" : "text-slate-600 hover:bg-slate-50")}
                                     onClick={() => setViewMode('global')}
                                 >
                                     <BookOpen className="h-4 w-4" /> Global Feed
                                 </Button>
                                 <Button
                                     variant={viewMode === 'circle' ? "secondary" : "ghost"}
-                                    className="w-full justify-start gap-3"
+                                    className={cn("w-full justify-start gap-3 rounded-xl font-medium", viewMode === 'circle' ? "bg-slate-100 text-slate-900" : "text-slate-600 hover:bg-slate-50")}
                                     onClick={() => setViewMode('circle')}
                                 >
                                     <Users className="h-4 w-4" /> My Circle
                                 </Button>
-                                <Separator className="my-2" />
-                                <div className="px-2 pb-2">
-                                    <TrendingSidebar />
-                                </div>
                             </div>
                         </div>
 
-                        <Separator />
+                        {/* Trending Section */}
+                        <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100/60">
+                            <TrendingSidebar />
+                        </div>
 
-                        <div className="space-y-4 px-2 pb-10">
-                            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Popular Tags</h3>
+                        {/* Tags Section */}
+                        <div className="px-2">
+                            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Popular Tags</h3>
                             <div className="flex flex-wrap gap-2">
-                                {['productivity', 'learning', 'coding', 'health', 'books'].map(tag => (
-                                    <Badge key={tag} variant="outline" className="cursor-pointer hover:bg-secondary">
+                                {['productivity', 'learning', 'coding', 'health', 'books', 'mindset'].map(tag => (
+                                    <Badge
+                                        key={tag}
+                                        variant="outline"
+                                        className="cursor-pointer bg-white hover:bg-slate-100 text-slate-600 border-slate-200 rounded-full py-1.5 px-3 font-normal transition-colors"
+                                    >
                                         #{tag}
                                     </Badge>
                                 ))}
                             </div>
                         </div>
                     </div>
-                </ScrollArea>
-            </div>
+                </div>
 
-            {/* Main Feed */}
-            <ScrollArea className="flex-1 h-full pr-4">
-                <div className="max-w-2xl mx-auto space-y-6 pb-20">
-                    {/* Quick Post Widget */}
-                    <div className="bg-card border border-border/60 rounded-2xl p-4 shadow-sm mb-8">
+                {/* Main Feed */}
+                <div className="flex-1 max-w-2xl mx-auto space-y-8 pb-20">
+                    {/* Quick Post Widget (Composer) */}
+                    <div className="bg-white border border-slate-100 shadow-sm rounded-2xl p-4 transition-all hover:shadow-md">
                         <div className="flex gap-4">
-                            <Avatar className="h-10 w-10 shrink-0">
+                            <Avatar className="h-11 w-11 shrink-0 border-2 border-slate-50">
                                 <AvatarImage src={user?.photoURL || "/avatars/01.png"} />
                                 <AvatarFallback>{user?.displayName?.[0] || 'U'}</AvatarFallback>
                             </Avatar>
-                            <CreatePostDialog>
-                                <button className="flex-1 text-left px-5 py-2.5 rounded-full bg-secondary/50 hover:bg-secondary text-muted-foreground transition-colors border border-border/40 cursor-pointer">
-                                    What&apos;s on your mind{user?.displayName ? `, ${user.displayName.split(' ')[0]}` : ""}?
-                                </button>
-                            </CreatePostDialog>
+
+                            <div className="flex-1">
+                                <CreatePostDialog>
+                                    <div className="w-full text-left">
+                                        {/* Fake Input */}
+                                        <div className="w-full bg-slate-50/50 hover:bg-slate-50 border border-transparent hover:border-slate-200 rounded-xl p-4 transition-all cursor-text min-h-[80px]">
+                                            <p className="text-slate-400 font-medium text-lg">
+                                                What&apos;s on your mind{user?.displayName ? `, ${user.displayName.split(' ')[0]}` : ""}?
+                                            </p>
+                                        </div>
+
+                                        {/* Fake Toolbar */}
+                                        <div className="flex items-center gap-2 mt-3 pl-1">
+                                            <Button variant="ghost" size="sm" className="h-8 px-3 rounded-full text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 gap-2">
+                                                <ImageIcon className="h-4 w-4" />
+                                                <span className="text-xs font-medium">Image</span>
+                                            </Button>
+                                            <Button variant="ghost" size="sm" className="h-8 px-3 rounded-full text-slate-500 hover:text-blue-600 hover:bg-blue-50 gap-2">
+                                                <LinkIcon className="h-4 w-4" />
+                                                <span className="text-xs font-medium">Link</span>
+                                            </Button>
+                                            <Button variant="ghost" size="sm" className="h-8 px-3 rounded-full text-slate-500 hover:text-amber-600 hover:bg-amber-50 gap-2">
+                                                <Lightbulb className="h-4 w-4" />
+                                                <span className="text-xs font-medium">Insight</span>
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </CreatePostDialog>
+                            </div>
                         </div>
                     </div>
 
-                    {posts
-                        .filter(post => viewMode === 'circle' || post.visibility === 'public')
-                        .map(post => (
-                            <PostCard
-                                key={post.id}
-                                post={post}
-                                currentUserId={user?.uid}
-                                friendships={friendships}
-                            />
-                        ))}
+                    {/* Posts List */}
+                    <div className="space-y-6">
+                        {posts
+                            .filter(post => viewMode === 'circle' || post.visibility === 'public')
+                            .map(post => (
+                                <PostCard
+                                    key={post.id}
+                                    post={post}
+                                    currentUserId={user?.uid}
+                                    friendships={friendships}
+                                />
+                            ))}
+                    </div>
 
                     {posts.length === 0 && (
-                        <div className="text-center py-20 border-2 border-dashed rounded-xl bg-muted/20">
-                            <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-3 opacity-20" />
-                            <h3 className="text-lg font-medium text-foreground">Your circle is quiet</h3>
-                            <p className="text-muted-foreground mb-6 max-w-sm mx-auto">Connect with friends to see their updates or share your own progress with your circle.</p>
+                        <div className="text-center py-20 border-2 border-dashed border-slate-200 rounded-3xl bg-slate-50/50">
+                            <div className="h-16 w-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
+                                <BookOpen className="h-8 w-8 text-slate-300" />
+                            </div>
+                            <h3 className="text-lg font-bold text-slate-800">Your feed is quiet</h3>
+                            <p className="text-slate-500 mb-6 max-w-sm mx-auto mt-2">Connect with friends to see their updates or share your own progress with your circle.</p>
                             <CreatePostDialog>
-                                <Button>Create First Post</Button>
+                                <Button className="rounded-full px-6">Create First Post</Button>
                             </CreatePostDialog>
                         </div>
                     )}
                 </div>
-            </ScrollArea>
-
-            {/* Right Sidebar - (Optional - maybe Friend suggestions later) */}
-            {/* For now keeping it 2-column as requested per design, simplified */}
+            </div>
         </div>
     )
 }
