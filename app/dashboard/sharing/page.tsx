@@ -24,7 +24,7 @@ export default function SharingPage() {
     const [posts, setPosts] = useState<Post[]>([])
     const [friendships, setFriendships] = useState<Friendship[]>([])
     const [loading, setLoading] = useState(true)
-    const [viewMode, setViewMode] = useState<'global' | 'circle'>('global')
+    const [viewMode, setViewMode] = useState<'global' | 'circle'>('circle')
 
     useEffect(() => {
         const unsubAuth = auth.onAuthStateChanged((u) => {
@@ -48,7 +48,9 @@ export default function SharingPage() {
         let unsubFeed: () => void
 
         if (viewMode === 'circle') {
-            const friendIds = friendships.map(f => f.friend.id)
+            const friendIds = friendships
+                .filter(f => f.status === 'accepted')
+                .map(f => f.friend.id)
             const feedIds = [user.uid, ...friendIds]
             const safeIds = feedIds.slice(0, 30) // Limit to 30 for 'in' query
 
@@ -142,15 +144,22 @@ export default function SharingPage() {
                         </div>
                     </div>
 
-                    {posts.map(post => (
-                        <PostCard key={post.id} post={post} currentUserId={user?.uid} />
-                    ))}
+                    {posts
+                        .filter(post => viewMode === 'circle' || post.visibility === 'public')
+                        .map(post => (
+                            <PostCard
+                                key={post.id}
+                                post={post}
+                                currentUserId={user?.uid}
+                                friendships={friendships}
+                            />
+                        ))}
 
                     {posts.length === 0 && (
                         <div className="text-center py-20 border-2 border-dashed rounded-xl bg-muted/20">
                             <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-3 opacity-20" />
-                            <h3 className="text-lg font-medium text-foreground">Your feed is empty</h3>
-                            <p className="text-muted-foreground mb-6 max-w-sm mx-auto">Connect with friends or share your first post to get started.</p>
+                            <h3 className="text-lg font-medium text-foreground">Your circle is quiet</h3>
+                            <p className="text-muted-foreground mb-6 max-w-sm mx-auto">Connect with friends to see their updates or share your own progress with your circle.</p>
                             <CreatePostDialog>
                                 <Button>Create First Post</Button>
                             </CreatePostDialog>

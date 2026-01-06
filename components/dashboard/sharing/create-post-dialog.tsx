@@ -14,6 +14,14 @@ import { uploadFile } from "@/lib/firebase/storage"
 import { createPost, updatePost, type Post, type Attachment, subscribeToGoals, subscribeToTasks, subscribeToNotes, subscribeToBlogPosts, type Goal, type Task, type Note, type BlogPost } from "@/lib/firebase/firestore"
 import { auth } from "@/lib/firebase/auth"
 import { cn } from "@/lib/utils"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+import { Globe, Users as UsersIcon } from "lucide-react"
 
 export function CreatePostDialog({ children, onPostCreated, postToEdit }: { children: React.ReactNode, onPostCreated?: () => void, postToEdit?: Post }) {
     const [open, setOpen] = useState(false)
@@ -25,6 +33,7 @@ export function CreatePostDialog({ children, onPostCreated, postToEdit }: { chil
     const [selectedImage, setSelectedImage] = useState<File | null>(null)
     const [imagePreview, setImagePreview] = useState("")
     const [attachments, setAttachments] = useState<Attachment[]>([])
+    const [visibility, setVisibility] = useState<'public' | 'private'>('public')
 
     // Data for attachments
     const [myGoals, setMyGoals] = useState<Goal[]>([])
@@ -43,6 +52,7 @@ export function CreatePostDialog({ children, onPostCreated, postToEdit }: { chil
             setContent(postToEdit.content || "")
             setTags(postToEdit.tags.join(", "))
             setAttachments(postToEdit.attachments || [])
+            setVisibility(postToEdit.visibility || 'public')
             // Handle images separately if needed, but for now we assume attachments cover it or we don't edit raw images easily without re-upload
         }
 
@@ -122,6 +132,7 @@ export function CreatePostDialog({ children, onPostCreated, postToEdit }: { chil
                     description,
                     tags: tagList,
                     attachments: JSON.parse(JSON.stringify(finalAttachments)),
+                    visibility,
                     // Merge new images with existing? For simplicity, we just add new ones to existing attachments if they are not already there.
                     // But here we are rebuilding attachments.
                 })
@@ -132,7 +143,8 @@ export function CreatePostDialog({ children, onPostCreated, postToEdit }: { chil
                     tagList,
                     title,
                     description,
-                    JSON.parse(JSON.stringify(finalAttachments)) // Deep sanitize to remove any undefined
+                    JSON.parse(JSON.stringify(finalAttachments)), // Deep sanitize to remove any undefined
+                    visibility
                 )
             }
 
@@ -143,6 +155,7 @@ export function CreatePostDialog({ children, onPostCreated, postToEdit }: { chil
             setTags("")
             handleRemoveImage()
             setAttachments([])
+            setVisibility('public')
             setOpen(false)
             onPostCreated?.()
 
@@ -206,7 +219,7 @@ export function CreatePostDialog({ children, onPostCreated, postToEdit }: { chil
                                             {att.type === 'goal' && <Target className="h-4 w-4" />}
                                             {att.type === 'task' && <CheckSquare className="h-4 w-4" />}
                                             {att.type === 'note' && <StickyNote className="h-4 w-4" />}
-                                            {att.type === 'blog' && <PenTool className="h-10 w-10" />}
+                                            {att.type === 'blog' && <PenTool className="h-4 w-4" />}
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <p className="font-medium text-sm truncate">{att.title}</p>
@@ -336,12 +349,38 @@ export function CreatePostDialog({ children, onPostCreated, postToEdit }: { chil
                     </div>
                 </div>
 
-                <div className="p-3 border-t bg-muted/5 flex justify-end gap-2">
-                    <Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
-                    <Button onClick={handleSubmit} disabled={isLoading}>
-                        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        {postToEdit ? "Update Post" : "Publish Post"}
-                    </Button>
+                <div className="p-3 border-t bg-muted/5 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                        <Select value={visibility} onValueChange={(v: any) => setVisibility(v)}>
+                            <SelectTrigger className="w-[140px] h-9 text-xs">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="public">
+                                    <div className="flex items-center gap-2">
+                                        <Globe className="h-3 w-3" />
+                                        <span>Global Feed</span>
+                                    </div>
+                                </SelectItem>
+                                <SelectItem value="private">
+                                    <div className="flex items-center gap-2">
+                                        <UsersIcon className="h-3 w-3" />
+                                        <span>My Circle</span>
+                                    </div>
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <span className="text-[10px] text-muted-foreground hidden sm:inline">
+                            {visibility === 'public' ? 'Everyone can see' : 'Only friends can see'}
+                        </span>
+                    </div>
+                    <div className="flex gap-2">
+                        <Button variant="ghost" size="sm" onClick={() => setOpen(false)}>Cancel</Button>
+                        <Button size="sm" onClick={handleSubmit} disabled={isLoading}>
+                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            {postToEdit ? "Update Post" : "Publish Post"}
+                        </Button>
+                    </div>
                 </div>
             </DialogContent>
         </Dialog>

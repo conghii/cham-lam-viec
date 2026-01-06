@@ -598,15 +598,18 @@ export const subscribeToBlogPosts = (callback: (posts: BlogPost[]) => void) => {
 export const subscribeToGlobalFeed = (callback: (posts: Post[]) => void) => {
     const q = query(
         collection(db, "posts"),
+        where("visibility", "==", "public"),
         orderBy("createdAt", "desc"),
         limit(20)
     );
 
     return onSnapshot(q, (snapshot) => {
-        const posts = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        })) as Post[];
+        const posts = snapshot.docs
+            .map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }))
+            .filter((p: any) => p.visibility === "public") as Post[];
 
         // Hydrate authors (simple hydration for now)
         (async () => {
@@ -650,15 +653,18 @@ export const subscribeToTrendingPosts = (callback: (posts: Post[]) => void) => {
 
     const q = query(
         collection(db, "posts"),
+        where("visibility", "==", "public"),
         orderBy("createdAt", "desc"),
         limit(50)
     );
 
     return onSnapshot(q, async (snapshot) => {
-        const posts = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        })) as Post[];
+        const posts = snapshot.docs
+            .map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }))
+            .filter((p: any) => p.visibility === "public") as Post[];
 
         // Hydrate authors
         // ... (We could batch fetch authors here, but for now relies on PostCard to fetch or basic hydration if author object exists)
@@ -1789,6 +1795,7 @@ export interface Post {
     tags: string[];
     likes: string[];
     commentsCount: number;
+    visibility: 'public' | 'private';
     createdAt: any;
     updatedAt: any;
     author?: {
@@ -1805,7 +1812,8 @@ export const createPost = async (
     tags: string[] = [],
     title: string = "",
     description: string = "",
-    attachments: Attachment[] = []
+    attachments: Attachment[] = [],
+    visibility: 'public' | 'private' = 'public'
 ) => {
     const { getCurrentUser } = await import("./auth");
     const user = await getCurrentUser();
@@ -1824,6 +1832,7 @@ export const createPost = async (
         tags,
         likes: [],
         commentsCount: 0,
+        visibility,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
     });

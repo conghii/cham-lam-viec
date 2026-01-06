@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { type Post, type Attachment, toggleLikePost, deletePost, addComment, subscribeToComments, type SocialComment } from "@/lib/firebase/firestore"
+import { type Post, type Attachment, toggleLikePost, deletePost, addComment, subscribeToComments, type SocialComment, type Friendship, sendFriendRequest } from "@/lib/firebase/firestore"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Heart, MessageCircle, Share2, MoreVertical, Trash2, Send, Target, CheckSquare, StickyNote } from "lucide-react"
+import { Heart, MessageCircle, Share2, MoreVertical, Trash2, Send, Target, CheckSquare, StickyNote, Globe, Users, UserPlus, Clock } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { cn } from "@/lib/utils"
 import { useEffect } from "react"
@@ -20,7 +20,32 @@ import { Edit } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner";
 
-export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: string }) {
+export function PostCard({ post, currentUserId, friendships = [] }: { post: Post, currentUserId?: string, friendships?: Friendship[] }) {
+    const [requestLoading, setRequestLoading] = useState(false)
+
+    // Find friendship with author
+    const friendship = friendships.find(f =>
+        (f.requesterId === currentUserId && f.recipientId === post.authorId) ||
+        (f.requesterId === post.authorId && f.recipientId === currentUserId)
+    )
+
+    const isFriend = friendship?.status === 'accepted'
+    const isPending = friendship?.status === 'pending'
+    const canAddFriend = currentUserId && post.authorId !== currentUserId && !friendship
+
+    const handleAddFriend = async () => {
+        if (!currentUserId || !post.authorId || requestLoading) return
+        setRequestLoading(true)
+        try {
+            await sendFriendRequest(post.authorId)
+            toast.success("Friend request sent!")
+        } catch (e) {
+            toast.error("Failed to send request")
+        } finally {
+            setRequestLoading(false)
+        }
+    }
+
     const likes = post.likes || []
     const isLiked = currentUserId && likes.includes(currentUserId)
     const [showComments, setShowComments] = useState(false)
@@ -70,12 +95,42 @@ export function PostCard({ post, currentUserId }: { post: Post, currentUserId?: 
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                         <div>
-                            <Link href={`/dashboard/profile/${post.authorId}`} className="hover:underline">
-                                <p className="font-semibold text-sm">{post.author?.displayName || "Unknown"}</p>
-                            </Link>
-                            <p className="text-xs text-muted-foreground">
-                                {post.createdAt ? formatDistanceToNow(post.createdAt.toDate()) : "Just now"} ago
-                            </p>
+                            <div className="flex items-center">
+                                <Link href={`/dashboard/profile/${post.authorId}`} className="hover:underline">
+                                    <p className="font-semibold text-sm">{post.author?.displayName || "Unknown"}</p>
+                                </Link>
+                                {canAddFriend && (
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-6 px-2 text-[10px] text-primary hover:text-primary hover:bg-primary/5 gap-1 ml-2"
+                                        onClick={handleAddFriend}
+                                        disabled={requestLoading}
+                                    >
+                                        <UserPlus className="h-3 w-3" />
+                                        Add Friend
+                                    </Button>
+                                )}
+                                {isPending && (
+                                    <Badge variant="secondary" className="ml-2 h-5 px-1.5 text-[9px] font-normal gap-1 bg-amber-50 text-amber-600 border-amber-200">
+                                        <Clock className="h-2.5 w-2.5" />
+                                        Pending
+                                    </Badge>
+                                )}
+                            </div>
+                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                <span>{post.createdAt ? formatDistanceToNow(post.createdAt.toDate()) : "Just now"} ago</span>
+                                <span>•</span>
+                                {post.visibility === 'private' ? (
+                                    <div className="flex items-center gap-1" title="Only visible to circle">
+                                        <Users className="h-3 w-3" />
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center gap-1" title="Visible to everyone">
+                                        <Globe className="h-3 w-3" />
+                                    </div>
+                                )}
+                            </div>
                         </div>
                         {currentUserId === post.authorId && (
                             <DropdownMenu>
