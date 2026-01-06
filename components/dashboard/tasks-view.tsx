@@ -3,114 +3,114 @@
 import { createPortal } from "react-dom";
 
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList,
 } from "@/components/ui/command";
 
 import { useEffect, useState } from "react";
 
 import {
-  subscribeToTasks,
-  addTask,
-  toggleTaskCompletion,
-  deleteTask,
-  updateTaskStatus,
-  updateTask,
-  type Task,
-  subscribeToTaskColumns,
-  addTaskColumn,
-  deleteTaskColumn,
-  batchUpdateColumnOrders,
-  type TaskColumn,
-  type SubTask,
-  type Comment,
-  addTaskComment,
-  subscribeToTaskComments,
-  deleteTaskComment,
-  updateTaskComment,
-  subscribeToGoals,
-  type Goal,
-  getOrganizationMembers,
-  getUserOrganization,
-  subscribeToOrganization,
-  Organization,
-  Tag,
-  addTagToOrganization,
-  updateTagInOrganization,
-  deleteTagFromOrganization,
+    subscribeToTasks,
+    addTask,
+    toggleTaskCompletion,
+    deleteTask,
+    updateTaskStatus,
+    updateTask,
+    type Task,
+    subscribeToTaskColumns,
+    addTaskColumn,
+    deleteTaskColumn,
+    batchUpdateColumnOrders,
+    type TaskColumn,
+    type SubTask,
+    type Comment,
+    addTaskComment,
+    subscribeToTaskComments,
+    deleteTaskComment,
+    updateTaskComment,
+    subscribeToGoals,
+    type Goal,
+    getOrganizationMembers,
+    getUserOrganization,
+    subscribeToOrganization,
+    Organization,
+    Tag,
+    addTagToOrganization,
+    updateTagInOrganization,
+    deleteTagFromOrganization,
 } from "@/lib/firebase/firestore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Trash2,
-  Plus,
-  Calendar as CalendarIcon,
-  LayoutList,
-  Kanban,
-  Grid2X2,
-  Loader2,
-  ArrowRight,
-  GripVertical,
-  Pencil,
-  MessageSquare,
-  Send,
-  CheckCircle2,
-  Circle,
-  MoreVertical,
-  Edit2,
-  X,
-  Check,
-  Target,
-  User,
-  Tag as TagIcon,
-  Settings2,
-  Palette,
-  AlertCircle,
+    Trash2,
+    Plus,
+    Calendar as CalendarIcon,
+    LayoutList,
+    Kanban,
+    Grid2X2,
+    Loader2,
+    ArrowRight,
+    GripVertical,
+    Pencil,
+    MessageSquare,
+    Send,
+    CheckCircle2,
+    Circle,
+    MoreVertical,
+    Edit2,
+    X,
+    Check,
+    Target,
+    User,
+    Tag as TagIcon,
+    Settings2,
+    Palette,
+    AlertCircle,
 } from "lucide-react";
 import { Skeleton } from "../ui/skeleton";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { format, isBefore, addDays, isToday, isSameWeek } from "date-fns";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+    DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import {
-  DragDropContext,
-  Draggable,
-  DropResult,
-  Droppable,
+    DragDropContext,
+    Draggable,
+    DropResult,
+    Droppable,
 } from "@hello-pangea/dnd";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -127,2225 +127,2245 @@ import { toast } from "sonner";
 
 // Default tags if none exist
 const defaultTags: Tag[] = [
-  {
-    id: "general",
-    label: "General",
-    color: "bg-slate-50 text-slate-600 border-slate-100",
-  },
-  {
-    id: "coding",
-    label: "Coding",
-    color: "bg-blue-50 text-blue-600 border-blue-100",
-  },
-  {
-    id: "learning",
-    label: "Learning",
-    color: "bg-emerald-50 text-emerald-600 border-emerald-100",
-  },
-  {
-    id: "writing",
-    label: "Writing",
-    color: "bg-purple-50 text-purple-600 border-purple-100",
-  },
-  {
-    id: "design",
-    label: "Design",
-    color: "bg-pink-50 text-pink-600 border-pink-100",
-  },
+    {
+        id: "general",
+        label: "General",
+        color: "bg-slate-50 text-slate-600 border-slate-100",
+    },
+    {
+        id: "coding",
+        label: "Coding",
+        color: "bg-blue-50 text-blue-600 border-blue-100",
+    },
+    {
+        id: "learning",
+        label: "Learning",
+        color: "bg-emerald-50 text-emerald-600 border-emerald-100",
+    },
+    {
+        id: "writing",
+        label: "Writing",
+        color: "bg-purple-50 text-purple-600 border-purple-100",
+    },
+    {
+        id: "design",
+        label: "Design",
+        color: "bg-pink-50 text-pink-600 border-pink-100",
+    },
 ];
 
 const presetColors = [
-  { label: "Slate", value: "bg-slate-50 text-slate-600 border-slate-100" },
-  { label: "Blue", value: "bg-blue-50 text-blue-600 border-blue-100" },
-  {
-    label: "Green",
-    value: "bg-emerald-50 text-emerald-600 border-emerald-100",
-  },
-  { label: "Purple", value: "bg-purple-50 text-purple-600 border-purple-100" },
-  { label: "Pink", value: "bg-pink-50 text-pink-600 border-pink-100" },
-  { label: "Orange", value: "bg-orange-50 text-orange-600 border-orange-100" },
-  { label: "Red", value: "bg-rose-50 text-rose-600 border-rose-100" },
+    { label: "Slate", value: "bg-slate-50 text-slate-600 border-slate-100" },
+    { label: "Blue", value: "bg-blue-50 text-blue-600 border-blue-100" },
+    {
+        label: "Green",
+        value: "bg-emerald-50 text-emerald-600 border-emerald-100",
+    },
+    { label: "Purple", value: "bg-purple-50 text-purple-600 border-purple-100" },
+    { label: "Pink", value: "bg-pink-50 text-pink-600 border-pink-100" },
+    { label: "Orange", value: "bg-orange-50 text-orange-600 border-orange-100" },
+    { label: "Red", value: "bg-rose-50 text-rose-600 border-rose-100" },
 ];
 
 const priorityConfig = {
-  low: {
-    label: "Low",
-    color: "text-slate-500 bg-slate-100 dark:bg-slate-900 border-slate-200",
-    borderColor: "border-l-slate-400",
-  },
-  medium: {
-    label: "Medium",
-    color: "text-amber-600 bg-amber-50 dark:bg-amber-950/30 border-amber-200",
-    borderColor: "border-l-amber-500",
-  },
-  high: {
-    label: "High",
-    color: "text-rose-600 bg-rose-50 dark:bg-rose-950/30 border-rose-200",
-    borderColor: "border-l-rose-500",
-  },
+    low: {
+        label: "Low",
+        color: "text-slate-500 bg-slate-100 dark:bg-slate-900 border-slate-200",
+        borderColor: "border-l-slate-400",
+    },
+    medium: {
+        label: "Medium",
+        color: "text-amber-600 bg-amber-50 dark:bg-amber-950/30 border-amber-200",
+        borderColor: "border-l-amber-500",
+    },
+    high: {
+        label: "High",
+        color: "text-rose-600 bg-rose-50 dark:bg-rose-950/30 border-rose-200",
+        borderColor: "border-l-rose-500",
+    },
 };
 
 interface TaskCardProps {
-  task: Task;
-  compact?: boolean;
-  columns?: TaskColumn[];
-  onMove?: (taskId: string, status: string) => void;
-  dragHandleProps?: any;
-  members?: any[];
-  groups?: Group[];
-  role?: string;
-  orgId?: string;
-  tags?: Tag[];
-  onEditTag?: (tag: Tag) => void;
-  onDeleteTag?: (tagId: string) => void;
-  onCreateTag?: () => void;
-  isDragging?: boolean;
+    task: Task;
+    compact?: boolean;
+    columns?: TaskColumn[];
+    onMove?: (taskId: string, status: string) => void;
+    dragHandleProps?: any;
+    members?: any[];
+    groups?: Group[];
+    role?: string;
+    orgId?: string;
+    tags?: Tag[];
+    onEditTag?: (tag: Tag) => void;
+    onDeleteTag?: (tagId: string) => void;
+    onCreateTag?: () => void;
+    isDragging?: boolean;
 }
 
 function TaskCard({
-  task,
-  compact = false,
-  columns,
-  onMove,
-  dragHandleProps,
-  members = [],
-  groups = [],
-  role = "member",
-  orgId,
-  tags = [],
-  onEditTag,
-  onDeleteTag,
-  onCreateTag,
-  isDragging,
+    task,
+    compact = false,
+    columns,
+    onMove,
+    dragHandleProps,
+    members = [],
+    groups = [],
+    role = "member",
+    orgId,
+    tags = [],
+    onEditTag,
+    onDeleteTag,
+    onCreateTag,
+    isDragging,
 }: TaskCardProps) {
-  const priorityStyle =
-    priorityConfig[task.priority as keyof typeof priorityConfig] ||
-    priorityConfig.medium;
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(false);
+    const priorityStyle =
+        priorityConfig[task.priority as keyof typeof priorityConfig] ||
+        priorityConfig.medium;
+    const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+    const [isEditMode, setIsEditMode] = useState(false);
 
-  // Viewer Check
-  const isReadOnly = role === "viewer";
+    // Viewer Check
+    const isReadOnly = role === "viewer";
 
-  // Edit State
-  const [title, setTitle] = useState(task.title);
-  const [description, setDescription] = useState(task.description || "");
-  const [date, setDate] = useState<Date | undefined>(
-    task.dueDate && task.dueDate !== "" ? new Date(task.dueDate) : undefined, // Handle empty string
-  );
-  const [priority, setPriority] = useState<"low" | "medium" | "high">(
-    task.priority || "medium",
-  );
-  const [tag, setTag] = useState(task.tag || "general");
-  const [goalId, setGoalId] = useState<string | null | undefined>(task.goalId);
-  const [assigneeId, setAssigneeId] = useState<string | null | undefined>(
-    task.assigneeId,
-  );
-  const [assigneeIds, setAssigneeIds] = useState<string[]>(
-    task.assigneeIds || (task.assigneeId ? [task.assigneeId] : []),
-  );
-  const [groupIds, setGroupIds] = useState<string[]>(task.groupIds || []);
+    // Edit State
+    const [title, setTitle] = useState(task.title);
+    const [description, setDescription] = useState(task.description || "");
+    const [date, setDate] = useState<Date | undefined>(
+        task.dueDate && task.dueDate !== "" ? new Date(task.dueDate) : undefined, // Handle empty string
+    );
+    const [priority, setPriority] = useState<"low" | "medium" | "high">(
+        task.priority || "medium",
+    );
+    const [tag, setTag] = useState(task.tag || "general");
+    const [goalId, setGoalId] = useState<string | null | undefined>(task.goalId);
+    const [assigneeId, setAssigneeId] = useState<string | null | undefined>(
+        task.assigneeId,
+    );
+    const [assigneeIds, setAssigneeIds] = useState<string[]>(
+        task.assigneeIds || (task.assigneeId ? [task.assigneeId] : []),
+    );
+    const [groupIds, setGroupIds] = useState<string[]>(task.groupIds || []);
 
-  // Subtasks State
-  const [newSubtask, setNewSubtask] = useState("");
+    // Subtasks State
+    const [newSubtask, setNewSubtask] = useState("");
 
-  // Comments State
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [newComment, setNewComment] = useState("");
+    // Comments State
+    const [comments, setComments] = useState<Comment[]>([]);
+    const [newComment, setNewComment] = useState("");
 
-  // Goals State
-  const [goals, setGoals] = useState<Goal[]>([]);
+    // Goals State
+    const [goals, setGoals] = useState<Goal[]>([]);
 
-  // Subscribe to data
-  useEffect(() => {
-    if (isDetailsOpen) {
-      const unsubComments = subscribeToTaskComments(task.id, (data) =>
-        setComments(data),
-      );
-      const unsubGoals = subscribeToGoals((data) => setGoals(data));
-      return () => {
-        unsubComments();
-        unsubGoals();
-      };
-    }
-  }, [isDetailsOpen, task.id]);
+    // Subscribe to data
+    useEffect(() => {
+        if (isDetailsOpen) {
+            const unsubComments = subscribeToTaskComments(task.id, (data) =>
+                setComments(data),
+            );
+            const unsubGoals = subscribeToGoals((data) => setGoals(data));
+            return () => {
+                unsubComments();
+                unsubGoals();
+            };
+        }
+    }, [isDetailsOpen, task.id]);
 
-  const openDetails = (edit: boolean = false) => {
-    setIsEditMode(edit);
-    setIsDetailsOpen(true);
-  };
+    const openDetails = (edit: boolean = false) => {
+        setIsEditMode(edit);
+        setIsDetailsOpen(true);
+    };
 
-  const handleSaveDetails = async () => {
-    try {
-      await updateTask(task.id, {
-        title,
-        description,
-        dueDate: date ? date.toISOString() : null, // Send null to clear
-        priority,
-        tag,
-        goalId: goalId === "none" || goalId === undefined ? null : goalId,
-        assigneeId: assigneeIds.length > 0 ? assigneeIds[0] : null, // Backward compatible
-        assigneeIds: assigneeIds,
-        groupIds: groupIds,
-      });
-      setIsEditMode(false);
-    } catch (error: any) {
-      console.error("Failed to update task", error);
-      toast.error("Failed to save task: " + error.message);
-    }
-  };
+    const handleSaveDetails = async () => {
+        try {
+            await updateTask(task.id, {
+                title,
+                description,
+                dueDate: date ? date.toISOString() : null, // Send null to clear
+                priority,
+                tag,
+                goalId: goalId === "none" || goalId === undefined ? null : goalId,
+                assigneeId: assigneeIds.length > 0 ? assigneeIds[0] : null, // Backward compatible
+                assigneeIds: assigneeIds,
+                groupIds: groupIds,
+            });
+            setIsEditMode(false);
+        } catch (error: any) {
+            console.error("Failed to update task", error);
+            toast.error("Failed to save task: " + error.message);
+        }
+    };
 
-  const handleAddSubtask = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newSubtask.trim()) return;
+    const handleAddSubtask = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newSubtask.trim()) return;
 
-    try {
-      const subtask: SubTask = {
-        id: Math.random().toString(36).substr(2, 9),
-        title: newSubtask,
-        completed: false,
-      };
+        try {
+            const subtask: SubTask = {
+                id: Math.random().toString(36).substr(2, 9),
+                title: newSubtask,
+                completed: false,
+            };
 
-      const updatedSubtasks = [...(task.subtasks || []), subtask];
-      await updateTask(task.id, { subtasks: updatedSubtasks });
-      setNewSubtask("");
-    } catch (error: any) {
-      console.error("Failed to add subtask", error);
-      toast.error("Failed to add subtask: " + error.message);
-    }
-  };
+            const updatedSubtasks = [...(task.subtasks || []), subtask];
+            await updateTask(task.id, { subtasks: updatedSubtasks });
+            setNewSubtask("");
+        } catch (error: any) {
+            console.error("Failed to add subtask", error);
+            toast.error("Failed to add subtask: " + error.message);
+        }
+    };
 
-  const toggleSubtask = async (subtaskId: string) => {
-    try {
-      const updatedSubtasks = (task.subtasks || []).map((st) =>
-        st.id === subtaskId ? { ...st, completed: !st.completed } : st,
-      );
-      await updateTask(task.id, { subtasks: updatedSubtasks });
-    } catch (error: any) {
-      console.error("Failed to toggle subtask", error);
-      toast.error("Failed to toggle subtask: " + error.message);
-    }
-  };
+    const toggleSubtask = async (subtaskId: string) => {
+        try {
+            const updatedSubtasks = (task.subtasks || []).map((st) =>
+                st.id === subtaskId ? { ...st, completed: !st.completed } : st,
+            );
+            await updateTask(task.id, { subtasks: updatedSubtasks });
+        } catch (error: any) {
+            console.error("Failed to toggle subtask", error);
+            toast.error("Failed to toggle subtask: " + error.message);
+        }
+    };
 
-  const deleteSubtask = async (subtaskId: string) => {
-    try {
-      const updatedSubtasks = (task.subtasks || []).filter(
-        (st) => st.id !== subtaskId,
-      );
-      await updateTask(task.id, { subtasks: updatedSubtasks });
-    } catch (error: any) {
-      console.error("Failed to delete subtask", error);
-      toast.error("Failed to delete subtask: " + error.message);
-    }
-  };
+    const deleteSubtask = async (subtaskId: string) => {
+        try {
+            const updatedSubtasks = (task.subtasks || []).filter(
+                (st) => st.id !== subtaskId,
+            );
+            await updateTask(task.id, { subtasks: updatedSubtasks });
+        } catch (error: any) {
+            console.error("Failed to delete subtask", error);
+            toast.error("Failed to delete subtask: " + error.message);
+        }
+    };
 
-  const handleAddComment = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newComment.trim()) return;
+    const handleAddComment = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newComment.trim()) return;
 
-    await addTaskComment(task.id, newComment);
-    setNewComment("");
-  };
+        await addTaskComment(task.id, newComment);
+        setNewComment("");
+    };
 
-  // Calculate progress
-  const subtasksTotal = task.subtasks?.length || 0;
-  const subtasksCompleted =
-    task.subtasks?.filter((st) => st.completed).length || 0;
-  const progress =
-    subtasksTotal === 0
-      ? 0
-      : Math.round((subtasksCompleted / subtasksTotal) * 100);
+    // Calculate progress
+    const subtasksTotal = task.subtasks?.length || 0;
+    const subtasksCompleted =
+        task.subtasks?.filter((st) => st.completed).length || 0;
+    const progress =
+        subtasksTotal === 0
+            ? 0
+            : Math.round((subtasksCompleted / subtasksTotal) * 100);
 
-  return (
-    <>
-      <div
-        className={cn(
-          "group flex items-center gap-3 p-3 rounded-xl border border-border/30 bg-card hover:border-primary/20 hover:shadow-md ",
-          isDragging ? "transition-none shadow-xl border-primary/50 z-50" : "",
-          "border-l-[3px]",
-          priorityStyle.borderColor,
-          task.completed &&
-            "opacity-60 bg-muted/10 border-transparent hover:border-border/30 hover:shadow-none border-l-muted-foreground/30",
-        )}
-      >
-        {/* Drag Handle */}
-        {dragHandleProps && (
-          <div
-            {...dragHandleProps}
-            className="cursor-grab active:cursor-grabbing text-muted-foreground/30 hover:text-muted-foreground p-1 -ml-1"
-          >
-            <GripVertical className="h-4 w-4" />
-          </div>
-        )}
-
-        <Checkbox
-          checked={task.completed}
-          onCheckedChange={(checked) => {
-            toggleTaskCompletion(task.id, task.completed);
-            if (checked && columns) {
-              const doneCol = columns.find((c) => c.title === "Done");
-              if (doneCol) onMove?.(task.id, doneCol.id);
-            }
-          }}
-          disabled={isReadOnly}
-          className={cn(
-            "h-5 w-5 rounded-full border-2 data-[state=checked]:bg-primary data-[state=checked]:border-primary ",
-            !task.completed && "border-muted-foreground/30",
-            isReadOnly && "opacity-50 cursor-not-allowed",
-          )}
-        />
-
-        <div
-          className="flex-1 min-w-0 flex flex-col justify-between gap-1 cursor-pointer"
-          onClick={() => openDetails(false)}
-        >
-          <span
-            className={cn(
-              "font-medium truncate block ",
-              compact ? "text-sm" : "text-base",
-              task.completed && "line-through text-muted-foreground",
-            )}
-          >
-            {task.title}
-          </span>
-
-          <div className="flex flex-wrap items-center gap-2 text-xs">
-            {task.dueDate && (
-              <span
+    return (
+        <>
+            <div
+                {...(dragHandleProps || {})}
                 className={cn(
-                  "px-1.5 py-0.5 rounded-full font-medium flex items-center gap-1",
-                  new Date(task.dueDate) < new Date() && !task.completed
-                    ? "text-rose-600 bg-rose-50"
-                    : "text-muted-foreground bg-muted/50",
+                    "group flex items-center gap-3 p-3 rounded-xl border border-border/30 bg-card hover:border-primary/20 hover:shadow-md ",
+                    isDragging ? "transition-none shadow-xl border-primary/50 z-50" : "",
+                    "border-l-[3px]",
+                    priorityStyle.borderColor,
+                    task.completed &&
+                    "opacity-60 bg-muted/10 border-transparent hover:border-border/30 hover:shadow-none border-l-muted-foreground/30",
+                    dragHandleProps && "cursor-grab active:cursor-grabbing",
                 )}
-              >
-                {new Date(task.dueDate) < new Date() && !task.completed && "!"}
-                {format(
-                  new Date(task.dueDate),
-                  compact ? "MMM d" : "MMM d, yyyy",
-                )}
-              </span>
-            )}
-            {!compact && task.priority && task.priority !== "medium" && (
-              <Badge
-                variant="outline"
-                className={cn(
-                  "rounded-md border-0 px-1.5 font-normal capitalize h-5",
-                  priorityConfig[task.priority as keyof typeof priorityConfig]
-                    ?.color,
-                )}
-              >
-                {task.priority}
-              </Badge>
-            )}
-
-            <div className="flex items-center gap-1">
-              {(() => {
-                const availableTags = tags.length > 0 ? tags : defaultTags;
-                const currentTag =
-                  availableTags.find((t) => t.id === (task.tag || "general")) ||
-                  availableTags.find(
-                    (t) =>
-                      t.label.toLowerCase() ===
-                      (task.tag || "general").toLowerCase(),
-                  ) ||
-                  availableTags[0];
-                return (
-                  <Badge
-                    variant="outline"
-                    className={cn(
-                      "rounded-md border px-1.5 font-normal capitalize h-5",
-                      currentTag?.color,
-                    )}
-                  >
-                    {currentTag?.label || task.tag || "General"}
-                  </Badge>
-                );
-              })()}
-            </div>
-            {/* Subtask Indicator */}
-            {subtasksTotal > 0 && (
-              <span className="flex items-center gap-1 text-muted-foreground bg-muted/30 px-1.5 py-0.5 rounded-md">
-                <CheckCircle2 className="h-3 w-3" />
-                {subtasksCompleted}/{subtasksTotal}
-              </span>
-            )}
-            {/* Assignee & Group Display */}
-            <AssigneeDisplay
-              assigneeIds={
-                task.assigneeIds || (task.assigneeId ? [task.assigneeId] : [])
-              }
-              groupIds={task.groupIds}
-              members={members}
-              groups={groups}
-              className="ml-auto"
-            />
-          </div>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100  ml-auto">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-muted-foreground hover:text-primary hover:bg-primary/10 h-8 w-8"
-            onClick={(e) => {
-              e.stopPropagation();
-              openDetails(true);
-            }}
-            title="Edit Task"
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-muted-foreground h-8 w-8"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <MoreVertical className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                onClick={(e) => {
-                  e.stopPropagation();
-                  openDetails(true);
-                }}
-              >
-                <Edit2 className="h-4 w-4 mr-2" /> Edit Task
-              </DropdownMenuItem>
-              {columns && onMove && !dragHandleProps && (
-                <>
-                  <DropdownMenuSeparator />
-                  {columns.map((col) => (
-                    <DropdownMenuItem
-                      key={col.id}
-                      onClick={() => onMove(task.id, col.id)}
-                    >
-                      Move to {col.title}
-                    </DropdownMenuItem>
-                  ))}
-                  <DropdownMenuSeparator />
-                </>
-              )}
-              <DropdownMenuItem
-                className="text-destructive focus:text-destructive"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  deleteTask(task.id);
-                }}
-              >
-                <Trash2 className="h-4 w-4 mr-2" /> Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </div>
-
-      {/* Task Details Dialog */}
-      <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-        <DialogContent
-          showCloseButton={false}
-          className="!w-[60vw] !max-w-[60vw] h-[80vh] overflow-hidden flex flex-col p-0 gap-0"
-        >
-          <DialogHeader className="px-6 py-4 border-b bg-gradient-to-r from-muted/50 to-transparent">
-            <div className="flex items-start justify-between gap-4">
-              <div className="space-y-1 flex-1">
-                {isEditMode ? (
-                  <>
-                    <DialogTitle className="sr-only">
-                      Edit Task: {title}
-                    </DialogTitle>
-                    <Input
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      className="font-bold text-xl border-transparent px-0 h-auto focus-visible:ring-0 hover:bg-white/50 transition-colors bg-transparent placeholder:text-muted-foreground/80"
-                      placeholder="Task title"
-                      autoFocus
-                    />
-                  </>
-                ) : (
-                  <DialogTitle className="text-xl font-bold leading-tight py-1">
-                    {title}
-                  </DialogTitle>
-                )}
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  In{" "}
-                  <Badge variant="secondary" className="rounded-sm font-normal">
-                    {columns?.find((c) => c.id === task.status)?.title ||
-                      "Backlog"}
-                  </Badge>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                {!isEditMode && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setIsEditMode(true)}
-                    className="rounded-full hover:bg-black/5"
-                    title="Edit Task"
-                  >
-                    <Pencil className="h-4 w-4 opacity-70" />
-                  </Button>
-                )}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setIsDetailsOpen(false)}
-                  className="rounded-full hover:bg-black/5"
-                >
-                  <X className="h-5 w-5 opacity-70" />
-                </Button>
-              </div>
-            </div>
-          </DialogHeader>
-
-          <div className="flex-1 overflow-hidden flex flex-col md:flex-row">
-            {/* Main Content: Description & Subtasks */}
-            <ScrollArea className="flex-1 p-6 h-[500px] md:h-auto bg-background/50">
-              <div className="space-y-8">
-                {/* Metadata Row */}
-                <div className="flex flex-wrap gap-6 p-4 bg-muted/20 rounded-xl border border-border/40">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                      Status
-                    </Label>
-                    {isEditMode ? (
-                      <Select
-                        value={task.status || "backlog"}
-                        onValueChange={(v) => updateTaskStatus(task.id, v)}
-                      >
-                        <SelectTrigger className="h-8 w-[140px] text-xs bg-background">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {columns?.map((col) => (
-                            <SelectItem key={col.id} value={col.id}>
-                              {col.title}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    ) : (
-                      <div className="flex items-center h-8 text-sm font-medium">
-                        {columns?.find((c) => c.id === task.status)?.title ||
-                          "Backlog"}
-                      </div>
-                    )}
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                      Due Date
-                    </Label>
-                    {isEditMode ? (
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className={cn(
-                              "h-8 justify-start text-left font-normal w-[140px] text-xs bg-background",
-                              !date && "text-muted-foreground",
-                            )}
-                          >
-                            <CalendarIcon className="mr-2 h-3 w-3" />
-                            {date ? format(date, "MMM d") : "Set date"}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
-                          <Calendar
-                            mode="single"
-                            selected={date}
-                            onSelect={setDate}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    ) : (
-                      <div className="flex items-center h-8 text-sm font-medium">
-                        <CalendarIcon className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
-                        {date ? (
-                          format(date, "MMM d, yyyy")
-                        ) : (
-                          <span className="text-foreground">No due date</span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                      Priority
-                    </Label>
-                    {isEditMode ? (
-                      <Select
-                        value={priority}
-                        onValueChange={(v: any) => setPriority(v)}
-                      >
-                        <SelectTrigger className="h-8 w-[100px] text-xs bg-background">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="low">Low</SelectItem>
-                          <SelectItem value="medium">Medium</SelectItem>
-                          <SelectItem value="high">High</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    ) : (
-                      <div className="flex items-center h-8">
-                        <Badge
-                          variant="outline"
-                          className={cn(
-                            "font-normal capitalize",
-                            priorityConfig[priority]?.color,
-                          )}
-                        >
-                          {priority}
-                        </Badge>
-                      </div>
-                    )}
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                      Tag
-                    </Label>
-                    {isEditMode ? (
-                      <TagSelector
-                        value={tag}
-                        onChange={setTag}
-                        tags={tags.length > 0 ? tags : defaultTags}
-                        role={role}
-                        onEditTag={onEditTag}
-                        onDeleteTag={onDeleteTag}
-                        onCreateTag={onCreateTag}
-                      />
-                    ) : (
-                      <div className="flex items-center h-8">
-                        {(() => {
-                          const availableTags =
-                            tags.length > 0 ? tags : defaultTags;
-                          const currentTag =
-                            availableTags.find(
-                              (t) => t.id === (tag || "general"),
-                            ) ||
-                            availableTags.find(
-                              (t) =>
-                                t.label.toLowerCase() ===
-                                (tag || "general").toLowerCase(),
-                            ) ||
-                            availableTags[0];
-                          return (
-                            <Badge
-                              variant="outline"
-                              className={cn(
-                                "font-normal capitalize",
-                                currentTag?.color,
-                              )}
-                            >
-                              {currentTag?.label || tag || "General"}
-                            </Badge>
-                          );
-                        })()}
-                      </div>
-                    )}
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                      Linked Goal
-                    </Label>
-                    {isEditMode ? (
-                      <Select
-                        value={goalId || "none"}
-                        onValueChange={(v) => setGoalId(v)}
-                      >
-                        <SelectTrigger className="h-8 w-[160px] text-xs bg-background">
-                          <div className="flex items-center gap-2 truncate">
-                            <Target className="h-3 w-3 opacity-50" />
-                            <span className="truncate">
-                              {goals.find((g) => g.id === goalId)?.title ||
-                                "None"}
-                            </span>
-                          </div>
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">None</SelectItem>
-                          {goals.map((g) => (
-                            <SelectItem
-                              key={g.id}
-                              value={g.id}
-                              className="max-w-[200px] truncate"
-                            >
-                              {g.title}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    ) : (
-                      <div className="flex items-center h-8 text-sm">
-                        {goalId ? (
-                          <Badge
-                            variant="secondary"
-                            className="font-normal truncate max-w-[200px]"
-                          >
-                            <Target className="h-3 w-3 mr-1.5 opacity-50" />
-                            {goals.find((g) => g.id === goalId)?.title ||
-                              "Unknown Goal"}
-                          </Badge>
-                        ) : (
-                          <span className="text-muted-foreground italic text-xs">
-                            No goal linked
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                      Assignees
-                    </Label>
-                    {isEditMode ? (
-                      orgId && (
-                        <UserGroupSelect
-                          orgId={orgId}
-                          assigneeIds={assigneeIds}
-                          groupIds={groupIds}
-                          onAssigneeChange={setAssigneeIds}
-                          onGroupChange={setGroupIds}
-                          members={members}
-                        />
-                      )
-                    ) : (
-                      <div className="flex items-center h-8 text-sm">
-                        {(task.assigneeIds && task.assigneeIds.length > 0) ||
-                        task.assigneeId ? (
-                          <div className="flex -space-x-2">
-                            {/* Handle legacy single assigneeId if assigneeIds is empty */}
-                            {(task.assigneeIds?.length
-                              ? task.assigneeIds
-                              : task.assigneeId
-                                ? [task.assigneeId]
-                                : []
-                            ).map((id) => {
-                              const m = members?.find((mem) => mem.id === id);
-                              if (!m) return null;
-                              return (
-                                <Avatar
-                                  key={id}
-                                  className="h-6 w-6 border-2 border-background ring-0"
-                                  title={m.displayName}
-                                >
-                                  <AvatarImage src={m.photoURL} />
-                                  <AvatarFallback>
-                                    {m.displayName?.[0]}
-                                  </AvatarFallback>
-                                </Avatar>
-                              );
-                            })}
-                          </div>
-                        ) : (
-                          <span className="text-muted-foreground italic text-xs">
-                            Unassigned
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="space-y-3 group/desc">
-                  <Label className="flex items-center gap-2 text-sm font-semibold text-foreground/80">
-                    Description
-                  </Label>
-                  {isEditMode ? (
-                    <Textarea
-                      placeholder="Add a more detailed description..."
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      className="min-h-[120px] resize-none bg-Card/50"
-                    />
-                  ) : (
-                    <div
-                      className={cn(
-                        "min-h-[80px] text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap",
-                        !description && "italic text-muted-foreground/50",
-                      )}
-                    >
-                      {description || "No description provided."}
-                    </div>
-                  )}
-                </div>
-
-                <Separator />
-
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <Label className="flex items-center gap-2 text-sm font-semibold text-foreground/80">
-                      <CheckCircle2 className="h-4 w-4 text-primary" /> Subtasks
-                    </Label>
-                    <span className="text-xs text-muted-foreground font-mono bg-muted/50 px-2 py-1 rounded">
-                      {subtasksCompleted}/{subtasksTotal}
-                    </span>
-                  </div>
-
-                  <div className="space-y-2">
-                    {(task.subtasks || []).length === 0 && !isEditMode && (
-                      <p className="text-xs text-muted-foreground italic">
-                        No subtasks.
-                      </p>
-                    )}
-
-                    {(task.subtasks || []).map((st) => (
-                      <div
-                        key={st.id}
-                        className="flex items-center gap-3 group/st p-2 rounded-lg hover:bg-muted/30 transition-colors"
-                      >
-                        <Checkbox
-                          checked={st.completed}
-                          onCheckedChange={() => toggleSubtask(st.id)}
-                          className="rounded-full h-5 w-5"
-                        />
-                        <span
-                          className={cn(
-                            "flex-1 text-sm block transition-all",
-                            st.completed &&
-                              "line-through text-muted-foreground",
-                          )}
-                        >
-                          {st.title}
-                        </span>
-                        {isEditMode && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 opacity-0 group-hover/st:opacity-100 text-muted-foreground hover:text-destructive transition-opacity"
-                            onClick={() => deleteSubtask(st.id)}
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-
-                  {isEditMode && (
-                    <form
-                      onSubmit={handleAddSubtask}
-                      className="flex items-center gap-2 mt-4"
-                    >
-                      <div className="h-8 w-8 flex items-center justify-center rounded-full bg-muted/50 shrink-0">
-                        <Plus className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                      <Input
-                        placeholder="Add a step..."
-                        value={newSubtask}
-                        onChange={(e) => setNewSubtask(e.target.value)}
-                        className="border-none shadow-none focus-visible:ring-0 px-2 h-9 bg-transparent hover:bg-muted/30 transition-colors rounded-lg placeholder:text-muted-foreground/70"
-                      />
-                    </form>
-                  )}
-                </div>
-              </div>
-            </ScrollArea>
-
-            {/* Sidebar: Activity/Comments */}
-            <div className="w-full md:w-[400px] bg-muted/10 border-l flex flex-col h-[400px] md:h-auto">
-              <div className="p-4 border-b font-medium flex items-center justify-between text-xs uppercase tracking-wider text-muted-foreground bg-muted/5">
-                <div className="flex items-center gap-2">
-                  <MessageSquare className="h-3.5 w-3.5" /> Activity
-                </div>
-                <Badge variant="secondary" className="text-[10px] h-5 px-1.5">
-                  {comments.length}
-                </Badge>
-              </div>
-              <ScrollArea className="flex-1 p-4">
-                <div className="space-y-4">
-                  {comments.length === 0 ? (
-                    <div className="text-center py-12 flex flex-col items-center gap-2 opacity-50">
-                      <MessageSquare className="h-8 w-8 text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground">
-                        No comments yet.
-                      </span>
-                    </div>
-                  ) : (
-                    comments.map((comment) => (
-                      <CommentItem
-                        key={comment.id}
-                        comment={comment}
-                        taskId={task.id}
-                      />
-                    ))
-                  )}
-                </div>
-              </ScrollArea>
-              <div className="p-3 border-t bg-background/80 backdrop-blur">
-                <form
-                  onSubmit={handleAddComment}
-                  className="flex gap-2 relative"
-                >
-                  <Input
-                    placeholder="Write a comment..."
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    className="h-10 text-xs pl-3 pr-10 rounded-full bg-muted/50 border-transparent focus:bg-background focus:border-input transition-all placeholder:text-muted-foreground/80"
-                  />
-                  <Button
-                    type="submit"
-                    size="icon"
-                    className="absolute right-1 top-1 h-8 w-8 rounded-full shrink-0"
-                    disabled={!newComment.trim()}
-                  >
-                    <Send className="h-3.5 w-3.5" />
-                  </Button>
-                </form>
-              </div>
-            </div>
-          </div>
-
-          <DialogFooter className="px-6 py-4 border-t bg-muted/5 shrink-0">
-            <Button
-              variant="outline"
-              onClick={() => setIsDetailsOpen(false)}
-              className="rounded-full"
             >
-              Close
-            </Button>
-            {isEditMode && (
-              <Button
-                onClick={handleSaveDetails}
-                className="rounded-full shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-shadow"
-              >
-                Save Changes
-              </Button>
-            )}
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
-  );
+                <Checkbox
+                    checked={task.completed}
+                    onCheckedChange={(checked) => {
+                        toggleTaskCompletion(task.id, task.completed);
+                        if (checked && columns) {
+                            const doneCol = columns.find((c) => c.title === "Done");
+                            if (doneCol) onMove?.(task.id, doneCol.id);
+                        }
+                    }}
+                    disabled={isReadOnly}
+                    className={cn(
+                        "h-5 w-5 rounded-full border-2 data-[state=checked]:bg-primary data-[state=checked]:border-primary ",
+                        !task.completed && "border-muted-foreground/30",
+                        isReadOnly && "opacity-50 cursor-not-allowed",
+                    )}
+                />
+
+                <div
+                    className="flex-1 min-w-0 flex flex-col justify-between gap-1 cursor-pointer"
+                    onClick={() => openDetails(false)}
+                >
+                    <span
+                        className={cn(
+                            "font-medium truncate block ",
+                            compact ? "text-sm" : "text-base",
+                            task.completed && "line-through text-muted-foreground",
+                        )}
+                    >
+                        {task.title}
+                    </span>
+
+                    <div className="flex flex-wrap items-center gap-2 text-xs">
+                        {task.dueDate && (
+                            <span
+                                className={cn(
+                                    "px-1.5 py-0.5 rounded-full font-medium flex items-center gap-1",
+                                    new Date(task.dueDate) < new Date() && !task.completed
+                                        ? "text-rose-600 bg-rose-50"
+                                        : "text-muted-foreground bg-muted/50",
+                                )}
+                            >
+                                {new Date(task.dueDate) < new Date() && !task.completed && "!"}
+                                {format(
+                                    new Date(task.dueDate),
+                                    compact ? "MMM d" : "MMM d, yyyy",
+                                )}
+                            </span>
+                        )}
+                        {!compact && task.priority && task.priority !== "medium" && (
+                            <Badge
+                                variant="outline"
+                                className={cn(
+                                    "rounded-md border-0 px-1.5 font-normal capitalize h-5",
+                                    priorityConfig[task.priority as keyof typeof priorityConfig]
+                                        ?.color,
+                                )}
+                            >
+                                {task.priority}
+                            </Badge>
+                        )}
+
+                        <div className="flex items-center gap-1">
+                            {(() => {
+                                const availableTags = tags.length > 0 ? tags : defaultTags;
+                                const currentTag =
+                                    availableTags.find((t) => t.id === (task.tag || "general")) ||
+                                    availableTags.find(
+                                        (t) =>
+                                            t.label.toLowerCase() ===
+                                            (task.tag || "general").toLowerCase(),
+                                    ) ||
+                                    availableTags[0];
+                                return (
+                                    <Badge
+                                        variant="outline"
+                                        className={cn(
+                                            "rounded-md border px-1.5 font-normal capitalize h-5",
+                                            currentTag?.color,
+                                        )}
+                                    >
+                                        {currentTag?.label || task.tag || "General"}
+                                    </Badge>
+                                );
+                            })()}
+                        </div>
+                        {/* Subtask Indicator */}
+                        {subtasksTotal > 0 && (
+                            <span className="flex items-center gap-1 text-muted-foreground bg-muted/30 px-1.5 py-0.5 rounded-md">
+                                <CheckCircle2 className="h-3 w-3" />
+                                {subtasksCompleted}/{subtasksTotal}
+                            </span>
+                        )}
+                        {/* Assignee & Group Display */}
+                        <AssigneeDisplay
+                            assigneeIds={
+                                task.assigneeIds || (task.assigneeId ? [task.assigneeId] : [])
+                            }
+                            groupIds={task.groupIds}
+                            members={members}
+                            groups={groups}
+                            className="ml-auto"
+                        />
+                    </div>
+                </div>
+
+                {/* Quick Actions */}
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100  ml-auto">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-muted-foreground hover:text-primary hover:bg-primary/10 h-8 w-8"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            openDetails(true);
+                        }}
+                        title="Edit Task"
+                    >
+                        <Pencil className="h-4 w-4" />
+                    </Button>
+
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-muted-foreground h-8 w-8"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <MoreVertical className="h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    openDetails(true);
+                                }}
+                            >
+                                <Edit2 className="h-4 w-4 mr-2" /> Edit Task
+                            </DropdownMenuItem>
+                            {columns && onMove && !dragHandleProps && (
+                                <>
+                                    <DropdownMenuSeparator />
+                                    {columns.map((col) => (
+                                        <DropdownMenuItem
+                                            key={col.id}
+                                            onClick={() => onMove(task.id, col.id)}
+                                        >
+                                            Move to {col.title}
+                                        </DropdownMenuItem>
+                                    ))}
+                                    <DropdownMenuSeparator />
+                                </>
+                            )}
+                            <DropdownMenuItem
+                                className="text-destructive focus:text-destructive"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    deleteTask(task.id);
+                                }}
+                            >
+                                <Trash2 className="h-4 w-4 mr-2" /> Delete
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+            </div>
+
+            {/* Task Details Dialog */}
+            <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+                <DialogContent
+                    showCloseButton={false}
+                    className="!w-[60vw] !max-w-[60vw] h-[80vh] overflow-hidden flex flex-col p-0 gap-0"
+                >
+                    <DialogHeader className="px-6 py-4 border-b bg-gradient-to-r from-muted/50 to-transparent">
+                        <div className="flex items-start justify-between gap-4">
+                            <div className="space-y-1 flex-1">
+                                {isEditMode ? (
+                                    <>
+                                        <DialogTitle className="sr-only">
+                                            Edit Task: {title}
+                                        </DialogTitle>
+                                        <Input
+                                            value={title}
+                                            onChange={(e) => setTitle(e.target.value)}
+                                            className="font-bold text-xl border-transparent px-0 h-auto focus-visible:ring-0 hover:bg-white/50 transition-colors bg-transparent placeholder:text-muted-foreground/80"
+                                            placeholder="Task title"
+                                            autoFocus
+                                        />
+                                    </>
+                                ) : (
+                                    <DialogTitle className="text-xl font-bold leading-tight py-1">
+                                        {title}
+                                    </DialogTitle>
+                                )}
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                    In{" "}
+                                    <Badge variant="secondary" className="rounded-sm font-normal">
+                                        {columns?.find((c) => c.id === task.status)?.title ||
+                                            "Backlog"}
+                                    </Badge>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                {!isEditMode && (
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => setIsEditMode(true)}
+                                        className="rounded-full hover:bg-black/5"
+                                        title="Edit Task"
+                                    >
+                                        <Pencil className="h-4 w-4 opacity-70" />
+                                    </Button>
+                                )}
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setIsDetailsOpen(false)}
+                                    className="rounded-full hover:bg-black/5"
+                                >
+                                    <X className="h-5 w-5 opacity-70" />
+                                </Button>
+                            </div>
+                        </div>
+                    </DialogHeader>
+
+                    <div className="flex-1 overflow-hidden flex flex-col md:flex-row">
+                        {/* Main Content: Description & Subtasks */}
+                        <ScrollArea className="flex-1 p-6 h-[500px] md:h-auto bg-background/50">
+                            <div className="space-y-8">
+                                {/* Metadata Row */}
+                                <div className="flex flex-wrap gap-6 p-4 bg-muted/20 rounded-xl border border-border/40">
+                                    <div className="space-y-1.5">
+                                        <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                            Status
+                                        </Label>
+                                        {isEditMode ? (
+                                            <Select
+                                                value={task.status || "backlog"}
+                                                onValueChange={(v) => updateTaskStatus(task.id, v)}
+                                            >
+                                                <SelectTrigger className="h-8 w-[140px] text-xs bg-background">
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {columns?.map((col) => (
+                                                        <SelectItem key={col.id} value={col.id}>
+                                                            {col.title}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        ) : (
+                                            <div className="flex items-center h-8 text-sm font-medium">
+                                                {columns?.find((c) => c.id === task.status)?.title ||
+                                                    "Backlog"}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                            Due Date
+                                        </Label>
+                                        {isEditMode ? (
+                                            <Popover>
+                                                <PopoverTrigger asChild>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className={cn(
+                                                            "h-8 justify-start text-left font-normal w-[140px] text-xs bg-background",
+                                                            !date && "text-muted-foreground",
+                                                        )}
+                                                    >
+                                                        <CalendarIcon className="mr-2 h-3 w-3" />
+                                                        {date ? format(date, "MMM d") : "Set date"}
+                                                    </Button>
+                                                </PopoverTrigger>
+                                                <PopoverContent className="w-auto p-0">
+                                                    <Calendar
+                                                        mode="single"
+                                                        selected={date}
+                                                        onSelect={setDate}
+                                                        initialFocus
+                                                    />
+                                                </PopoverContent>
+                                            </Popover>
+                                        ) : (
+                                            <div className="flex items-center h-8 text-sm font-medium">
+                                                <CalendarIcon className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
+                                                {date ? (
+                                                    format(date, "MMM d, yyyy")
+                                                ) : (
+                                                    <span className="text-foreground">No due date</span>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                            Priority
+                                        </Label>
+                                        {isEditMode ? (
+                                            <Select
+                                                value={priority}
+                                                onValueChange={(v: any) => setPriority(v)}
+                                            >
+                                                <SelectTrigger className="h-8 w-[100px] text-xs bg-background">
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="low">Low</SelectItem>
+                                                    <SelectItem value="medium">Medium</SelectItem>
+                                                    <SelectItem value="high">High</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        ) : (
+                                            <div className="flex items-center h-8">
+                                                <Badge
+                                                    variant="outline"
+                                                    className={cn(
+                                                        "font-normal capitalize",
+                                                        priorityConfig[priority]?.color,
+                                                    )}
+                                                >
+                                                    {priority}
+                                                </Badge>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                            Tag
+                                        </Label>
+                                        {isEditMode ? (
+                                            <TagSelector
+                                                value={tag}
+                                                onChange={setTag}
+                                                tags={tags.length > 0 ? tags : defaultTags}
+                                                role={role}
+                                                onEditTag={onEditTag}
+                                                onDeleteTag={onDeleteTag}
+                                                onCreateTag={onCreateTag}
+                                            />
+                                        ) : (
+                                            <div className="flex items-center h-8">
+                                                {(() => {
+                                                    const availableTags =
+                                                        tags.length > 0 ? tags : defaultTags;
+                                                    const currentTag =
+                                                        availableTags.find(
+                                                            (t) => t.id === (tag || "general"),
+                                                        ) ||
+                                                        availableTags.find(
+                                                            (t) =>
+                                                                t.label.toLowerCase() ===
+                                                                (tag || "general").toLowerCase(),
+                                                        ) ||
+                                                        availableTags[0];
+                                                    return (
+                                                        <Badge
+                                                            variant="outline"
+                                                            className={cn(
+                                                                "font-normal capitalize",
+                                                                currentTag?.color,
+                                                            )}
+                                                        >
+                                                            {currentTag?.label || tag || "General"}
+                                                        </Badge>
+                                                    );
+                                                })()}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                            Linked Goal
+                                        </Label>
+                                        {isEditMode ? (
+                                            <Select
+                                                value={goalId || "none"}
+                                                onValueChange={(v) => setGoalId(v)}
+                                            >
+                                                <SelectTrigger className="h-8 w-[160px] text-xs bg-background">
+                                                    <div className="flex items-center gap-2 truncate">
+                                                        <Target className="h-3 w-3 opacity-50" />
+                                                        <span className="truncate">
+                                                            {goals.find((g) => g.id === goalId)?.title ||
+                                                                "None"}
+                                                        </span>
+                                                    </div>
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="none">None</SelectItem>
+                                                    {goals.map((g) => (
+                                                        <SelectItem
+                                                            key={g.id}
+                                                            value={g.id}
+                                                            className="max-w-[200px] truncate"
+                                                        >
+                                                            {g.title}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        ) : (
+                                            <div className="flex items-center h-8 text-sm">
+                                                {goalId ? (
+                                                    <Badge
+                                                        variant="secondary"
+                                                        className="font-normal truncate max-w-[200px]"
+                                                    >
+                                                        <Target className="h-3 w-3 mr-1.5 opacity-50" />
+                                                        {goals.find((g) => g.id === goalId)?.title ||
+                                                            "Unknown Goal"}
+                                                    </Badge>
+                                                ) : (
+                                                    <span className="text-muted-foreground italic text-xs">
+                                                        No goal linked
+                                                    </span>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                            Assignees
+                                        </Label>
+                                        {isEditMode ? (
+                                            orgId && (
+                                                <UserGroupSelect
+                                                    orgId={orgId}
+                                                    assigneeIds={assigneeIds}
+                                                    groupIds={groupIds}
+                                                    onAssigneeChange={setAssigneeIds}
+                                                    onGroupChange={setGroupIds}
+                                                    members={members}
+                                                />
+                                            )
+                                        ) : (
+                                            <div className="flex items-center h-8 text-sm">
+                                                {(task.assigneeIds && task.assigneeIds.length > 0) ||
+                                                    task.assigneeId ? (
+                                                    <div className="flex -space-x-2">
+                                                        {/* Handle legacy single assigneeId if assigneeIds is empty */}
+                                                        {(task.assigneeIds?.length
+                                                            ? task.assigneeIds
+                                                            : task.assigneeId
+                                                                ? [task.assigneeId]
+                                                                : []
+                                                        ).map((id) => {
+                                                            const m = members?.find((mem) => mem.id === id);
+                                                            if (!m) return null;
+                                                            return (
+                                                                <Avatar
+                                                                    key={id}
+                                                                    className="h-6 w-6 border-2 border-background ring-0"
+                                                                    title={m.displayName}
+                                                                >
+                                                                    <AvatarImage src={m.photoURL} />
+                                                                    <AvatarFallback>
+                                                                        {m.displayName?.[0]}
+                                                                    </AvatarFallback>
+                                                                </Avatar>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-muted-foreground italic text-xs">
+                                                        Unassigned
+                                                    </span>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="space-y-3 group/desc">
+                                    <Label className="flex items-center gap-2 text-sm font-semibold text-foreground/80">
+                                        Description
+                                    </Label>
+                                    {isEditMode ? (
+                                        <Textarea
+                                            placeholder="Add a more detailed description..."
+                                            value={description}
+                                            onChange={(e) => setDescription(e.target.value)}
+                                            className="min-h-[120px] resize-none bg-Card/50"
+                                        />
+                                    ) : (
+                                        <div
+                                            className={cn(
+                                                "min-h-[80px] text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap",
+                                                !description && "italic text-muted-foreground/50",
+                                            )}
+                                        >
+                                            {description || "No description provided."}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <Separator />
+
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <Label className="flex items-center gap-2 text-sm font-semibold text-foreground/80">
+                                            <CheckCircle2 className="h-4 w-4 text-primary" /> Subtasks
+                                        </Label>
+                                        <span className="text-xs text-muted-foreground font-mono bg-muted/50 px-2 py-1 rounded">
+                                            {subtasksCompleted}/{subtasksTotal}
+                                        </span>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        {(task.subtasks || []).length === 0 && !isEditMode && (
+                                            <p className="text-xs text-muted-foreground italic">
+                                                No subtasks.
+                                            </p>
+                                        )}
+
+                                        {(task.subtasks || []).map((st) => (
+                                            <div
+                                                key={st.id}
+                                                className="flex items-center gap-3 group/st p-2 rounded-lg hover:bg-muted/30 transition-colors"
+                                            >
+                                                <Checkbox
+                                                    checked={st.completed}
+                                                    onCheckedChange={() => toggleSubtask(st.id)}
+                                                    className="rounded-full h-5 w-5"
+                                                />
+                                                <span
+                                                    className={cn(
+                                                        "flex-1 text-sm block transition-all",
+                                                        st.completed &&
+                                                        "line-through text-muted-foreground",
+                                                    )}
+                                                >
+                                                    {st.title}
+                                                </span>
+                                                {isEditMode && (
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-6 w-6 opacity-0 group-hover/st:opacity-100 text-muted-foreground hover:text-destructive transition-opacity"
+                                                        onClick={() => deleteSubtask(st.id)}
+                                                    >
+                                                        <Trash2 className="h-3.5 w-3.5" />
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {isEditMode && (
+                                        <form
+                                            onSubmit={handleAddSubtask}
+                                            className="flex items-center gap-2 mt-4"
+                                        >
+                                            <div className="h-8 w-8 flex items-center justify-center rounded-full bg-muted/50 shrink-0">
+                                                <Plus className="h-4 w-4 text-muted-foreground" />
+                                            </div>
+                                            <Input
+                                                placeholder="Add a step..."
+                                                value={newSubtask}
+                                                onChange={(e) => setNewSubtask(e.target.value)}
+                                                className="border-none shadow-none focus-visible:ring-0 px-2 h-9 bg-transparent hover:bg-muted/30 transition-colors rounded-lg placeholder:text-muted-foreground/70"
+                                            />
+                                        </form>
+                                    )}
+                                </div>
+                            </div>
+                        </ScrollArea>
+
+                        {/* Sidebar: Activity/Comments */}
+                        <div className="w-full md:w-[400px] bg-muted/10 border-l flex flex-col h-[400px] md:h-auto">
+                            <div className="p-4 border-b font-medium flex items-center justify-between text-xs uppercase tracking-wider text-muted-foreground bg-muted/5">
+                                <div className="flex items-center gap-2">
+                                    <MessageSquare className="h-3.5 w-3.5" /> Activity
+                                </div>
+                                <Badge variant="secondary" className="text-[10px] h-5 px-1.5">
+                                    {comments.length}
+                                </Badge>
+                            </div>
+                            <ScrollArea className="flex-1 p-4">
+                                <div className="space-y-4">
+                                    {comments.length === 0 ? (
+                                        <div className="text-center py-12 flex flex-col items-center gap-2 opacity-50">
+                                            <MessageSquare className="h-8 w-8 text-muted-foreground" />
+                                            <span className="text-xs text-muted-foreground">
+                                                No comments yet.
+                                            </span>
+                                        </div>
+                                    ) : (
+                                        comments.map((comment) => (
+                                            <CommentItem
+                                                key={comment.id}
+                                                comment={comment}
+                                                taskId={task.id}
+                                            />
+                                        ))
+                                    )}
+                                </div>
+                            </ScrollArea>
+                            <div className="p-3 border-t bg-background/80 backdrop-blur">
+                                <form
+                                    onSubmit={handleAddComment}
+                                    className="flex gap-2 relative"
+                                >
+                                    <Input
+                                        placeholder="Write a comment..."
+                                        value={newComment}
+                                        onChange={(e) => setNewComment(e.target.value)}
+                                        className="h-10 text-xs pl-3 pr-10 rounded-full bg-muted/50 border-transparent focus:bg-background focus:border-input transition-all placeholder:text-muted-foreground/80"
+                                    />
+                                    <Button
+                                        type="submit"
+                                        size="icon"
+                                        className="absolute right-1 top-1 h-8 w-8 rounded-full shrink-0"
+                                        disabled={!newComment.trim()}
+                                    >
+                                        <Send className="h-3.5 w-3.5" />
+                                    </Button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <DialogFooter className="px-6 py-4 border-t bg-muted/5 shrink-0">
+                        <Button
+                            variant="outline"
+                            onClick={() => setIsDetailsOpen(false)}
+                            className="rounded-full"
+                        >
+                            Close
+                        </Button>
+                        {isEditMode && (
+                            <Button
+                                onClick={handleSaveDetails}
+                                className="rounded-full shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-shadow"
+                            >
+                                Save Changes
+                            </Button>
+                        )}
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </>
+    );
 }
 
 function CommentItem({
-  comment,
-  taskId,
+    comment,
+    taskId,
 }: {
-  comment: Comment;
-  taskId: string;
+    comment: Comment;
+    taskId: string;
 }) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [content, setContent] = useState(comment.content);
-  const currentUser = auth.currentUser;
-  const isOwner = currentUser?.uid === comment.userId;
+    const [isEditing, setIsEditing] = useState(false);
+    const [content, setContent] = useState(comment.content);
+    const currentUser = auth.currentUser;
+    const isOwner = currentUser?.uid === comment.userId;
 
-  const handleUpdate = async () => {
-    if (!content.trim()) return;
-    await updateTaskComment(taskId, comment.id, content);
-    setIsEditing(false);
-  };
+    const handleUpdate = async () => {
+        if (!content.trim()) return;
+        await updateTaskComment(taskId, comment.id, content);
+        setIsEditing(false);
+    };
 
-  const handleDelete = async () => {
-    await deleteTaskComment(taskId, comment.id);
-  };
+    const handleDelete = async () => {
+        await deleteTaskComment(taskId, comment.id);
+    };
 
-  return (
-    <div className="flex gap-3 text-sm group/comment">
-      <Avatar className="h-8 w-8">
-        <AvatarImage src={comment.userPhotoURL} />
-        <AvatarFallback>{comment.userDisplayName?.[0] || "U"}</AvatarFallback>
-      </Avatar>
-      <div className="flex-1 space-y-1">
-        <div className="flex items-baseline justify-between">
-          <span className="font-semibold text-xs">
-            {comment.userDisplayName}
-          </span>
-          <span className="text-[10px] text-muted-foreground">
-            {comment.createdAt
-              ? format(comment.createdAt.toDate(), "MMM d, h:mm a")
-              : "Just now"}
-          </span>
-        </div>
+    return (
+        <div className="flex gap-3 text-sm group/comment">
+            <Avatar className="h-8 w-8">
+                <AvatarImage src={comment.userPhotoURL} />
+                <AvatarFallback>{comment.userDisplayName?.[0] || "U"}</AvatarFallback>
+            </Avatar>
+            <div className="flex-1 space-y-1">
+                <div className="flex items-baseline justify-between">
+                    <span className="font-semibold text-xs">
+                        {comment.userDisplayName}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground">
+                        {comment.createdAt
+                            ? format(comment.createdAt.toDate(), "MMM d, h:mm a")
+                            : "Just now"}
+                    </span>
+                </div>
 
-        {isEditing ? (
-          <div className="space-y-2">
-            <Input
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              className="h-8 text-xs"
-              autoFocus
-            />
-            <div className="flex items-center gap-2">
-              <Button
-                size="sm"
-                onClick={handleUpdate}
-                className="h-6 text-xs px-2"
-              >
-                Save
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => setIsEditing(false)}
-                className="h-6 text-xs px-2"
-              >
-                Cancel
-              </Button>
+                {isEditing ? (
+                    <div className="space-y-2">
+                        <Input
+                            value={content}
+                            onChange={(e) => setContent(e.target.value)}
+                            className="h-8 text-xs"
+                            autoFocus
+                        />
+                        <div className="flex items-center gap-2">
+                            <Button
+                                size="sm"
+                                onClick={handleUpdate}
+                                className="h-6 text-xs px-2"
+                            >
+                                Save
+                            </Button>
+                            <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => setIsEditing(false)}
+                                className="h-6 text-xs px-2"
+                            >
+                                Cancel
+                            </Button>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="group relative">
+                        <p className="text-muted-foreground leading-snug text-xs bg-muted/40 p-2 rounded-lg pr-8">
+                            {comment.content}
+                        </p>
+                        {isOwner && (
+                            <div className="absolute top-1 right-1 opacity-100 md:opacity-0 group-hover/comment:opacity-100 transition-opacity">
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-6 w-6 text-muted-foreground hover:bg-background/80"
+                                        >
+                                            <MoreVertical className="h-3 w-3" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuItem onClick={() => setIsEditing(true)}>
+                                            <Edit2 className="h-3 w-3 mr-2" /> Edit
+                                        </DropdownMenuItem>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem
+                                            onClick={handleDelete}
+                                            className="text-destructive focus:text-destructive"
+                                        >
+                                            <Trash2 className="h-3 w-3 mr-2" /> Delete
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
-          </div>
-        ) : (
-          <div className="group relative">
-            <p className="text-muted-foreground leading-snug text-xs bg-muted/40 p-2 rounded-lg pr-8">
-              {comment.content}
-            </p>
-            {isOwner && (
-              <div className="absolute top-1 right-1 opacity-100 md:opacity-0 group-hover/comment:opacity-100 transition-opacity">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 text-muted-foreground hover:bg-background/80"
-                    >
-                      <MoreVertical className="h-3 w-3" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => setIsEditing(true)}>
-                      <Edit2 className="h-3 w-3 mr-2" /> Edit
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={handleDelete}
-                      className="text-destructive focus:text-destructive"
-                    >
-                      <Trash2 className="h-3 w-3 mr-2" /> Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  );
+        </div>
+    );
 }
 
 interface TasksViewProps {
-  compact?: boolean;
-  className?: string;
+    compact?: boolean;
+    className?: string;
 }
 
 export function TasksView({ compact = false, className }: TasksViewProps) {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [columns, setColumns] = useState<TaskColumn[]>([]);
-  const [newTaskTitle, setNewTaskTitle] = useState("");
-  const [newTaskTag, setNewTaskTag] = useState("general");
-  const [newTaskDate, setNewTaskDate] = useState<Date | undefined>(undefined);
-  const [newTaskPriority, setNewTaskPriority] = useState<
-    "low" | "medium" | "high"
-  >("medium");
-  const [loading, setLoading] = useState(true);
-  const [view, setView] = useState("list");
-  const [members, setMembers] = useState<any[]>([]);
-  const [role, setRole] = useState<"owner" | "member" | "viewer">("member");
-  const [currentUser, setCurrentUser] = useState<any>(null);
-  const [orgId, setOrgId] = useState<string | undefined>(undefined);
-  const [groups, setGroups] = useState<Group[]>([]);
-  const [organization, setOrganization] = useState<Organization | null>(null);
-  const [isTagManagerOpen, setIsTagManagerOpen] = useState(false);
+    const [tasks, setTasks] = useState<Task[]>([]);
+    const [columns, setColumns] = useState<TaskColumn[]>([]);
+    const [newTaskTitle, setNewTaskTitle] = useState("");
+    const [newTaskTag, setNewTaskTag] = useState("general");
+    const [newTaskDate, setNewTaskDate] = useState<Date | undefined>(undefined);
+    const [newTaskPriority, setNewTaskPriority] = useState<
+        "low" | "medium" | "high"
+    >("medium");
+    const [loading, setLoading] = useState(true);
+    const [view, setView] = useState("list");
+    const [members, setMembers] = useState<any[]>([]);
+    const [role, setRole] = useState<"owner" | "member" | "viewer">("member");
+    const [currentUser, setCurrentUser] = useState<any>(null);
+    const [orgId, setOrgId] = useState<string | undefined>(undefined);
+    const [groups, setGroups] = useState<Group[]>([]);
+    const [organization, setOrganization] = useState<Organization | null>(null);
+    const [isTagManagerOpen, setIsTagManagerOpen] = useState(false);
 
-  // Tag Manager State
-  const [editingTag, setEditingTag] = useState<Tag | null>(null);
-  const [newTagName, setNewTagName] = useState("");
-  const [newTagColor, setNewTagColor] = useState(presetColors[0].value);
+    // Tag Manager State
+    const [editingTag, setEditingTag] = useState<Tag | null>(null);
+    const [newTagName, setNewTagName] = useState("");
+    const [newTagColor, setNewTagColor] = useState(presetColors[0].value);
 
-  const orgTags = organization?.tags || [];
-  const availableTags = orgTags.length > 0 ? orgTags : defaultTags;
+    const orgTags = organization?.tags || [];
+    const availableTags = orgTags.length > 0 ? orgTags : defaultTags;
 
-  // Column Management state
-  const [isAddingColumn, setIsAddingColumn] = useState(false);
-  const [newColumnTitle, setNewColumnTitle] = useState("");
+    // Column Management state
+    const [isAddingColumn, setIsAddingColumn] = useState(false);
+    const [newColumnTitle, setNewColumnTitle] = useState("");
 
-  useEffect(() => {
-    const loadMembers = async () => {
-      const user = auth.currentUser;
-      setCurrentUser(user);
-      if (user) {
-        const org = await getUserOrganization(user.uid);
-        if (org) {
-          setOrgId(org.id);
-          const orgMembers = await getOrganizationMembers(org.id);
-          setMembers(orgMembers);
+    useEffect(() => {
+        const loadMembers = async () => {
+            const user = auth.currentUser;
+            setCurrentUser(user);
+            if (user) {
+                const org = await getUserOrganization(user.uid);
+                if (org) {
+                    setOrgId(org.id);
+                    const orgMembers = await getOrganizationMembers(org.id);
+                    setMembers(orgMembers);
 
-          // Determine current user's role
-          const myMemberInfo = orgMembers.find((m: any) => m.id === user.uid);
-          if (myMemberInfo) {
-            setRole(myMemberInfo.role || "member");
-          } else if (org.ownerId === user.uid) {
-            setRole("owner");
-          }
+                    // Determine current user's role
+                    const myMemberInfo = orgMembers.find((m: any) => m.id === user.uid);
+                    if (myMemberInfo) {
+                        setRole(myMemberInfo.role || "member");
+                    } else if (org.ownerId === user.uid) {
+                        setRole("owner");
+                    }
+                }
+            }
+        };
+
+        loadMembers();
+
+        const unsubscribeTasks = subscribeToTasks((data) => setTasks(data));
+        const unsubscribeColumns = subscribeToTaskColumns((data) => {
+            setColumns(data);
+        });
+        const unsubscribeGroups = subscribeToGroups((data) => {
+            setGroups(data);
+        });
+
+        let unsubscribeOrg: () => void = () => { };
+        if (orgId) {
+            unsubscribeOrg = subscribeToOrganization(orgId, (data) => {
+                setOrganization(data);
+            });
         }
-      }
+
+        setLoading(false);
+        return () => {
+            unsubscribeTasks();
+            unsubscribeColumns();
+            unsubscribeGroups();
+            unsubscribeOrg();
+        };
+    }, [orgId]); // Added orgId dependency to re-subscribe if it changes
+
+    // Filter tasks based on Role and Visibility
+    const filteredTasks = tasks.filter((task) => {
+        if (role === "owner") return true; // Owner sees all
+
+        // If no current user loaded yet, default to hidden or wait
+        if (!currentUser) return false;
+
+        const isCreator = task.userId === currentUser.uid;
+        // Check both single assignee (legacy) and multi-assignee array
+        const isAssigned =
+            (task.assigneeIds && task.assigneeIds.includes(currentUser.uid)) ||
+            task.assigneeId === currentUser.uid;
+
+        // Check group assignments (Need to fetch user's groups or check if user is in task.groupIds if we have that logic locally)
+        // Ideally we fetch user's groups. For now, we assumed we don't have user's groups in memory easily without fetching.
+        // But we can check if any of task.groupIds are in the groups the user belongs to.
+        // Since we don't have user's groups loaded here efficiently yet, we might skip or do a simple check if we had list of all groups.
+        // For now, let's assume we need to implement group visibility logic properly.
+        // We need to fetch groups for the user or all groups and check membership?
+        // Let's implement full fetching of groups in TasksView or store user's groupIds in user profile/session?
+
+        // For this iteration, let's keep it simple: visible if creator or directly assigned.
+        // Full group visibility logic might require fetching user's groups.
+        // We will add `task.groupIds` check later when we implement group fetching in TasksView.
+        return isCreator || isAssigned;
+    });
+
+    // Effect for Auto-Migration of Tasks based on Date
+    useEffect(() => {
+        if (tasks.length === 0 || columns.length === 0) return;
+
+        const todayCol = columns.find((c) => c.title === "Today");
+        const thisWeekCol = columns.find((c) => c.title === "This Week");
+        const doneCol = columns.find((c) => c.title === "Done");
+        const backlogCol = columns.find((c) => c.title === "Backlog");
+
+        if (!todayCol && !thisWeekCol && !doneCol) return;
+
+        tasks.forEach((task) => {
+            // Migration should probably run on all tasks, or maybe just filtered? Should be careful.
+            // If user can't see task, they probably shouldn't migrate it, but migration is system logic.
+            // Let's leave migration on 'tasks' for now as it's often an owner/system action,
+            // BUT if 'member' triggers it, it might update tasks they don't own?
+            // Actually, `updateTaskStatus` checks permission? Not really, Firestore rules usually handle it.
+            // For now, leave as is.
+
+            // Rule 0: Completed tasks -> Move to Done
+            if (task.completed && doneCol && task.status !== doneCol.id) {
+                updateTaskStatus(task.id, doneCol.id);
+                return;
+            }
+            // ... (rest of migration logic)
+
+            if (task.completed) return;
+
+            // Don't auto-migrate tasks in Backlog - they are intentionally unscheduled
+            if (backlogCol && task.status === backlogCol.id) return;
+
+            if (!task.dueDate) return;
+
+            const date = new Date(task.dueDate);
+
+            // Rule 1: Task is due Today -> Move to Today Column
+            if (isToday(date) && todayCol && task.status !== todayCol.id) {
+                updateTaskStatus(task.id, todayCol.id);
+            }
+            // Rule 2: Task is due This Week (and NOT Today) -> Move to This Week Column
+            else if (
+                isSameWeek(date, new Date(), { weekStartsOn: 1 }) &&
+                !isToday(date) &&
+                thisWeekCol &&
+                task.status !== thisWeekCol.id &&
+                task.status !== todayCol?.id
+            ) {
+                updateTaskStatus(task.id, thisWeekCol.id);
+            }
+        });
+    }, [tasks, columns]);
+
+    const handleCreateDefaultColumns = async () => {
+        setLoading(true);
+        await addTaskColumn("Backlog", 0);
+        await addTaskColumn("This Week", 1);
+        await addTaskColumn("Today", 2);
+        await addTaskColumn("Done", 3);
+        setLoading(false);
     };
 
-    loadMembers();
+    const handleAddTask = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newTaskTitle.trim()) return;
 
-    const unsubscribeTasks = subscribeToTasks((data) => setTasks(data));
-    const unsubscribeColumns = subscribeToTaskColumns((data) => {
-      setColumns(data);
-    });
-    const unsubscribeGroups = subscribeToGroups((data) => {
-      setGroups(data);
-    });
-
-    let unsubscribeOrg: () => void = () => {};
-    if (orgId) {
-      unsubscribeOrg = subscribeToOrganization(orgId, (data) => {
-        setOrganization(data);
-      });
-    }
-
-    setLoading(false);
-    return () => {
-      unsubscribeTasks();
-      unsubscribeColumns();
-      unsubscribeGroups();
-      unsubscribeOrg();
+        try {
+            await addTask(
+                newTaskTitle,
+                newTaskTag,
+                newTaskDate ? newTaskDate.toISOString() : undefined,
+                newTaskPriority,
+            );
+            setNewTaskTitle("");
+            setNewTaskDate(undefined);
+            setNewTaskPriority("medium");
+            setNewTaskTag("general");
+        } catch (error: any) {
+            console.error("Failed to add task", error);
+            toast.error(`Failed to add task: ${error.message} `);
+        }
     };
-  }, [orgId]); // Added orgId dependency to re-subscribe if it changes
 
-  // Filter tasks based on Role and Visibility
-  const filteredTasks = tasks.filter((task) => {
-    if (role === "owner") return true; // Owner sees all
+    const handleAddColumn = async () => {
+        if (!newColumnTitle.trim()) return;
+        await addTaskColumn(newColumnTitle, columns.length);
+        setNewColumnTitle("");
+        setIsAddingColumn(false);
+    };
 
-    // If no current user loaded yet, default to hidden or wait
-    if (!currentUser) return false;
+    const onDragEnd = async (result: DropResult) => {
+        const { destination, source, draggableId, type } = result;
 
-    const isCreator = task.userId === currentUser.uid;
-    // Check both single assignee (legacy) and multi-assignee array
-    const isAssigned =
-      (task.assigneeIds && task.assigneeIds.includes(currentUser.uid)) ||
-      task.assigneeId === currentUser.uid;
+        if (!destination) return;
+        if (
+            destination.droppableId === source.droppableId &&
+            destination.index === source.index
+        ) {
+            return;
+        }
 
-    // Check group assignments (Need to fetch user's groups or check if user is in task.groupIds if we have that logic locally)
-    // Ideally we fetch user's groups. For now, we assumed we don't have user's groups in memory easily without fetching.
-    // But we can check if any of task.groupIds are in the groups the user belongs to.
-    // Since we don't have user's groups loaded here efficiently yet, we might skip or do a simple check if we had list of all groups.
-    // For now, let's assume we need to implement group visibility logic properly.
-    // We need to fetch groups for the user or all groups and check membership?
-    // Let's implement full fetching of groups in TasksView or store user's groupIds in user profile/session?
+        // Reordering Columns
+        if (type === "MATRIX_TASK") {
+            // Matrix logic already handled by destination.droppableId.startsWith("matrix-")
+            // falling through is fine if we keep the checks below.
+        }
 
-    // For this iteration, let's keep it simple: visible if creator or directly assigned.
-    // Full group visibility logic might require fetching user's groups.
-    // We will add `task.groupIds` check later when we implement group fetching in TasksView.
-    return isCreator || isAssigned;
-  });
+        if (type === "COLUMN") {
+            const newColumns = Array.from(columns);
+            const [reorderedItem] = newColumns.splice(source.index, 1);
+            newColumns.splice(destination.index, 0, reorderedItem);
 
-  // Effect for Auto-Migration of Tasks based on Date
-  useEffect(() => {
-    if (tasks.length === 0 || columns.length === 0) return;
+            // Optimistic update
+            setColumns(newColumns.map((c, i) => ({ ...c, order: i })));
 
-    const todayCol = columns.find((c) => c.title === "Today");
-    const thisWeekCol = columns.find((c) => c.title === "This Week");
-    const doneCol = columns.find((c) => c.title === "Done");
+            // Async persist
+            await batchUpdateColumnOrders(
+                newColumns.map((c, i) => ({ id: c.id, order: i })),
+            );
+            return;
+        }
 
-    if (!todayCol && !thisWeekCol && !doneCol) return;
+        // Handle Matrix Drops
+        if (destination.droppableId.startsWith("matrix-")) {
+            const quadrant = destination.droppableId;
+            let updates: Partial<Task> = {};
+            const tomorrow = addDays(new Date(), 1);
+            const nextWeek = addDays(new Date(), 7);
 
-    tasks.forEach((task) => {
-      // Migration should probably run on all tasks, or maybe just filtered? Should be careful.
-      // If user can't see task, they probably shouldn't migrate it, but migration is system logic.
-      // Let's leave migration on 'tasks' for now as it's often an owner/system action,
-      // BUT if 'member' triggers it, it might update tasks they don't own?
-      // Actually, `updateTaskStatus` checks permission? Not really, Firestore rules usually handle it.
-      // For now, leave as is.
+            switch (quadrant) {
+                case "matrix-q1": // Do First
+                    updates = { priority: "high", dueDate: tomorrow.toISOString() };
+                    break;
+                case "matrix-q2": // Schedule
+                    updates = { priority: "high", dueDate: nextWeek.toISOString() };
+                    break;
+                case "matrix-q3": // Delegate
+                    updates = { priority: "medium", dueDate: tomorrow.toISOString() };
+                    break;
+                case "matrix-q4": // Eliminate
+                    updates = { priority: "low", dueDate: nextWeek.toISOString() };
+                    break;
+            }
 
-      // Rule 0: Completed tasks -> Move to Done
-      if (task.completed && doneCol && task.status !== doneCol.id) {
-        updateTaskStatus(task.id, doneCol.id);
-        return;
-      }
-      // ... (rest of migration logic)
+            await updateTask(draggableId, updates);
+            return;
+        }
 
-      if (task.completed) return;
+        // Moving Tasks between Columns (Board View)
+        const startColumnId = source.droppableId;
+        const finishColumnId = destination.droppableId;
 
-      if (!task.dueDate) return;
+        if (startColumnId !== finishColumnId) {
+            // Find the destination column
+            const destColumn = columns.find(c => c.id === finishColumnId);
+            const sourceColumn = columns.find(c => c.id === startColumnId);
 
-      const date = new Date(task.dueDate);
+            // Check if moving to or from "Done" column
+            const movingToDone = destColumn?.title === "Done";
+            const movingFromDone = sourceColumn?.title === "Done";
+            const movingToBacklog = destColumn?.title === "Backlog";
 
-      // Rule 1: Task is due Today -> Move to Today Column
-      if (isToday(date) && todayCol && task.status !== todayCol.id) {
-        updateTaskStatus(task.id, todayCol.id);
-      }
-      // Rule 2: Task is due This Week (and NOT Today) -> Move to This Week Column
-      else if (
-        isSameWeek(date, new Date(), { weekStartsOn: 1 }) &&
-        !isToday(date) &&
-        thisWeekCol &&
-        task.status !== thisWeekCol.id &&
-        task.status !== todayCol?.id
-      ) {
-        updateTaskStatus(task.id, thisWeekCol.id);
-      }
-    });
-  }, [tasks, columns]);
+            // Update task status
+            await updateTaskStatus(draggableId, finishColumnId);
 
-  const handleCreateDefaultColumns = async () => {
-    setLoading(true);
-    await addTaskColumn("Backlog", 0);
-    await addTaskColumn("This Week", 1);
-    await addTaskColumn("Today", 2);
-    await addTaskColumn("Done", 3);
-    setLoading(false);
-  };
+            // Auto-complete/uncomplete based on Done column
+            if (movingToDone) {
+                // Mark as completed when moving to Done
+                await toggleTaskCompletion(draggableId, false); // false = current state is not completed, so toggle to completed
+            } else if (movingFromDone) {
+                // Mark as uncompleted when moving out of Done
+                await toggleTaskCompletion(draggableId, true); // true = current state is completed, so toggle to uncompleted
+            }
 
-  const handleAddTask = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newTaskTitle.trim()) return;
+            // Clear dueDate when moving to Backlog
+            if (movingToBacklog) {
+                await updateTask(draggableId, { dueDate: null });
+            }
+        }
+    };
 
-    try {
-      await addTask(
-        newTaskTitle,
-        newTaskTag,
-        newTaskDate ? newTaskDate.toISOString() : undefined,
-        newTaskPriority,
-      );
-      setNewTaskTitle("");
-      setNewTaskDate(undefined);
-      setNewTaskPriority("medium");
-      setNewTaskTag("general");
-    } catch (error: any) {
-      console.error("Failed to add task", error);
-      toast.error(`Failed to add task: ${error.message} `);
-    }
-  };
+    // Helper for Matrix View
+    const getTasksForMatrix = (urgent: boolean, important: boolean) => {
+        const urgerntThreshold = addDays(new Date(), 2);
+        return filteredTasks.filter((t) => {
+            if (t.completed) return false;
+            const isImportant = t.priority === "high";
+            const date = t.dueDate && t.dueDate !== "" ? new Date(t.dueDate) : null;
+            const isUrgent = date ? isBefore(date, urgerntThreshold) : false; // Due within 2 days = Urgent
 
-  const handleAddColumn = async () => {
-    if (!newColumnTitle.trim()) return;
-    await addTaskColumn(newColumnTitle, columns.length);
-    setNewColumnTitle("");
-    setIsAddingColumn(false);
-  };
+            return isImportant === important && isUrgent === urgent;
+        });
+    };
 
-  const onDragEnd = async (result: DropResult) => {
-    const { destination, source, draggableId, type } = result;
+    // Helper to group tasks by column with sorting
+    const getTasksByColumn = (columnId: string, columnTitle: string) => {
+        const tasksInColumn = filteredTasks.filter((t) => {
+            // Use filteredTasks declared above
+            // If task status matches column ID
+            if (t.status === columnId) return true;
+            // Backward compatibility/Default: if task has "backlog" and this is "Backlog" column
+            if ((!t.status || t.status === "backlog") && columnTitle === "Backlog")
+                return true;
+            return false;
+        });
 
-    if (!destination) return;
-    if (
-      destination.droppableId === source.droppableId &&
-      destination.index === source.index
-    ) {
-      return;
-    }
+        // Current sorting rule:
+        // 1. Uncompleted first
+        // 2. Nearest Due Date first
+        return tasksInColumn.sort((a, b) => {
+            if (a.completed !== b.completed) {
+                return a.completed ? 1 : -1;
+            }
+            if (!a.dueDate && !b.dueDate) return 0;
+            if (!a.dueDate) return 1;
+            if (!b.dueDate) return -1;
+            return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+        });
+    };
 
-    // Reordering Columns
-    if (type === "MATRIX_TASK") {
-      // Matrix logic already handled by destination.droppableId.startsWith("matrix-")
-      // falling through is fine if we keep the checks below.
-    }
-
-    if (type === "COLUMN") {
-      const newColumns = Array.from(columns);
-      const [reorderedItem] = newColumns.splice(source.index, 1);
-      newColumns.splice(destination.index, 0, reorderedItem);
-
-      // Optimistic update
-      setColumns(newColumns.map((c, i) => ({ ...c, order: i })));
-
-      // Async persist
-      await batchUpdateColumnOrders(
-        newColumns.map((c, i) => ({ id: c.id, order: i })),
-      );
-      return;
-    }
-
-    // Handle Matrix Drops
-    if (destination.droppableId.startsWith("matrix-")) {
-      const quadrant = destination.droppableId;
-      let updates: Partial<Task> = {};
-      const tomorrow = addDays(new Date(), 1);
-      const nextWeek = addDays(new Date(), 7);
-
-      switch (quadrant) {
-        case "matrix-q1": // Do First
-          updates = { priority: "high", dueDate: tomorrow.toISOString() };
-          break;
-        case "matrix-q2": // Schedule
-          updates = { priority: "high", dueDate: nextWeek.toISOString() };
-          break;
-        case "matrix-q3": // Delegate
-          updates = { priority: "medium", dueDate: tomorrow.toISOString() };
-          break;
-        case "matrix-q4": // Eliminate
-          updates = { priority: "low", dueDate: nextWeek.toISOString() };
-          break;
-      }
-
-      await updateTask(draggableId, updates);
-      return;
-    }
-
-    // Moving Tasks between Columns (Board View)
-    const startColumnId = source.droppableId;
-    const finishColumnId = destination.droppableId;
-
-    if (startColumnId !== finishColumnId) {
-      await updateTaskStatus(draggableId, finishColumnId);
-    }
-  };
-
-  // Helper for Matrix View
-  const getTasksForMatrix = (urgent: boolean, important: boolean) => {
-    const urgerntThreshold = addDays(new Date(), 2);
-    return filteredTasks.filter((t) => {
-      if (t.completed) return false;
-      const isImportant = t.priority === "high";
-      const date = t.dueDate && t.dueDate !== "" ? new Date(t.dueDate) : null;
-      const isUrgent = date ? isBefore(date, urgerntThreshold) : false; // Due within 2 days = Urgent
-
-      return isImportant === important && isUrgent === urgent;
-    });
-  };
-
-  // Helper to group tasks by column with sorting
-  const getTasksByColumn = (columnId: string, columnTitle: string) => {
-    const tasksInColumn = filteredTasks.filter((t) => {
-      // Use filteredTasks declared above
-      // If task status matches column ID
-      if (t.status === columnId) return true;
-      // Backward compatibility/Default: if task has "backlog" and this is "Backlog" column
-      if ((!t.status || t.status === "backlog") && columnTitle === "Backlog")
-        return true;
-      return false;
+    // Sorting Helper for List View
+    const sortedTasksForList = filteredTasks.sort((a, b) => {
+        if (a.completed !== b.completed) return a.completed ? 1 : -1;
+        if (!a.dueDate && !b.dueDate) return 0;
+        if (!a.dueDate) return 1;
+        if (!b.dueDate) return -1;
+        return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
     });
 
-    // Current sorting rule:
-    // 1. Uncompleted first
-    // 2. Nearest Due Date first
-    return tasksInColumn.sort((a, b) => {
-      if (a.completed !== b.completed) {
-        return a.completed ? 1 : -1;
-      }
-      if (!a.dueDate && !b.dueDate) return 0;
-      if (!a.dueDate) return 1;
-      if (!b.dueDate) return -1;
-      return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
-    });
-  };
-
-  // Sorting Helper for List View
-  const sortedTasksForList = filteredTasks.sort((a, b) => {
-    if (a.completed !== b.completed) return a.completed ? 1 : -1;
-    if (!a.dueDate && !b.dueDate) return 0;
-    if (!a.dueDate) return 1;
-    if (!b.dueDate) return -1;
-    return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
-  });
-
-  return (
-    <DragDropContext onDragEnd={onDragEnd}>
-      <div className={cn("space-y-6", className)}>
-        {/* Header & Controls */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div>
-            {!compact && (
-              <>
-                <h2 className="text-3xl font-extrabold tracking-tight text-foreground">
-                  Tasks
-                </h2>
-                <p className="text-muted-foreground mt-1 text-lg">
-                  Manage your daily tasks and track your progress.
-                </p>
-              </>
-            )}
-          </div>
-
-          <Tabs
-            value={view}
-            onValueChange={setView}
-            className="w-full md:w-auto"
-          >
-            <TabsList className="grid w-full md:w-[300px] grid-cols-3">
-              <TabsTrigger value="list">
-                <LayoutList className="h-4 w-4 mr-2" /> List
-              </TabsTrigger>
-              <TabsTrigger value="board">
-                <Kanban className="h-4 w-4 mr-2" /> Board
-              </TabsTrigger>
-              <TabsTrigger value="matrix">
-                <Grid2X2 className="h-4 w-4 mr-2" /> Matrix
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
-
-        {/* Add Task Bar */}
-        <div className="bg-card border border-border/40 shadow-sm rounded-2xl p-2 md:p-3 relative z-10">
-          <form
-            onSubmit={handleAddTask}
-            className="flex flex-col md:flex-row gap-2 items-center"
-          >
-            <div className="flex-1 w-full">
-              <Input
-                placeholder="What needs to be done?"
-                value={newTaskTitle}
-                onChange={(e) => setNewTaskTitle(e.target.value)}
-                className="h-12 border-transparent bg-transparent text-lg focus-visible:ring-0 px-4 placeholder:text-muted-foreground/60 shadow-none"
-              />
-            </div>
-
-            <div className="flex items-center gap-2 w-full md:w-auto px-2">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant={"outline"}
-                    size="sm"
-                    className={cn(
-                      "h-9 w-[130px] justify-start text-left font-normal border-border/50 bg-muted/30 hover:bg-muted/50",
-                      !newTaskDate && "text-muted-foreground",
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
-                    {newTaskDate ? (
-                      format(newTaskDate, "MMM d")
-                    ) : (
-                      <span>No Date</span>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="end">
-                  <Calendar
-                    mode="single"
-                    selected={newTaskDate}
-                    onSelect={setNewTaskDate}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-
-              <Select
-                value={newTaskPriority}
-                onValueChange={(v: any) => setNewTaskPriority(v)}
-              >
-                <SelectTrigger className="h-9 w-[100px] border-border/50 bg-muted/30 hover:bg-muted/50 text-muted-foreground">
-                  <SelectValue placeholder="Priority" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="low">Low</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="high">High</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <div className="flex items-center gap-2">
-                <TagSelector
-                  value={newTaskTag}
-                  onChange={setNewTaskTag}
-                  tags={availableTags}
-                  role={role}
-                  onEditTag={(tag) => {
-                    setEditingTag(tag);
-                    setNewTagName(tag.label);
-                    setNewTagColor(tag.color || presetColors[0].value);
-                    setIsTagManagerOpen(true);
-                  }}
-                  onDeleteTag={(tagId) => {
-                    if (orgId) deleteTagFromOrganization(orgId, tagId);
-                  }}
-                  onCreateTag={() => {
-                    setEditingTag(null);
-                    setNewTagName("");
-                    setNewTagColor(presetColors[0].value);
-                    setIsTagManagerOpen(true);
-                  }}
-                />
-
-                <Dialog
-                  open={isTagManagerOpen}
-                  onOpenChange={setIsTagManagerOpen}
-                >
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Manage Tags</DialogTitle>
-                      <DialogDescription>
-                        Create, edit, and remove tags for your organization.
-                      </DialogDescription>
-                    </DialogHeader>
-
-                    <div className="space-y-4 py-4">
-                      <div className="flex gap-2 items-end">
-                        <div className="space-y-2 flex-1">
-                          <Label>
-                            {editingTag ? "Edit Tag Name" : "New Tag Name"}
-                          </Label>
-                          <Input
-                            value={newTagName}
-                            onChange={(e) => setNewTagName(e.target.value)}
-                            placeholder="e.g. Marketing"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Color</Label>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <Button
-                                variant="outline"
-                                className={cn("w-9 px-0", newTagColor)}
-                              >
-                                <div
-                                  className={cn(
-                                    "h-4 w-4 rounded-full",
-                                    newTagColor
-                                      .split(" ")[0]
-                                      .replace("bg-", "bg-"),
-                                  )}
-                                />
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-[180px] p-2">
-                              <div className="grid grid-cols-4 gap-2">
-                                {presetColors.map((c) => (
-                                  <div
-                                    key={c.value}
-                                    className={cn(
-                                      "h-6 w-6 rounded-full cursor-pointer border hover:scale-110 transition-transform",
-                                      c.value,
-                                      newTagColor === c.value &&
-                                        "ring-2 ring-primary ring-offset-2",
-                                    )}
-                                    onClick={() => setNewTagColor(c.value)}
-                                    title={c.label}
-                                  />
-                                ))}
-                              </div>
-                            </PopoverContent>
-                          </Popover>
-                        </div>
-                        <Button
-                          onClick={async () => {
-                            if (!newTagName.trim() || !orgId) return;
-                            if (editingTag) {
-                              await updateTagInOrganization(
-                                orgId,
-                                editingTag.id,
-                                newTagName,
-                                newTagColor,
-                              );
-                              setEditingTag(null);
-                            } else {
-                              await addTagToOrganization(
-                                orgId,
-                                newTagName,
-                                newTagColor,
-                              );
-                            }
-                            setNewTagName("");
-                            setNewTagColor(presetColors[0].value);
-                          }}
-                          className="w-20"
-                        >
-                          {editingTag ? "Save" : "Add"}
-                        </Button>
-                        {editingTag && (
-                          <Button
-                            variant="ghost"
-                            onClick={() => {
-                              setEditingTag(null);
-                              setNewTagName("");
-                              setNewTagColor(presetColors[0].value);
-                            }}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
+    return (
+        <DragDropContext onDragEnd={onDragEnd}>
+            <div className={cn("space-y-6", className)}>
+                {/* Header & Controls */}
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                    <div>
+                        {!compact && (
+                            <>
+                                <h2 className="text-3xl font-extrabold tracking-tight text-foreground">
+                                    Tasks
+                                </h2>
+                                <p className="text-muted-foreground mt-1 text-lg">
+                                    Manage your daily tasks and track your progress.
+                                </p>
+                            </>
                         )}
-                      </div>
-
-                      <ScrollArea className="h-[200px] border rounded-md p-2">
-                        <div className="space-y-2">
-                          {orgTags.length === 0 ? (
-                            <p className="text-sm text-center text-muted-foreground py-8">
-                              No custom tags yet.
-                            </p>
-                          ) : (
-                            orgTags.map((tag) => (
-                              <div
-                                key={tag.id}
-                                className="flex items-center justify-between p-2 rounded-lg border bg-card hover:bg-muted/30 group"
-                              >
-                                <Badge
-                                  variant="outline"
-                                  className={cn(
-                                    "font-normal capitalize",
-                                    tag.color,
-                                  )}
-                                >
-                                  {tag.label}
-                                </Badge>
-                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-7 w-7"
-                                    onClick={() => {
-                                      setEditingTag(tag);
-                                      setNewTagName(tag.label);
-                                      setNewTagColor(
-                                        tag.color || presetColors[0].value,
-                                      );
-                                    }}
-                                  >
-                                    <Pencil className="h-3.5 w-3.5" />
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-7 w-7 text-destructive hover:text-destructive"
-                                    onClick={() => {
-                                      if (orgId)
-                                        deleteTagFromOrganization(
-                                          orgId,
-                                          tag.id,
-                                        );
-                                    }}
-                                  >
-                                    <Trash2 className="h-3.5 w-3.5" />
-                                  </Button>
-                                </div>
-                              </div>
-                            ))
-                          )}
-                        </div>
-                      </ScrollArea>
                     </div>
-                  </DialogContent>
-                </Dialog>
-              </div>
 
-              <Button
-                type="submit"
-                size="icon"
-                className="h-9 w-9 bg-primary text-primary-foreground shrink-0 rounded-lg shadow-md hover:shadow-lg transition-all ml-1"
-              >
-                <Plus className="h-5 w-5" />
-              </Button>
-            </div>
-          </form>
-        </div>
+                    <Tabs
+                        value={view}
+                        onValueChange={setView}
+                        className="w-full md:w-auto"
+                    >
+                        <TabsList className="grid w-full md:w-[300px] grid-cols-3">
+                            <TabsTrigger value="list">
+                                <LayoutList className="h-4 w-4 mr-2" /> List
+                            </TabsTrigger>
+                            <TabsTrigger value="board">
+                                <Kanban className="h-4 w-4 mr-2" /> Board
+                            </TabsTrigger>
+                            <TabsTrigger value="matrix">
+                                <Grid2X2 className="h-4 w-4 mr-2" /> Matrix
+                            </TabsTrigger>
+                        </TabsList>
+                    </Tabs>
+                </div>
 
-        {/* Views Content */}
-        {loading ? (
-          <div
-            className={cn(
-              "container mx-auto max-w-7xl pt-6 space-y-4",
-              className,
-            )}
-          >
-            <div className="flex items-center justify-between mb-8">
-              <Skeleton className="h-8 w-48" />
-              <div className="flex gap-2">
-                <Skeleton className="h-9 w-24" />
-                <Skeleton className="h-9 w-24" />
-              </div>
-            </div>
-            <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
-                <Skeleton key={i} className="h-20 w-full rounded-xl" />
-              ))}
-            </div>
-          </div>
-        ) : tasks.length === 0 && columns.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 border-2 border-dashed border-muted rounded-2xl bg-muted/5">
-            <div className="h-16 w-16 bg-muted/50 rounded-full flex items-center justify-center mb-4"></div>
-            <h3 className="text-lg font-medium">No tasks yet</h3>
-            <p className="text-muted-foreground max-w-sm text-center mt-1">
-              Use the bar above to add your first task.
-            </p>
-          </div>
-        ) : (
-          <>
-            {/* List View */}
-            {view === "list" && (
-              <div className="space-y-3">
-                {sortedTasksForList.map((task) => (
-                  <TaskCard
-                    key={task.id}
-                    task={task}
-                    columns={columns}
-                    onMove={updateTaskStatus}
-                    members={members}
-                    groups={groups}
-                    role={role}
-                    orgId={orgId}
-                    tags={availableTags}
-                    onEditTag={(tag) => {
-                      setEditingTag(tag);
-                      setNewTagName(tag.label);
-                      setNewTagColor(tag.color || presetColors[0].value);
-                      setIsTagManagerOpen(true);
-                    }}
-                    onDeleteTag={(tagId) => {
-                      if (orgId) deleteTagFromOrganization(orgId, tagId);
-                    }}
-                    onCreateTag={() => {
-                      setEditingTag(null);
-                      setNewTagName("");
-                      setNewTagColor(presetColors[0].value);
-                      setIsTagManagerOpen(true);
-                    }}
-                  />
-                ))}
-              </div>
-            )}
+                {/* Add Task Bar */}
+                <div className="bg-card border border-border/40 shadow-sm rounded-2xl p-2 md:p-3 relative z-10">
+                    <form
+                        onSubmit={handleAddTask}
+                        className="flex flex-col md:flex-row gap-2 items-center"
+                    >
+                        <div className="flex-1 w-full">
+                            <Input
+                                placeholder="What needs to be done?"
+                                value={newTaskTitle}
+                                onChange={(e) => setNewTaskTitle(e.target.value)}
+                                className="h-12 border-transparent bg-transparent text-lg focus-visible:ring-0 px-4 placeholder:text-muted-foreground/60 shadow-none"
+                            />
+                        </div>
 
-            {/* Board View */}
-            {view === "board" && (
-              <div className="min-h-[500px] overflow-x-auto">
-                {columns.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center w-full py-10 border-2 border-dashed rounded-xl">
-                    <p className="mb-4 text-muted-foreground">
-                      No columns configured.
-                    </p>
-                    <Button onClick={handleCreateDefaultColumns}>
-                      Create Default Columns
-                    </Button>
-                  </div>
-                ) : (
-                  <Droppable
-                    droppableId="board"
-                    direction="horizontal"
-                    type="COLUMN"
-                  >
-                    {(provided) => (
-                      <div
-                        ref={provided.innerRef}
-                        {...provided.droppableProps}
-                        className="flex gap-6 pb-6 items-start h-full"
-                      >
-                        {columns.map((col, index) => (
-                          <Draggable
-                            key={col.id}
-                            draggableId={col.id}
-                            index={index}
-                          >
-                            {(provided, snapshot) => {
-                              const child = (
-                                <div
-                                  ref={provided.innerRef}
-                                  {...provided.draggableProps}
-                                  className="min-w-[300px] w-[300px] flex flex-col gap-4 bg-muted/10 rounded-xl p-2"
-                                  style={provided.draggableProps.style}
-                                >
-                                  <div
-                                    {...provided.dragHandleProps}
-                                    className="flex items-center justify-between px-2 cursor-grab active:cursor-grabbing group"
-                                  >
-                                    <div className="flex items-center gap-2">
-                                      <h3 className="font-semibold text-sm text-foreground/80">
-                                        {col.title}
-                                      </h3>
-                                      <span className="text-[10px] font-bold text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">
-                                        {
-                                          getTasksByColumn(col.id, col.title)
-                                            .length
-                                        }
-                                      </span>
-                                    </div>
-                                    <DropdownMenu>
-                                      <DropdownMenuTrigger asChild>
-                                        <Button
-                                          variant="ghost"
-                                          size="icon"
-                                          className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                                        >
-                                          <Trash2 className="h-3 w-3 text-muted-foreground/50 hover:text-destructive" />
-                                        </Button>
-                                      </DropdownMenuTrigger>
-                                      <DropdownMenuContent>
-                                        <DropdownMenuItem
-                                          className="text-destructive"
-                                          onClick={() =>
-                                            deleteTaskColumn(col.id)
-                                          }
-                                        >
-                                          Delete Column
-                                        </DropdownMenuItem>
-                                      </DropdownMenuContent>
-                                    </DropdownMenu>
-                                  </div>
-
-                                  <Droppable droppableId={col.id} type="TASK">
-                                    {(provided, snapshot) => (
-                                      <div
-                                        ref={provided.innerRef}
-                                        {...provided.droppableProps}
+                        <div className="flex items-center gap-2 w-full md:w-auto px-2">
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        variant={"outline"}
+                                        size="sm"
                                         className={cn(
-                                          "space-y-3 min-h-[150px] transition-colors rounded-xl p-1",
-                                          snapshot.isDraggingOver
-                                            ? "bg-secondary/20 ring-2 ring-primary/10"
-                                            : "bg-transparent",
+                                            "h-9 w-[130px] justify-start text-left font-normal border-border/50 bg-muted/30 hover:bg-muted/50",
+                                            !newTaskDate && "text-muted-foreground",
                                         )}
-                                      >
-                                        {getTasksByColumn(col.id, col.title)
-                                          .length === 0 ? (
-                                          <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground/40 border-2 border-dashed border-muted/30 rounded-lg mx-1">
-                                            <AlertCircle className="h-6 w-6 mb-1 opacity-50" />
-                                            <span className="text-xs font-medium">
-                                              No tasks yet
-                                            </span>
-                                          </div>
+                                    >
+                                        <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
+                                        {newTaskDate ? (
+                                            format(newTaskDate, "MMM d")
                                         ) : (
-                                          getTasksByColumn(
-                                            col.id,
-                                            col.title,
-                                          ).map((task, index) => (
-                                            <Draggable
-                                              key={task.id}
-                                              draggableId={task.id}
-                                              index={index}
-                                            >
-                                              {(provided, snapshot) => {
-                                                const child = (
-                                                  <div
-                                                    ref={provided.innerRef}
-                                                    {...provided.draggableProps}
-                                                    style={{
-                                                      ...provided.draggableProps
-                                                        .style,
-                                                      width: snapshot.isDragging
-                                                        ? "300px"
-                                                        : "auto",
-                                                      zIndex: 9999,
-                                                      pointerEvents:
-                                                        snapshot.isDragging
-                                                          ? "none"
-                                                          : "auto",
-                                                    }}
-                                                  >
-                                                    <TaskCard
-                                                      task={task}
-                                                      compact
-                                                      columns={columns}
-                                                      dragHandleProps={
-                                                        role !== "viewer"
-                                                          ? provided.dragHandleProps
-                                                          : undefined
-                                                      }
-                                                      members={members}
-                                                      role={role}
-                                                      orgId={orgId}
-                                                      onEditTag={(tag) => {
-                                                        setEditingTag(tag);
-                                                        setNewTagName(
-                                                          tag.label,
-                                                        );
-                                                        setNewTagColor(
-                                                          tag.color ||
-                                                            presetColors[0]
-                                                              .value,
-                                                        );
-                                                        setIsTagManagerOpen(
-                                                          true,
-                                                        );
-                                                      }}
-                                                      onDeleteTag={(tagId) => {
-                                                        if (orgId)
-                                                          deleteTagFromOrganization(
-                                                            orgId,
-                                                            tagId,
-                                                          );
-                                                      }}
-                                                      onCreateTag={() => {
-                                                        setEditingTag(null);
-                                                        setNewTagName("");
-                                                        setNewTagColor(
-                                                          presetColors[0].value,
-                                                        );
-                                                        setIsTagManagerOpen(
-                                                          true,
-                                                        );
-                                                      }}
-                                                      isDragging={
-                                                        snapshot.isDragging
-                                                      }
-                                                    />
-                                                  </div>
-                                                );
-
-                                                if (
-                                                  snapshot.isDragging &&
-                                                  typeof document !==
-                                                    "undefined"
-                                                ) {
-                                                  return createPortal(
-                                                    child,
-                                                    document.body,
-                                                  );
-                                                }
-
-                                                return child;
-                                              }}
-                                            </Draggable>
-                                          ))
+                                            <span>No Date</span>
                                         )}
-                                        {provided.placeholder}
-                                      </div>
-                                    )}
-                                  </Droppable>
-                                </div>
-                              );
-                              return child;
-                            }}
-                          </Draggable>
-                        ))}
-                        {provided.placeholder}
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="end">
+                                    <Calendar
+                                        mode="single"
+                                        selected={newTaskDate}
+                                        onSelect={setNewTaskDate}
+                                        initialFocus
+                                    />
+                                </PopoverContent>
+                            </Popover>
 
-                        {/* Add Column Button (Icon Only) */}
-                        <div className="min-w-[50px] pt-1">
-                          {isAddingColumn ? (
-                            <div className="bg-background border rounded-lg p-2 space-y-2 shadow-sm w-[200px]">
-                              <Input
-                                autoFocus
-                                placeholder="Column Title"
-                                value={newColumnTitle}
-                                onChange={(e) =>
-                                  setNewColumnTitle(e.target.value)
-                                }
-                                className="h-8 text-sm"
-                              />
-                              <div className="flex justify-end gap-2">
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  className="h-6 w-6"
-                                  onClick={() => setIsAddingColumn(false)}
-                                >
-                                  <ArrowRight className="h-3 w-3 rotate-180" />
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  className="h-6 px-2 text-xs"
-                                  onClick={handleAddColumn}
-                                >
-                                  Add
-                                </Button>
-                              </div>
-                            </div>
-                          ) : (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-10 w-10 rounded-full border border-dashed border-muted-foreground/30 text-muted-foreground hover:bg-secondary/20 hover:text-primary transition-all"
-                              onClick={() => setIsAddingColumn(true)}
-                              title="Add Column"
+                            <Select
+                                value={newTaskPriority}
+                                onValueChange={(v: any) => setNewTaskPriority(v)}
                             >
-                              <Plus className="h-5 w-5" />
+                                <SelectTrigger className="h-9 w-[100px] border-border/50 bg-muted/30 hover:bg-muted/50 text-muted-foreground">
+                                    <SelectValue placeholder="Priority" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="low">Low</SelectItem>
+                                    <SelectItem value="medium">Medium</SelectItem>
+                                    <SelectItem value="high">High</SelectItem>
+                                </SelectContent>
+                            </Select>
+
+                            <div className="flex items-center gap-2">
+                                <TagSelector
+                                    value={newTaskTag}
+                                    onChange={setNewTaskTag}
+                                    tags={availableTags}
+                                    role={role}
+                                    onEditTag={(tag) => {
+                                        setEditingTag(tag);
+                                        setNewTagName(tag.label);
+                                        setNewTagColor(tag.color || presetColors[0].value);
+                                        setIsTagManagerOpen(true);
+                                    }}
+                                    onDeleteTag={(tagId) => {
+                                        if (orgId) deleteTagFromOrganization(orgId, tagId);
+                                    }}
+                                    onCreateTag={() => {
+                                        setEditingTag(null);
+                                        setNewTagName("");
+                                        setNewTagColor(presetColors[0].value);
+                                        setIsTagManagerOpen(true);
+                                    }}
+                                />
+
+                                <Dialog
+                                    open={isTagManagerOpen}
+                                    onOpenChange={setIsTagManagerOpen}
+                                >
+                                    <DialogContent>
+                                        <DialogHeader>
+                                            <DialogTitle>Manage Tags</DialogTitle>
+                                            <DialogDescription>
+                                                Create, edit, and remove tags for your organization.
+                                            </DialogDescription>
+                                        </DialogHeader>
+
+                                        <div className="space-y-4 py-4">
+                                            <div className="flex gap-2 items-end">
+                                                <div className="space-y-2 flex-1">
+                                                    <Label>
+                                                        {editingTag ? "Edit Tag Name" : "New Tag Name"}
+                                                    </Label>
+                                                    <Input
+                                                        value={newTagName}
+                                                        onChange={(e) => setNewTagName(e.target.value)}
+                                                        placeholder="e.g. Marketing"
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label>Color</Label>
+                                                    <Popover>
+                                                        <PopoverTrigger asChild>
+                                                            <Button
+                                                                variant="outline"
+                                                                className={cn("w-9 px-0", newTagColor)}
+                                                            >
+                                                                <div
+                                                                    className={cn(
+                                                                        "h-4 w-4 rounded-full",
+                                                                        newTagColor
+                                                                            .split(" ")[0]
+                                                                            .replace("bg-", "bg-"),
+                                                                    )}
+                                                                />
+                                                            </Button>
+                                                        </PopoverTrigger>
+                                                        <PopoverContent className="w-[180px] p-2">
+                                                            <div className="grid grid-cols-4 gap-2">
+                                                                {presetColors.map((c) => (
+                                                                    <div
+                                                                        key={c.value}
+                                                                        className={cn(
+                                                                            "h-6 w-6 rounded-full cursor-pointer border hover:scale-110 transition-transform",
+                                                                            c.value,
+                                                                            newTagColor === c.value &&
+                                                                            "ring-2 ring-primary ring-offset-2",
+                                                                        )}
+                                                                        onClick={() => setNewTagColor(c.value)}
+                                                                        title={c.label}
+                                                                    />
+                                                                ))}
+                                                            </div>
+                                                        </PopoverContent>
+                                                    </Popover>
+                                                </div>
+                                                <Button
+                                                    onClick={async () => {
+                                                        if (!newTagName.trim() || !orgId) return;
+                                                        if (editingTag) {
+                                                            await updateTagInOrganization(
+                                                                orgId,
+                                                                editingTag.id,
+                                                                newTagName,
+                                                                newTagColor,
+                                                            );
+                                                            setEditingTag(null);
+                                                        } else {
+                                                            await addTagToOrganization(
+                                                                orgId,
+                                                                newTagName,
+                                                                newTagColor,
+                                                            );
+                                                        }
+                                                        setNewTagName("");
+                                                        setNewTagColor(presetColors[0].value);
+                                                    }}
+                                                    className="w-20"
+                                                >
+                                                    {editingTag ? "Save" : "Add"}
+                                                </Button>
+                                                {editingTag && (
+                                                    <Button
+                                                        variant="ghost"
+                                                        onClick={() => {
+                                                            setEditingTag(null);
+                                                            setNewTagName("");
+                                                            setNewTagColor(presetColors[0].value);
+                                                        }}
+                                                    >
+                                                        <X className="h-4 w-4" />
+                                                    </Button>
+                                                )}
+                                            </div>
+
+                                            <ScrollArea className="h-[200px] border rounded-md p-2">
+                                                <div className="space-y-2">
+                                                    {orgTags.length === 0 ? (
+                                                        <p className="text-sm text-center text-muted-foreground py-8">
+                                                            No custom tags yet.
+                                                        </p>
+                                                    ) : (
+                                                        orgTags.map((tag) => (
+                                                            <div
+                                                                key={tag.id}
+                                                                className="flex items-center justify-between p-2 rounded-lg border bg-card hover:bg-muted/30 group"
+                                                            >
+                                                                <Badge
+                                                                    variant="outline"
+                                                                    className={cn(
+                                                                        "font-normal capitalize",
+                                                                        tag.color,
+                                                                    )}
+                                                                >
+                                                                    {tag.label}
+                                                                </Badge>
+                                                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        className="h-7 w-7"
+                                                                        onClick={() => {
+                                                                            setEditingTag(tag);
+                                                                            setNewTagName(tag.label);
+                                                                            setNewTagColor(
+                                                                                tag.color || presetColors[0].value,
+                                                                            );
+                                                                        }}
+                                                                    >
+                                                                        <Pencil className="h-3.5 w-3.5" />
+                                                                    </Button>
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        className="h-7 w-7 text-destructive hover:text-destructive"
+                                                                        onClick={() => {
+                                                                            if (orgId)
+                                                                                deleteTagFromOrganization(
+                                                                                    orgId,
+                                                                                    tag.id,
+                                                                                );
+                                                                        }}
+                                                                    >
+                                                                        <Trash2 className="h-3.5 w-3.5" />
+                                                                    </Button>
+                                                                </div>
+                                                            </div>
+                                                        ))
+                                                    )}
+                                                </div>
+                                            </ScrollArea>
+                                        </div>
+                                    </DialogContent>
+                                </Dialog>
+                            </div>
+
+                            <Button
+                                type="submit"
+                                size="icon"
+                                className="h-9 w-9 bg-primary text-primary-foreground shrink-0 rounded-lg shadow-md hover:shadow-lg transition-all ml-1"
+                            >
+                                <Plus className="h-5 w-5" />
                             </Button>
-                          )}
                         </div>
-                      </div>
-                    )}
-                  </Droppable>
+                    </form>
+                </div>
+
+                {/* Views Content */}
+                {loading ? (
+                    <div
+                        className={cn(
+                            "container mx-auto max-w-7xl pt-6 space-y-4",
+                            className,
+                        )}
+                    >
+                        <div className="flex items-center justify-between mb-8">
+                            <Skeleton className="h-8 w-48" />
+                            <div className="flex gap-2">
+                                <Skeleton className="h-9 w-24" />
+                                <Skeleton className="h-9 w-24" />
+                            </div>
+                        </div>
+                        <div className="space-y-4">
+                            {[1, 2, 3].map((i) => (
+                                <Skeleton key={i} className="h-20 w-full rounded-xl" />
+                            ))}
+                        </div>
+                    </div>
+                ) : tasks.length === 0 && columns.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-20 border-2 border-dashed border-muted rounded-2xl bg-muted/5">
+                        <div className="h-16 w-16 bg-muted/50 rounded-full flex items-center justify-center mb-4"></div>
+                        <h3 className="text-lg font-medium">No tasks yet</h3>
+                        <p className="text-muted-foreground max-w-sm text-center mt-1">
+                            Use the bar above to add your first task.
+                        </p>
+                    </div>
+                ) : (
+                    <>
+                        {/* List View */}
+                        {view === "list" && (
+                            <div className="space-y-3">
+                                {sortedTasksForList.map((task) => (
+                                    <TaskCard
+                                        key={task.id}
+                                        task={task}
+                                        columns={columns}
+                                        onMove={updateTaskStatus}
+                                        members={members}
+                                        groups={groups}
+                                        role={role}
+                                        orgId={orgId}
+                                        tags={availableTags}
+                                        onEditTag={(tag) => {
+                                            setEditingTag(tag);
+                                            setNewTagName(tag.label);
+                                            setNewTagColor(tag.color || presetColors[0].value);
+                                            setIsTagManagerOpen(true);
+                                        }}
+                                        onDeleteTag={(tagId) => {
+                                            if (orgId) deleteTagFromOrganization(orgId, tagId);
+                                        }}
+                                        onCreateTag={() => {
+                                            setEditingTag(null);
+                                            setNewTagName("");
+                                            setNewTagColor(presetColors[0].value);
+                                            setIsTagManagerOpen(true);
+                                        }}
+                                    />
+                                ))}
+                            </div>
+                        )}
+
+                        {/* Board View */}
+                        {view === "board" && (
+                            <div className="min-h-[500px] overflow-x-auto">
+                                {columns.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center w-full py-10 border-2 border-dashed rounded-xl">
+                                        <p className="mb-4 text-muted-foreground">
+                                            No columns configured.
+                                        </p>
+                                        <Button onClick={handleCreateDefaultColumns}>
+                                            Create Default Columns
+                                        </Button>
+                                    </div>
+                                ) : (
+                                    <Droppable
+                                        droppableId="board"
+                                        direction="horizontal"
+                                        type="COLUMN"
+                                    >
+                                        {(provided) => (
+                                            <div
+                                                ref={provided.innerRef}
+                                                {...provided.droppableProps}
+                                                className="flex gap-6 pb-6 items-start h-full"
+                                            >
+                                                {columns.map((col, index) => (
+                                                    <Draggable
+                                                        key={col.id}
+                                                        draggableId={col.id}
+                                                        index={index}
+                                                    >
+                                                        {(provided, snapshot) => {
+                                                            const child = (
+                                                                <div
+                                                                    ref={provided.innerRef}
+                                                                    {...provided.draggableProps}
+                                                                    className="min-w-[300px] w-[300px] flex flex-col gap-4 bg-muted/10 rounded-xl p-2"
+                                                                    style={provided.draggableProps.style}
+                                                                >
+                                                                    <div
+                                                                        {...provided.dragHandleProps}
+                                                                        className="flex items-center justify-between px-2 cursor-grab active:cursor-grabbing group"
+                                                                    >
+                                                                        <div className="flex items-center gap-2">
+                                                                            <h3 className="font-semibold text-sm text-foreground/80">
+                                                                                {col.title}
+                                                                            </h3>
+                                                                            <span className="text-[10px] font-bold text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">
+                                                                                {
+                                                                                    getTasksByColumn(col.id, col.title)
+                                                                                        .length
+                                                                                }
+                                                                            </span>
+                                                                        </div>
+                                                                        <DropdownMenu>
+                                                                            <DropdownMenuTrigger asChild>
+                                                                                <Button
+                                                                                    variant="ghost"
+                                                                                    size="icon"
+                                                                                    className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                                >
+                                                                                    <Trash2 className="h-3 w-3 text-muted-foreground/50 hover:text-destructive" />
+                                                                                </Button>
+                                                                            </DropdownMenuTrigger>
+                                                                            <DropdownMenuContent>
+                                                                                <DropdownMenuItem
+                                                                                    className="text-destructive"
+                                                                                    onClick={() =>
+                                                                                        deleteTaskColumn(col.id)
+                                                                                    }
+                                                                                >
+                                                                                    Delete Column
+                                                                                </DropdownMenuItem>
+                                                                            </DropdownMenuContent>
+                                                                        </DropdownMenu>
+                                                                    </div>
+
+                                                                    <Droppable droppableId={col.id} type="TASK">
+                                                                        {(provided, snapshot) => (
+                                                                            <div
+                                                                                ref={provided.innerRef}
+                                                                                {...provided.droppableProps}
+                                                                                className={cn(
+                                                                                    "space-y-3 min-h-[150px] transition-colors rounded-xl p-1",
+                                                                                    snapshot.isDraggingOver
+                                                                                        ? "bg-secondary/20 ring-2 ring-primary/10"
+                                                                                        : "bg-transparent",
+                                                                                )}
+                                                                            >
+                                                                                {getTasksByColumn(col.id, col.title)
+                                                                                    .length === 0 ? (
+                                                                                    <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground/40 border-2 border-dashed border-muted/30 rounded-lg mx-1">
+                                                                                        <AlertCircle className="h-6 w-6 mb-1 opacity-50" />
+                                                                                        <span className="text-xs font-medium">
+                                                                                            No tasks yet
+                                                                                        </span>
+                                                                                    </div>
+                                                                                ) : (
+                                                                                    getTasksByColumn(
+                                                                                        col.id,
+                                                                                        col.title,
+                                                                                    ).map((task, index) => (
+                                                                                        <Draggable
+                                                                                            key={task.id}
+                                                                                            draggableId={task.id}
+                                                                                            index={index}
+                                                                                        >
+                                                                                            {(provided, snapshot) => {
+                                                                                                const child = (
+                                                                                                    <div
+                                                                                                        ref={provided.innerRef}
+                                                                                                        {...provided.draggableProps}
+                                                                                                        style={{
+                                                                                                            ...provided.draggableProps
+                                                                                                                .style,
+                                                                                                            width: snapshot.isDragging
+                                                                                                                ? "300px"
+                                                                                                                : "auto",
+                                                                                                            zIndex: 9999,
+                                                                                                            pointerEvents:
+                                                                                                                snapshot.isDragging
+                                                                                                                    ? "none"
+                                                                                                                    : "auto",
+                                                                                                        }}
+                                                                                                    >
+                                                                                                        <TaskCard
+                                                                                                            task={task}
+                                                                                                            compact
+                                                                                                            columns={columns}
+                                                                                                            dragHandleProps={
+                                                                                                                role !== "viewer"
+                                                                                                                    ? provided.dragHandleProps
+                                                                                                                    : undefined
+                                                                                                            }
+                                                                                                            members={members}
+                                                                                                            role={role}
+                                                                                                            orgId={orgId}
+                                                                                                            onEditTag={(tag) => {
+                                                                                                                setEditingTag(tag);
+                                                                                                                setNewTagName(
+                                                                                                                    tag.label,
+                                                                                                                );
+                                                                                                                setNewTagColor(
+                                                                                                                    tag.color ||
+                                                                                                                    presetColors[0]
+                                                                                                                        .value,
+                                                                                                                );
+                                                                                                                setIsTagManagerOpen(
+                                                                                                                    true,
+                                                                                                                );
+                                                                                                            }}
+                                                                                                            onDeleteTag={(tagId) => {
+                                                                                                                if (orgId)
+                                                                                                                    deleteTagFromOrganization(
+                                                                                                                        orgId,
+                                                                                                                        tagId,
+                                                                                                                    );
+                                                                                                            }}
+                                                                                                            onCreateTag={() => {
+                                                                                                                setEditingTag(null);
+                                                                                                                setNewTagName("");
+                                                                                                                setNewTagColor(
+                                                                                                                    presetColors[0].value,
+                                                                                                                );
+                                                                                                                setIsTagManagerOpen(
+                                                                                                                    true,
+                                                                                                                );
+                                                                                                            }}
+                                                                                                            isDragging={
+                                                                                                                snapshot.isDragging
+                                                                                                            }
+                                                                                                        />
+                                                                                                    </div>
+                                                                                                );
+
+                                                                                                if (
+                                                                                                    snapshot.isDragging &&
+                                                                                                    typeof document !==
+                                                                                                    "undefined"
+                                                                                                ) {
+                                                                                                    return createPortal(
+                                                                                                        child,
+                                                                                                        document.body,
+                                                                                                    );
+                                                                                                }
+
+                                                                                                return child;
+                                                                                            }}
+                                                                                        </Draggable>
+                                                                                    ))
+                                                                                )}
+                                                                                {provided.placeholder}
+                                                                            </div>
+                                                                        )}
+                                                                    </Droppable>
+                                                                </div>
+                                                            );
+                                                            return child;
+                                                        }}
+                                                    </Draggable>
+                                                ))}
+                                                {provided.placeholder}
+
+                                                {/* Add Column Button (Icon Only) */}
+                                                <div className="min-w-[50px] pt-1">
+                                                    {isAddingColumn ? (
+                                                        <div className="bg-background border rounded-lg p-2 space-y-2 shadow-sm w-[200px]">
+                                                            <Input
+                                                                autoFocus
+                                                                placeholder="Column Title"
+                                                                value={newColumnTitle}
+                                                                onChange={(e) =>
+                                                                    setNewColumnTitle(e.target.value)
+                                                                }
+                                                                className="h-8 text-sm"
+                                                            />
+                                                            <div className="flex justify-end gap-2">
+                                                                <Button
+                                                                    size="icon"
+                                                                    variant="ghost"
+                                                                    className="h-6 w-6"
+                                                                    onClick={() => setIsAddingColumn(false)}
+                                                                >
+                                                                    <ArrowRight className="h-3 w-3 rotate-180" />
+                                                                </Button>
+                                                                <Button
+                                                                    size="sm"
+                                                                    className="h-6 px-2 text-xs"
+                                                                    onClick={handleAddColumn}
+                                                                >
+                                                                    Add
+                                                                </Button>
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-10 w-10 rounded-full border border-dashed border-muted-foreground/30 text-muted-foreground hover:bg-secondary/20 hover:text-primary transition-all"
+                                                            onClick={() => setIsAddingColumn(true)}
+                                                            title="Add Column"
+                                                        >
+                                                            <Plus className="h-5 w-5" />
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </Droppable>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Matrix View */}
+                        {view === "matrix" && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-[600px]">
+                                {/* Q1: Do First (Urgent & Important) */}
+                                <Droppable droppableId="matrix-q1" type="MATRIX_TASK">
+                                    {(provided, snapshot) => (
+                                        <div
+                                            className={cn(
+                                                "bg-rose-50/50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/50 rounded-2xl p-4",
+                                                snapshot.isDraggingOver &&
+                                                "bg-rose-100/50 ring-2 ring-rose-500/20",
+                                            )}
+                                        >
+                                            <h3 className="text-rose-700 dark:text-rose-400 font-bold mb-4 flex items-center gap-2">
+                                                <span className="bg-rose-100 dark:bg-rose-900/50 w-6 h-6 rounded-full flex items-center justify-center text-xs">
+                                                    1
+                                                </span>
+                                                Do First{" "}
+                                                <span className="text-xs font-normal opacity-70">
+                                                    (Urgent & Important)
+                                                </span>
+                                            </h3>
+                                            <div
+                                                className="space-y-2 min-h-[100px]"
+                                                ref={provided.innerRef}
+                                                {...provided.droppableProps}
+                                            >
+                                                {getTasksForMatrix(true, true).map((task, index) => (
+                                                    <Draggable
+                                                        key={task.id}
+                                                        draggableId={task.id}
+                                                        index={index}
+                                                    >
+                                                        {(provided, snapshot) => {
+                                                            const child = (
+                                                                <div
+                                                                    ref={provided.innerRef}
+                                                                    {...provided.draggableProps}
+                                                                    style={provided.draggableProps.style}
+                                                                >
+                                                                    <TaskCard
+                                                                        task={task}
+                                                                        compact
+                                                                        dragHandleProps={
+                                                                            role !== "viewer"
+                                                                                ? provided.dragHandleProps
+                                                                                : undefined
+                                                                        }
+                                                                        members={members}
+                                                                        groups={groups}
+                                                                        role={role}
+                                                                        orgId={orgId}
+                                                                        tags={availableTags}
+                                                                        onEditTag={(tag) => {
+                                                                            setEditingTag(tag);
+                                                                            setNewTagName(tag.label);
+                                                                            setNewTagColor(
+                                                                                tag.color || presetColors[0].value,
+                                                                            );
+                                                                            setIsTagManagerOpen(true);
+                                                                        }}
+                                                                        onDeleteTag={(tagId) => {
+                                                                            if (orgId)
+                                                                                deleteTagFromOrganization(orgId, tagId);
+                                                                        }}
+                                                                        onCreateTag={() => {
+                                                                            setEditingTag(null);
+                                                                            setNewTagName("");
+                                                                            setNewTagColor(presetColors[0].value);
+                                                                            setIsTagManagerOpen(true);
+                                                                        }}
+                                                                        isDragging={snapshot.isDragging}
+                                                                    />
+                                                                </div>
+                                                            );
+                                                            return child;
+                                                        }}
+                                                    </Draggable>
+                                                ))}
+                                                {provided.placeholder}
+                                            </div>
+                                        </div>
+                                    )}
+                                </Droppable>
+
+                                {/* Q2: Schedule (Not Urgent & Important) */}
+                                <Droppable droppableId="matrix-q2" type="MATRIX_TASK">
+                                    {(provided, snapshot) => (
+                                        <div
+                                            className={cn(
+                                                "bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/50 rounded-2xl p-4",
+                                                snapshot.isDraggingOver &&
+                                                "bg-blue-100/50 ring-2 ring-blue-500/20",
+                                            )}
+                                        >
+                                            <h3 className="text-blue-700 dark:text-blue-400 font-bold mb-4 flex items-center gap-2">
+                                                <span className="bg-blue-100 dark:bg-blue-900/50 w-6 h-6 rounded-full flex items-center justify-center text-xs">
+                                                    2
+                                                </span>
+                                                Schedule{" "}
+                                                <span className="text-xs font-normal opacity-70">
+                                                    (Not Urgent & Important)
+                                                </span>
+                                            </h3>
+                                            <div
+                                                className="space-y-2 min-h-[100px]"
+                                                ref={provided.innerRef}
+                                                {...provided.droppableProps}
+                                            >
+                                                {getTasksForMatrix(false, true).map((task, index) => (
+                                                    <Draggable
+                                                        key={task.id}
+                                                        draggableId={task.id}
+                                                        index={index}
+                                                    >
+                                                        {(provided, snapshot) => {
+                                                            const child = (
+                                                                <div
+                                                                    ref={provided.innerRef}
+                                                                    {...provided.draggableProps}
+                                                                    style={provided.draggableProps.style}
+                                                                >
+                                                                    <TaskCard
+                                                                        task={task}
+                                                                        compact
+                                                                        dragHandleProps={
+                                                                            role !== "viewer"
+                                                                                ? provided.dragHandleProps
+                                                                                : undefined
+                                                                        }
+                                                                        members={members}
+                                                                        groups={groups}
+                                                                        role={role}
+                                                                        orgId={orgId}
+                                                                    />
+                                                                </div>
+                                                            );
+                                                            return child;
+                                                        }}
+                                                    </Draggable>
+                                                ))}
+                                                {provided.placeholder}
+                                            </div>
+                                        </div>
+                                    )}
+                                </Droppable>
+
+                                {/* Q3: Delegate (Urgent & Not Important) */}
+                                <Droppable droppableId="matrix-q3" type="MATRIX_TASK">
+                                    {(provided, snapshot) => (
+                                        <div
+                                            className={cn(
+                                                "bg-amber-50/50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/50 rounded-2xl p-4",
+                                                snapshot.isDraggingOver &&
+                                                "bg-amber-100/50 ring-2 ring-amber-500/20",
+                                            )}
+                                        >
+                                            <h3 className="text-amber-700 dark:text-amber-400 font-bold mb-4 flex items-center gap-2">
+                                                <span className="bg-amber-100 dark:bg-amber-900/50 w-6 h-6 rounded-full flex items-center justify-center text-xs">
+                                                    3
+                                                </span>
+                                                Delegate{" "}
+                                                <span className="text-xs font-normal opacity-70">
+                                                    (Urgent & Not Important)
+                                                </span>
+                                            </h3>
+                                            <div
+                                                className="space-y-2 min-h-[100px]"
+                                                ref={provided.innerRef}
+                                                {...provided.droppableProps}
+                                            >
+                                                {getTasksForMatrix(true, false).map((task, index) => (
+                                                    <Draggable
+                                                        key={task.id}
+                                                        draggableId={task.id}
+                                                        index={index}
+                                                    >
+                                                        {(provided, snapshot) => {
+                                                            const child = (
+                                                                <div
+                                                                    ref={provided.innerRef}
+                                                                    {...provided.draggableProps}
+                                                                    style={provided.draggableProps.style}
+                                                                >
+                                                                    <TaskCard
+                                                                        task={task}
+                                                                        compact
+                                                                        dragHandleProps={
+                                                                            role !== "viewer"
+                                                                                ? provided.dragHandleProps
+                                                                                : undefined
+                                                                        }
+                                                                        members={members}
+                                                                        groups={groups}
+                                                                        role={role}
+                                                                        orgId={orgId}
+                                                                    />
+                                                                </div>
+                                                            );
+                                                            return child;
+                                                        }}
+                                                    </Draggable>
+                                                ))}
+                                                {provided.placeholder}
+                                            </div>
+                                        </div>
+                                    )}
+                                </Droppable>
+
+                                {/* Q4: Eliminate (Not Urgent & Not Important) */}
+                                <Droppable droppableId="matrix-q4" type="MATRIX_TASK">
+                                    {(provided, snapshot) => (
+                                        <div
+                                            className={cn(
+                                                "bg-slate-50/50 dark:bg-slate-900/20 border border-slate-100 dark:border-slate-800 rounded-2xl p-4",
+                                                snapshot.isDraggingOver &&
+                                                "bg-slate-100/50 ring-2 ring-slate-500/20",
+                                            )}
+                                        >
+                                            <h3 className="text-slate-700 dark:text-slate-400 font-bold mb-4 flex items-center gap-2">
+                                                <span className="bg-slate-100 dark:bg-slate-800 w-6 h-6 rounded-full flex items-center justify-center text-xs">
+                                                    4
+                                                </span>
+                                                Eliminate{" "}
+                                                <span className="text-xs font-normal opacity-70">
+                                                    (Not Urgent & Not Important)
+                                                </span>
+                                            </h3>
+                                            <div
+                                                className="space-y-2 min-h-[100px]"
+                                                ref={provided.innerRef}
+                                                {...provided.droppableProps}
+                                            >
+                                                {getTasksForMatrix(false, false).map((task, index) => (
+                                                    <Draggable
+                                                        key={task.id}
+                                                        draggableId={task.id}
+                                                        index={index}
+                                                    >
+                                                        {(provided, snapshot) => {
+                                                            const child = (
+                                                                <div
+                                                                    ref={provided.innerRef}
+                                                                    {...provided.draggableProps}
+                                                                    style={provided.draggableProps.style}
+                                                                >
+                                                                    <TaskCard
+                                                                        task={task}
+                                                                        compact
+                                                                        dragHandleProps={
+                                                                            role !== "viewer"
+                                                                                ? provided.dragHandleProps
+                                                                                : undefined
+                                                                        }
+                                                                        members={members}
+                                                                        groups={groups}
+                                                                        role={role}
+                                                                        orgId={orgId}
+                                                                        tags={availableTags}
+                                                                        onEditTag={(tag) => {
+                                                                            setEditingTag(tag);
+                                                                            setNewTagName(tag.label);
+                                                                            setNewTagColor(
+                                                                                tag.color || presetColors[0].value,
+                                                                            );
+                                                                            setIsTagManagerOpen(true);
+                                                                        }}
+                                                                        onDeleteTag={(tagId) => {
+                                                                            if (orgId)
+                                                                                deleteTagFromOrganization(orgId, tagId);
+                                                                        }}
+                                                                        onCreateTag={() => {
+                                                                            setEditingTag(null);
+                                                                            setNewTagName("");
+                                                                            setNewTagColor(presetColors[0].value);
+                                                                            setIsTagManagerOpen(true);
+                                                                        }}
+                                                                        isDragging={snapshot.isDragging}
+                                                                    />
+                                                                </div>
+                                                            );
+                                                            return child;
+                                                        }}
+                                                    </Draggable>
+                                                ))}
+                                                {provided.placeholder}
+                                            </div>
+                                        </div>
+                                    )}
+                                </Droppable>
+                            </div>
+                        )}
+                    </>
                 )}
-              </div>
-            )}
-
-            {/* Matrix View */}
-            {view === "matrix" && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-[600px]">
-                {/* Q1: Do First (Urgent & Important) */}
-                <Droppable droppableId="matrix-q1" type="MATRIX_TASK">
-                  {(provided, snapshot) => (
-                    <div
-                      className={cn(
-                        "bg-rose-50/50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/50 rounded-2xl p-4",
-                        snapshot.isDraggingOver &&
-                          "bg-rose-100/50 ring-2 ring-rose-500/20",
-                      )}
-                    >
-                      <h3 className="text-rose-700 dark:text-rose-400 font-bold mb-4 flex items-center gap-2">
-                        <span className="bg-rose-100 dark:bg-rose-900/50 w-6 h-6 rounded-full flex items-center justify-center text-xs">
-                          1
-                        </span>
-                        Do First{" "}
-                        <span className="text-xs font-normal opacity-70">
-                          (Urgent & Important)
-                        </span>
-                      </h3>
-                      <div
-                        className="space-y-2 min-h-[100px]"
-                        ref={provided.innerRef}
-                        {...provided.droppableProps}
-                      >
-                        {getTasksForMatrix(true, true).map((task, index) => (
-                          <Draggable
-                            key={task.id}
-                            draggableId={task.id}
-                            index={index}
-                          >
-                            {(provided, snapshot) => {
-                              const child = (
-                                <div
-                                  ref={provided.innerRef}
-                                  {...provided.draggableProps}
-                                  style={provided.draggableProps.style}
-                                >
-                                  <TaskCard
-                                    task={task}
-                                    compact
-                                    dragHandleProps={
-                                      role !== "viewer"
-                                        ? provided.dragHandleProps
-                                        : undefined
-                                    }
-                                    members={members}
-                                    groups={groups}
-                                    role={role}
-                                    orgId={orgId}
-                                    tags={availableTags}
-                                    onEditTag={(tag) => {
-                                      setEditingTag(tag);
-                                      setNewTagName(tag.label);
-                                      setNewTagColor(
-                                        tag.color || presetColors[0].value,
-                                      );
-                                      setIsTagManagerOpen(true);
-                                    }}
-                                    onDeleteTag={(tagId) => {
-                                      if (orgId)
-                                        deleteTagFromOrganization(orgId, tagId);
-                                    }}
-                                    onCreateTag={() => {
-                                      setEditingTag(null);
-                                      setNewTagName("");
-                                      setNewTagColor(presetColors[0].value);
-                                      setIsTagManagerOpen(true);
-                                    }}
-                                    isDragging={snapshot.isDragging}
-                                  />
-                                </div>
-                              );
-                              return child;
-                            }}
-                          </Draggable>
-                        ))}
-                        {provided.placeholder}
-                      </div>
-                    </div>
-                  )}
-                </Droppable>
-
-                {/* Q2: Schedule (Not Urgent & Important) */}
-                <Droppable droppableId="matrix-q2" type="MATRIX_TASK">
-                  {(provided, snapshot) => (
-                    <div
-                      className={cn(
-                        "bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/50 rounded-2xl p-4",
-                        snapshot.isDraggingOver &&
-                          "bg-blue-100/50 ring-2 ring-blue-500/20",
-                      )}
-                    >
-                      <h3 className="text-blue-700 dark:text-blue-400 font-bold mb-4 flex items-center gap-2">
-                        <span className="bg-blue-100 dark:bg-blue-900/50 w-6 h-6 rounded-full flex items-center justify-center text-xs">
-                          2
-                        </span>
-                        Schedule{" "}
-                        <span className="text-xs font-normal opacity-70">
-                          (Not Urgent & Important)
-                        </span>
-                      </h3>
-                      <div
-                        className="space-y-2 min-h-[100px]"
-                        ref={provided.innerRef}
-                        {...provided.droppableProps}
-                      >
-                        {getTasksForMatrix(false, true).map((task, index) => (
-                          <Draggable
-                            key={task.id}
-                            draggableId={task.id}
-                            index={index}
-                          >
-                            {(provided, snapshot) => {
-                              const child = (
-                                <div
-                                  ref={provided.innerRef}
-                                  {...provided.draggableProps}
-                                  style={provided.draggableProps.style}
-                                >
-                                  <TaskCard
-                                    task={task}
-                                    compact
-                                    dragHandleProps={
-                                      role !== "viewer"
-                                        ? provided.dragHandleProps
-                                        : undefined
-                                    }
-                                    members={members}
-                                    groups={groups}
-                                    role={role}
-                                    orgId={orgId}
-                                  />
-                                </div>
-                              );
-                              return child;
-                            }}
-                          </Draggable>
-                        ))}
-                        {provided.placeholder}
-                      </div>
-                    </div>
-                  )}
-                </Droppable>
-
-                {/* Q3: Delegate (Urgent & Not Important) */}
-                <Droppable droppableId="matrix-q3" type="MATRIX_TASK">
-                  {(provided, snapshot) => (
-                    <div
-                      className={cn(
-                        "bg-amber-50/50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/50 rounded-2xl p-4",
-                        snapshot.isDraggingOver &&
-                          "bg-amber-100/50 ring-2 ring-amber-500/20",
-                      )}
-                    >
-                      <h3 className="text-amber-700 dark:text-amber-400 font-bold mb-4 flex items-center gap-2">
-                        <span className="bg-amber-100 dark:bg-amber-900/50 w-6 h-6 rounded-full flex items-center justify-center text-xs">
-                          3
-                        </span>
-                        Delegate{" "}
-                        <span className="text-xs font-normal opacity-70">
-                          (Urgent & Not Important)
-                        </span>
-                      </h3>
-                      <div
-                        className="space-y-2 min-h-[100px]"
-                        ref={provided.innerRef}
-                        {...provided.droppableProps}
-                      >
-                        {getTasksForMatrix(true, false).map((task, index) => (
-                          <Draggable
-                            key={task.id}
-                            draggableId={task.id}
-                            index={index}
-                          >
-                            {(provided, snapshot) => {
-                              const child = (
-                                <div
-                                  ref={provided.innerRef}
-                                  {...provided.draggableProps}
-                                  style={provided.draggableProps.style}
-                                >
-                                  <TaskCard
-                                    task={task}
-                                    compact
-                                    dragHandleProps={
-                                      role !== "viewer"
-                                        ? provided.dragHandleProps
-                                        : undefined
-                                    }
-                                    members={members}
-                                    groups={groups}
-                                    role={role}
-                                    orgId={orgId}
-                                  />
-                                </div>
-                              );
-                              return child;
-                            }}
-                          </Draggable>
-                        ))}
-                        {provided.placeholder}
-                      </div>
-                    </div>
-                  )}
-                </Droppable>
-
-                {/* Q4: Eliminate (Not Urgent & Not Important) */}
-                <Droppable droppableId="matrix-q4" type="MATRIX_TASK">
-                  {(provided, snapshot) => (
-                    <div
-                      className={cn(
-                        "bg-slate-50/50 dark:bg-slate-900/20 border border-slate-100 dark:border-slate-800 rounded-2xl p-4",
-                        snapshot.isDraggingOver &&
-                          "bg-slate-100/50 ring-2 ring-slate-500/20",
-                      )}
-                    >
-                      <h3 className="text-slate-700 dark:text-slate-400 font-bold mb-4 flex items-center gap-2">
-                        <span className="bg-slate-100 dark:bg-slate-800 w-6 h-6 rounded-full flex items-center justify-center text-xs">
-                          4
-                        </span>
-                        Eliminate{" "}
-                        <span className="text-xs font-normal opacity-70">
-                          (Not Urgent & Not Important)
-                        </span>
-                      </h3>
-                      <div
-                        className="space-y-2 min-h-[100px]"
-                        ref={provided.innerRef}
-                        {...provided.droppableProps}
-                      >
-                        {getTasksForMatrix(false, false).map((task, index) => (
-                          <Draggable
-                            key={task.id}
-                            draggableId={task.id}
-                            index={index}
-                          >
-                            {(provided, snapshot) => {
-                              const child = (
-                                <div
-                                  ref={provided.innerRef}
-                                  {...provided.draggableProps}
-                                  style={provided.draggableProps.style}
-                                >
-                                  <TaskCard
-                                    task={task}
-                                    compact
-                                    dragHandleProps={
-                                      role !== "viewer"
-                                        ? provided.dragHandleProps
-                                        : undefined
-                                    }
-                                    members={members}
-                                    groups={groups}
-                                    role={role}
-                                    orgId={orgId}
-                                    tags={availableTags}
-                                    onEditTag={(tag) => {
-                                      setEditingTag(tag);
-                                      setNewTagName(tag.label);
-                                      setNewTagColor(
-                                        tag.color || presetColors[0].value,
-                                      );
-                                      setIsTagManagerOpen(true);
-                                    }}
-                                    onDeleteTag={(tagId) => {
-                                      if (orgId)
-                                        deleteTagFromOrganization(orgId, tagId);
-                                    }}
-                                    onCreateTag={() => {
-                                      setEditingTag(null);
-                                      setNewTagName("");
-                                      setNewTagColor(presetColors[0].value);
-                                      setIsTagManagerOpen(true);
-                                    }}
-                                    isDragging={snapshot.isDragging}
-                                  />
-                                </div>
-                              );
-                              return child;
-                            }}
-                          </Draggable>
-                        ))}
-                        {provided.placeholder}
-                      </div>
-                    </div>
-                  )}
-                </Droppable>
-              </div>
-            )}
-          </>
-        )}
-      </div>
-    </DragDropContext>
-  );
+            </div>
+        </DragDropContext>
+    );
 }

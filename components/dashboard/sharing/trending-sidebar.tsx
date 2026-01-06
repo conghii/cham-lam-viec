@@ -47,7 +47,13 @@ export function TrendingSidebar() {
                                         </span>
                                         <div className="space-y-1.5 flex-1 min-w-0">
                                             <div className="flex items-center gap-2">
-                                                <Link href={`/dashboard/profile/${post.authorId}`} className="group/avatar flex items-center gap-2 z-10 relative">
+                                                <div
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        window.location.href = `/dashboard/profile/${post.authorId}`;
+                                                    }}
+                                                    className="group/avatar flex items-center gap-2 z-10 relative cursor-pointer"
+                                                >
                                                     <Avatar className="h-5 w-5 hover:opacity-80 transition-opacity">
                                                         <AvatarImage src={post.author?.photoURL} />
                                                         <AvatarFallback className="text-[10px]">{post.author?.displayName?.[0]}</AvatarFallback>
@@ -55,7 +61,7 @@ export function TrendingSidebar() {
                                                     <span className="text-xs font-medium text-muted-foreground truncate max-w-[120px] group-hover/avatar:underline group-hover/avatar:text-primary transition-colors">
                                                         {post.author?.displayName}
                                                     </span>
-                                                </Link>
+                                                </div>
                                             </div>
                                             <h4 className="text-sm font-semibold leading-tight group-hover:text-primary transition-colors line-clamp-2">
                                                 {post.title || post.content.substring(0, 50)}
