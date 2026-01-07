@@ -71,7 +71,7 @@ export interface Database {
           goal_id: string | null
           title: string
           is_completed: boolean | null
-          tag_type: 'learning' | 'coding' | 'writing' | 'general' | null
+          tag_type: null
           priority: 'high' | 'medium' | 'low' | null
           estimated_minutes: number | null
           due_date: string | null
@@ -83,7 +83,7 @@ export interface Database {
           goal_id?: string | null
           title: string
           is_completed?: boolean | null
-          tag_type?: 'learning' | 'coding' | 'writing' | 'general' | null
+          tag_type?: null
           priority?: 'high' | 'medium' | 'low' | null
           estimated_minutes?: number | null
           due_date?: string | null
@@ -95,7 +95,7 @@ export interface Database {
           goal_id?: string | null
           title?: string
           is_completed?: boolean | null
-          tag_type?: 'learning' | 'coding' | 'writing' | 'general' | null
+          tag_type?: null
           priority?: 'high' | 'medium' | 'low' | null
           estimated_minutes?: number | null
           due_date?: string | null

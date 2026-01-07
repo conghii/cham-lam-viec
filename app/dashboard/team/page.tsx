@@ -58,6 +58,8 @@ import {
     Shield,
     Trash2,
     Zap,
+    X,
+    AlertTriangle,
     Copy,
     Upload,
     Check,
@@ -111,6 +113,7 @@ export default function TeamPage() {
 
     const [selectedMember, setSelectedMember] = useState<OrganizationMember | null>(null);
     const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
+    const [groupToDelete, setGroupToDelete] = useState<string | null>(null);
 
     // Settings State
     const [orgName, setOrgName] = useState("");
@@ -248,12 +251,16 @@ export default function TeamPage() {
         }
     };
 
-    const handleDeleteGroup = async (groupId: string) => {
-        if (!confirm("Are you sure you want to delete this group?")) return;
+    const handleDeleteGroup = (groupId: string) => {
+        setGroupToDelete(groupId);
+    };
+
+    const confirmDeleteGroup = async () => {
+        if (!groupToDelete) return;
         try {
-            await deleteGroup(groupId);
+            await deleteGroup(groupToDelete);
             toast.success("Group deleted.");
-            // Refresh logic if needed, but subscription handles it
+            setGroupToDelete(null);
         } catch (error) {
             toast.error("Failed to delete group");
         }
@@ -838,6 +845,33 @@ export default function TeamPage() {
                         </div>
                     </TabsContent>
 
+                    {/* Delete Group Confirmation Dialog */}
+                    <Dialog open={!!groupToDelete} onOpenChange={(open) => !open && setGroupToDelete(null)}>
+                        <DialogContent className="sm:max-w-[425px] p-0 overflow-hidden border-0 bg-white dark:bg-slate-900 rounded-2xl shadow-xl">
+                            <div className="bg-red-50 dark:bg-red-900/20 p-6 flex flex-col items-center justify-center text-center border-b border-red-100 dark:border-red-900/50">
+                                <div className="h-16 w-16 bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center mb-4 ring-8 ring-red-50 dark:ring-red-900/10">
+                                    <AlertTriangle className="h-8 w-8" />
+                                </div>
+                                <DialogTitle className="text-xl font-bold text-slate-900 dark:text-white">Delete Group?</DialogTitle>
+                            </div>
+
+                            <div className="p-6 space-y-4">
+                                <DialogDescription className="text-center text-slate-500 dark:text-slate-400 text-base">
+                                    Are you sure you want to delete this group? This action cannot be undone and will remove all associations.
+                                </DialogDescription>
+
+                                <div className="grid grid-cols-2 gap-3 pt-2">
+                                    <Button variant="outline" size="lg" onClick={() => setGroupToDelete(null)} className="rounded-xl border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300">
+                                        Cancel
+                                    </Button>
+                                    <Button variant="destructive" size="lg" onClick={confirmDeleteGroup} className="rounded-xl bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-200 dark:shadow-red-900/20">
+                                        Yes, Delete
+                                    </Button>
+                                </div>
+                            </div>
+                        </DialogContent>
+                    </Dialog>
+
                     {/* SETTINGS TAB (Redesigned) */}
                     <TabsContent value="settings" className="mt-6">
                         <div className="max-w-4xl space-y-8">
@@ -1001,11 +1035,19 @@ export default function TeamPage() {
 
             {/* Member Profile Modal */}
             <Dialog open={isMemberModalOpen} onOpenChange={setIsMemberModalOpen}>
-                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0 border-none bg-slate-50 dark:bg-slate-900 rounded-3xl">
+                <DialogContent showCloseButton={false} className="max-w-2xl max-h-[90vh] overflow-y-auto p-0 border-none bg-slate-50 dark:bg-slate-900 rounded-3xl">
                     {selectedMember && (
                         <div className="space-y-0 relative">
                             {/* Modal Header/Banner */}
                             <div className="h-32 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-t-3xl relative">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="absolute top-4 right-4 text-white/70 hover:text-white hover:bg-white/20 rounded-full"
+                                    onClick={() => setIsMemberModalOpen(false)}
+                                >
+                                    <X className="h-5 w-5" />
+                                </Button>
                             </div>
 
                             <div className="px-8 pb-8 -mt-12 relative">
@@ -1107,6 +1149,6 @@ export default function TeamPage() {
                     )}
                 </DialogContent>
             </Dialog>
-        </div>
+        </div >
     );
 }

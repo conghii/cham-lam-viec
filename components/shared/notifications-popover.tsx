@@ -59,8 +59,13 @@ export function NotificationsPopover() {
                 router.push(`/dashboard/goals`)
                 break
             case 'post':
-                // router.push(`/dashboard/blog/${notification.resourceId}`)
-                router.push(`/dashboard/blog`) // Generic for now until slug routing matches
+            case 'social_post':
+                // Use hash navigation to jump to post in sharing feed
+                router.push(`/dashboard/sharing#${notification.resourceId}`)
+                break
+            case 'blog_post':
+                // Go to blog list (maybe filter later?)
+                router.push(`/dashboard/blog`)
                 break
             default:
                 break

@@ -1,21 +1,22 @@
 "use client"
 
 import { useLanguage } from "@/components/shared/language-context"
-import { useEffect, useState, use } from "react"
+import { useEffect, useState, use, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea" // Fallback if no rich editor
-import { ArrowLeft, Save, Image as ImageIcon, Loader2 } from "lucide-react"
-import { addBlogPost, updateBlogPost, getBlogPost, getUserOrganization } from "@/lib/firebase/firestore" // Need getBlogPost
+import { ArrowLeft, Loader2, ImagePlus, X, Save } from "lucide-react"
+import { updateBlogPost, getUserOrganization, getOrganizationMembers, OrganizationMember } from "@/lib/firebase/firestore"
+import { uploadFile } from "@/lib/firebase/storage"
 import { auth } from "@/lib/firebase/auth"
 import { toast } from "sonner"
 import Link from "next/link"
-import { AssigneeDisplay } from "@/components/dashboard/assignee-display"
+import Image from "next/image"
 import { UserGroupSelect } from "@/components/dashboard/user-group-select"
-import { Label } from "@/components/ui/label"
+import { BlogEditor } from "@/components/dashboard/blog-editor"
 import { doc, getDoc } from "firebase/firestore"
 import { db } from "@/lib/firebase/firestore"
+import { cn } from "@/lib/utils"
 
 export default function EditBlogPage({ params }: { params: Promise<{ id: string }> }) {
     // Unwrap params using React.use()
@@ -23,41 +24,41 @@ export default function EditBlogPage({ params }: { params: Promise<{ id: string 
 
     const [title, setTitle] = useState("")
     const [content, setContent] = useState("")
-    const [tagInput, setTagInput] = useState("")
-    const [tags, setTags] = useState<string[]>([])
-    const [isSubmitting, setIsSubmitting] = useState(false)
-    const [isLoading, setIsLoading] = useState(true)
+    const [coverImage, setCoverImage] = useState<string | null>(null)
     const [assigneeIds, setAssigneeIds] = useState<string[]>([])
     const [groupIds, setGroupIds] = useState<string[]>([])
-    const [orgId, setOrgId] = useState<string>("")
+
+    // UI States
+    const [isLoading, setIsLoading] = useState(true)
+    const [isSubmitting, setIsSubmitting] = useState(false)
+    const [uploading, setUploading] = useState(false)
+
+    // Org Data
+    const [orgId, setOrgId] = useState<string | null>(null)
+    const [members, setMembers] = useState<OrganizationMember[]>([])
+
     const router = useRouter()
     const { t } = useLanguage()
+    const fileInputRef = useRef<HTMLInputElement>(null)
 
+    // Fetch Post Data
     useEffect(() => {
         const fetchPost = async () => {
             if (!id) return;
             try {
-                // Direct fetch since getBlogPost might not be exported or working as expected
                 const docRef = doc(db, "posts", id);
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    setTitle(data.title);
-                    setContent(data.content);
-                    setTags(data.tags || []);
+                    setTitle(data.title || "");
+                    setContent(data.content || "");
+                    setCoverImage(data.coverImage || null);
                     setAssigneeIds(data.assigneeIds || []);
                     setGroupIds(data.groupIds || []);
                 } else {
                     toast.error("Post not found");
                     router.push("/dashboard/blog");
-                }
-
-                // Fetch Org ID
-                const user = auth.currentUser;
-                if (user) {
-                    const org = await getUserOrganization(user.uid);
-                    if (org) setOrgId(org.id);
                 }
             } catch (error) {
                 console.error("Error fetching post:", error);
@@ -70,33 +71,62 @@ export default function EditBlogPage({ params }: { params: Promise<{ id: string 
         fetchPost();
     }, [id, router]);
 
-    const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter' && tagInput.trim()) {
-            e.preventDefault();
-            if (!tags.includes(tagInput.trim())) {
-                setTags([...tags, tagInput.trim()]);
+    // Fetch Org Data
+    useEffect(() => {
+        const loadOrg = async () => {
+            const user = auth.currentUser;
+            if (user) {
+                const org = await getUserOrganization(user.uid);
+                if (org) {
+                    setOrgId(org.id);
+                    const mems = await getOrganizationMembers(org.id);
+                    setMembers(mems);
+                }
             }
-            setTagInput("");
         }
-    };
+        loadOrg();
+    }, [])
 
-    const removeTag = (tagToRemove: string) => {
-        setTags(tags.filter(tag => tag !== tagToRemove));
-    };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+
+        // Optimistic Preview
+        const objectUrl = URL.createObjectURL(file)
+        setCoverImage(objectUrl)
+        setUploading(true)
+
+        try {
+            // Upload to "blog_covers/{timestamp}_{filename}"
+            const path = `blog_covers/${Date.now()}_${file.name}`
+            const url = await uploadFile(file, path)
+            setCoverImage(url)
+        } catch (error) {
+            console.error("Failed to upload image", error)
+            setCoverImage(null) // Revert on failure
+            toast.error("Failed to upload image")
+        } finally {
+            setUploading(false)
+        }
+    }
+
+    const handleSubmit = async () => {
         if (!title.trim() || !content.trim()) return
 
         setIsSubmitting(true)
         try {
+            // Strip HTML tags for excerpt update (optional, but good practice)
+            const strippedContent = content.replace(/<[^>]*>/g, '')
+            const excerpt = strippedContent.substring(0, 150) + "..."
+
             await updateBlogPost(id, {
                 title,
                 content,
-                tags,
+                excerpt,
+                coverImage: coverImage || undefined,
                 assigneeIds,
                 groupIds,
-                // excerpt: content.slice(0, 150) + "..." // Optional update
             })
             toast.success("Blog post updated successfully!")
             router.push("/dashboard/blog")
@@ -117,91 +147,108 @@ export default function EditBlogPage({ params }: { params: Promise<{ id: string 
     }
 
     return (
-        <div className="max-w-4xl mx-auto py-8 px-4">
-            <Link href="/dashboard/blog" className="inline-flex items-center text-sm text-slate-500 hover:text-indigo-600 mb-6 transition-colors">
-                <ArrowLeft className="h-4 w-4 mr-1" />
-                {t("back_to_blog")}
-            </Link>
-
-            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-8">
-                <h1 className="text-2xl font-bold mb-6 text-slate-900 dark:text-slate-100">{t("edit_entry") || "Edit Entry"}</h1>
-
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="space-y-2">
-                        <Label>Title</Label>
-                        <Input
-                            placeholder={t("entry_title_placeholder")}
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
-                            className="text-lg font-medium h-12"
-                            required
-                        />
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label>Content (Markdown supported)</Label>
-                        <Textarea
-                            placeholder={t("entry_content_placeholder")}
-                            value={content}
-                            onChange={(e) => setContent(e.target.value)}
-                            className="min-h-[300px] font-mono text-sm leading-relaxed"
-                            required
-                        />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                            <Label>Tags</Label>
-                            <div className="flex flex-wrap gap-2 mb-2 p-2 border rounded-md min-h-[42px]">
-                                {tags.map(tag => (
-                                    <span key={tag} className="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md text-xs flex items-center gap-1">
-                                        #{tag}
-                                        <button type="button" onClick={() => removeTag(tag)} className="hover:text-red-500"><span className="sr-only">Remove</span>&times;</button>
-                                    </span>
-                                ))}
-                                <input
-                                    type="text"
-                                    value={tagInput}
-                                    onChange={(e) => setTagInput(e.target.value)}
-                                    onKeyDown={handleKeyDown}
-                                    placeholder="Type tag & Enter..."
-                                    className="flex-1 bg-transparent outline-none text-sm min-w-[80px]"
+        <div className="min-h-screen bg-background pb-20">
+            {/* Minimal Header */}
+            <header className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-md border-b">
+                <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <Link href="/dashboard/blog">
+                            <Button variant="ghost" size="icon" className="rounded-full">
+                                <ArrowLeft className="h-5 w-5" />
+                            </Button>
+                        </Link>
+                        <span className="text-sm text-muted-foreground font-medium hidden md:inline-block">{t("edit_entry") || "Edit Entry"}</span>
+                        {orgId && (
+                            <div className="hidden md:block">
+                                <UserGroupSelect
+                                    orgId={orgId}
+                                    assigneeIds={assigneeIds}
+                                    groupIds={groupIds}
+                                    onAssigneeChange={setAssigneeIds}
+                                    onGroupChange={setGroupIds}
                                 />
                             </div>
-                        </div>
+                        )}
+                    </div>
+                    <Button
+                        onClick={handleSubmit}
+                        disabled={isSubmitting || !title || !content}
+                        className="rounded-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-6"
+                    >
+                        {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : t("save_changes") || "Update"}
+                    </Button>
+                </div>
+            </header>
 
-                        <div className="space-y-2">
-                            <Label>Assignee / Group</Label>
-                            <UserGroupSelect
-                                orgId={orgId}
-                                assigneeIds={assigneeIds}
-                                groupIds={groupIds}
-                                onAssigneeChange={setAssigneeIds}
-                                onGroupChange={setGroupIds}
+            {/* Mobile Org Select */}
+            {orgId && (
+                <div className="md:hidden px-6 py-2 border-b bg-muted/20">
+                    <UserGroupSelect
+                        orgId={orgId}
+                        assigneeIds={assigneeIds}
+                        groupIds={groupIds}
+                        onAssigneeChange={setAssigneeIds}
+                        onGroupChange={setGroupIds}
+                    />
+                </div>
+            )}
+
+            <main className="max-w-4xl mx-auto px-6 pt-10">
+                {/* Cover Image */}
+                <div className="mb-8 group relative">
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        className="hidden"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                    />
+
+                    {coverImage ? (
+                        <div className="relative w-full h-[300px] rounded-3xl overflow-hidden shadow-sm border bg-muted">
+                            <Image
+                                src={coverImage}
+                                alt="Cover"
+                                fill
+                                className="object-cover"
                             />
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                                <Button variant="secondary" size="sm" onClick={() => setCoverImage(null)} className="mr-2">
+                                    <X className="h-4 w-4 mr-2" /> Remove
+                                </Button>
+                                <Button variant="secondary" size="sm" onClick={() => fileInputRef.current?.click()}>
+                                    Change Cover
+                                </Button>
+                            </div>
                         </div>
-                    </div>
+                    ) : (
+                        <button
+                            onClick={() => fileInputRef.current?.click()}
+                            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors px-4 py-2 rounded-lg hover:bg-muted"
+                        >
+                            <ImagePlus className="h-4 w-4" />
+                            {uploading ? "Uploading..." : "Add Cover Image"}
+                        </button>
+                    )}
+                </div>
 
-                    <div className="pt-4 flex justify-end gap-3">
-                        <Link href="/dashboard/blog">
-                            <Button type="button" variant="outline">{t("cancel")}</Button>
-                        </Link>
-                        <Button type="submit" disabled={isSubmitting} className="bg-indigo-600 hover:bg-indigo-700 text-white min-w-[120px]">
-                            {isSubmitting ? (
-                                <>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    {t("saving")}
-                                </>
-                            ) : (
-                                <>
-                                    <Save className="mr-2 h-4 w-4" />
-                                    {t("save_changes") || "Update"}
-                                </>
-                            )}
-                        </Button>
-                    </div>
-                </form>
-            </div>
+                {/* Title Input */}
+                <div className="mb-6">
+                    <Input
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                        placeholder="Article Title..."
+                        className="text-4xl font-bold border-none shadow-none px-0 h-auto focus-visible:ring-0 placeholder:text-muted-foreground/50 bg-transparent"
+                    />
+                </div>
+
+                {/* Editor */}
+                <BlogEditor
+                    content={content}
+                    onChange={setContent}
+                    placeholder="Tell your story..."
+                />
+            </main>
         </div>
     )
 }

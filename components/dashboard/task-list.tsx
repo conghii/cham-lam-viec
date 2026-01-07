@@ -10,12 +10,7 @@ import { ProofOfWorkDialog } from "@/components/dashboard/proof-of-work-dialog"
 import { subscribeToTasks, toggleTaskCompletion, type Task } from "@/lib/firebase/firestore"
 import Link from "next/link"
 
-const tagColors: Record<string, string> = {
-    coding: "bg-blue-500/10 text-blue-500 hover:bg-blue-500/20",
-    learning: "bg-green-500/10 text-green-500 hover:bg-green-500/20",
-    writing: "bg-orange-500/10 text-orange-500 hover:bg-orange-500/20",
-    general: "bg-slate-500/10 text-slate-500 hover:bg-slate-500/20",
-}
+
 
 export function TaskList() {
     const [tasks, setTasks] = useState<Task[]>([])
@@ -81,8 +76,8 @@ export function TaskList() {
                                             {task.title}
                                         </label>
                                         <div className="flex gap-2">
-                                            <Badge variant="secondary" className={tagColors[task.tag || 'general']}>
-                                                {task.tag || 'general'}
+                                            <Badge variant="secondary" className="font-normal">
+                                                {task.tag || 'General'}
                                             </Badge>
                                         </div>
                                     </div>

@@ -1,219 +1,82 @@
 "use client";
 
-import { type Task } from "@/lib/firebase/firestore";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Calendar, TrendingUp, Clock, Flame, ChevronDown, CheckCircle2 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { isToday, isThisWeek, isThisMonth, startOfWeek, endOfWeek, differenceInDays } from "date-fns";
+import { CheckCircle2, Circle, LayoutList, Target } from "lucide-react";
+import { type Task, type Goal } from "@/lib/firebase/firestore";
 import { useLanguage } from "@/components/shared/language-context";
 
 interface TasksMetricsProps {
     tasks: Task[];
-    timeFilter: "today" | "week" | "month";
-    onTimeFilterChange: (filter: "today" | "week" | "month") => void;
+    goals: Goal[];
 }
 
-export function TasksMetrics({ tasks, timeFilter, onTimeFilterChange }: TasksMetricsProps) {
-    // Helper to safely convert Timestamp/string/number to Date
-    const getDate = (dateField: any): Date => {
-        if (!dateField) return new Date();
-        if (dateField.toDate && typeof dateField.toDate === 'function') {
-            return dateField.toDate();
-        }
-        return new Date(dateField);
-    };
-
-    // Filter tasks based on time period
-    const getFilteredTasks = () => {
-        return tasks.filter((task) => {
-            if (!task.createdAt) return false;
-            const taskDate = getDate(task.createdAt);
-
-            switch (timeFilter) {
-                case "today":
-                    return isToday(taskDate);
-                case "week":
-                    return isThisWeek(taskDate, { weekStartsOn: 1 });
-                case "month":
-                    return isThisMonth(taskDate);
-                default:
-                    return false;
-            }
-        });
-    };
-
-    const filteredTasks = getFilteredTasks();
-    const completedTasks = filteredTasks.filter((t) => t.completed);
-    const totalTasks = filteredTasks.length;
-    const completionRate = totalTasks > 0 ? Math.round((completedTasks.length / totalTasks) * 100) : 0;
-
-    // Calculate productivity velocity (comparison with previous period)
-    const getPreviousPeriodTasks = () => {
-        const now = new Date();
-        return tasks.filter((task) => {
-            if (!task.createdAt) return false;
-            const taskDate = getDate(task.createdAt);
-
-            switch (timeFilter) {
-                case "today": {
-                    const yesterday = new Date(now);
-                    yesterday.setDate(yesterday.getDate() - 1);
-                    const yesterdayStart = new Date(yesterday.setHours(0, 0, 0, 0));
-                    const yesterdayEnd = new Date(yesterday.setHours(23, 59, 59, 999));
-                    return taskDate >= yesterdayStart && taskDate <= yesterdayEnd;
-                }
-                case "week": {
-                    const lastWeekStart = new Date(startOfWeek(now, { weekStartsOn: 1 }));
-                    lastWeekStart.setDate(lastWeekStart.getDate() - 7);
-                    const lastWeekEnd = new Date(endOfWeek(now, { weekStartsOn: 1 }));
-                    lastWeekEnd.setDate(lastWeekEnd.getDate() - 7);
-                    return taskDate >= lastWeekStart && taskDate <= lastWeekEnd;
-                }
-                case "month": {
-                    const lastMonth = new Date(now);
-                    lastMonth.setMonth(lastMonth.getMonth() - 1);
-                    return taskDate.getMonth() === lastMonth.getMonth() &&
-                        taskDate.getFullYear() === lastMonth.getFullYear();
-                }
-                default:
-                    return false;
-            }
-        });
-    };
-
-    const previousPeriodCompleted = getPreviousPeriodTasks().filter((t) => t.completed).length;
-    const velocityChange = previousPeriodCompleted > 0
-        ? Math.round(((completedTasks.length - previousPeriodCompleted) / previousPeriodCompleted) * 100)
-        : completedTasks.length > 0 ? 100 : 0;
-
-    // Calculate streak (consecutive days with completed tasks)
-    const calculateStreak = () => {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        let streak = 0;
-        let currentDate = new Date(today);
-
-        for (let i = 0; i < 365; i++) {
-            const hasCompletedTask = tasks.some((task) => {
-                if (!task.createdAt || !task.completed) return false;
-                const createdDate = getDate(task.createdAt);
-                createdDate.setHours(0, 0, 0, 0);
-                return createdDate.getTime() === currentDate.getTime();
-            });
-
-            if (!hasCompletedTask) break;
-            streak++;
-            currentDate.setDate(currentDate.getDate() - 1);
-        }
-
-        return streak;
-    };
-
+export function TasksMetrics({ tasks = [], goals = [] }: TasksMetricsProps) {
     const { t } = useLanguage();
 
-    const streak = calculateStreak();
+    const activeTasks = tasks.filter((t) => !t.completed).length;
+    const completedTasks = tasks.filter((t) => t.completed).length;
+    const totalTasks = tasks.length;
+    const completionRate =
+        totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
+
+    const activeGoals = goals.filter((g) => (g.progress || 0) < 100).length;
+    const totalGoals = goals.length;
 
     return (
-        <div className="space-y-6">
-            {/* Header with Time Filter */}
-            {/* Header with Time Filter */}
-            <div className="flex items-center justify-between">
-                <div />
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="sm" className="gap-2 h-9 rounded-full bg-white/50 backdrop-blur-sm border-slate-200 dark:border-slate-800">
-                            <Calendar className="h-4 w-4" />
-                            {t(timeFilter)}
-                            <ChevronDown className="h-4 w-4 opacity-50" />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => onTimeFilterChange("today")}>
-                            {t("today")}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => onTimeFilterChange("week")}>
-                            {t("week")}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => onTimeFilterChange("month")}>
-                            {t("month")}
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            {/* Active Tasks Block */}
+            <div className="bg-white dark:bg-slate-900 rounded-3xl p-4 border border-slate-100 dark:border-slate-800 flex items-center gap-4 shadow-sm">
+                <div className="h-12 w-12 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center shrink-0">
+                    <LayoutList className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div>
+                    <div className="flex items-baseline gap-2">
+                        <span className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                            {activeTasks}
+                        </span>
+                    </div>
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                        {t("active_tasks") || "Active Tasks"}
+                    </p>
+                </div>
             </div>
 
-            {/* Stats Cards - Compact Layout */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Focus Time Card */}
-                <div className="flex items-center gap-4 p-4 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl shadow-sm">
-                    <div className="h-12 w-12 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 flex items-center justify-center shrink-0">
-                        <Clock className="h-6 w-6" />
-                    </div>
-                    <div>
-                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                            {t("focus_time")}
-                        </p>
-                        <div className="flex items-baseline gap-2">
-                            <h3 className="text-2xl font-bold text-foreground">
-                                {(() => {
-                                    const totalSeconds = completedTasks.reduce((acc, t) => acc + (t.totalTimeSpent || 0), 0);
-                                    const hours = (totalSeconds / 3600).toFixed(1);
-                                    return `${hours}h`;
-                                })()}
-                            </h3>
-                            <span className="text-xs text-muted-foreground">
-                                {(() => {
-                                    const totalSeconds = completedTasks.reduce((acc, t) => acc + (t.totalTimeSpent || 0), 0);
-                                    const avgMinutes = completedTasks.length > 0 ? Math.round((totalSeconds / 60) / completedTasks.length) : 0;
-                                    return `~${avgMinutes}m/task`;
-                                })()}
-                            </span>
-                        </div>
-                    </div>
+            {/* Active Goals Block */}
+            <div className="bg-white dark:bg-slate-900 rounded-3xl p-4 border border-slate-100 dark:border-slate-800 flex items-center gap-4 shadow-sm">
+                <div className="h-12 w-12 rounded-full bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center shrink-0">
+                    <Target className="h-6 w-6 text-purple-600 dark:text-purple-400" />
                 </div>
-
-                {/* Task Completion Card */}
-                <div className="flex items-center gap-4 p-4 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl shadow-sm">
-                    <div className="h-12 w-12 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 flex items-center justify-center shrink-0">
-                        <CheckCircle2 className="h-6 w-6" />
+                <div>
+                    <div className="flex items-baseline gap-2">
+                        <span className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                            {activeGoals}
+                        </span>
+                        <span className="text-xs text-slate-400">
+                            / {totalGoals} Total
+                        </span>
                     </div>
-                    <div>
-                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                            {t("tasks")}
-                        </p>
-                        <div className="flex items-baseline gap-2">
-                            <h3 className="text-2xl font-bold text-foreground">
-                                {completedTasks.length} <span className="text-lg text-muted-foreground font-medium">/ {totalTasks}</span>
-                            </h3>
-                            <span className="text-xs text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full font-medium">
-                                {completionRate}% Rate
-                            </span>
-                        </div>
-                    </div>
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                        {t("active_goals") || "Active Goals"}
+                    </p>
                 </div>
+            </div>
 
-                {/* Streak Card */}
-                <div className="flex items-center gap-4 p-4 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl shadow-sm">
-                    <div className="h-12 w-12 rounded-xl bg-orange-50 dark:bg-orange-900/20 text-orange-600 flex items-center justify-center shrink-0">
-                        <Flame className="h-6 w-6" />
+            {/* Completion Rate Block */}
+            <div className="bg-white dark:bg-slate-900 rounded-3xl p-4 border border-slate-100 dark:border-slate-800 flex items-center gap-4 shadow-sm">
+                <div className="h-12 w-12 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center shrink-0">
+                    <CheckCircle2 className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <div>
+                    <div className="flex items-baseline gap-2">
+                        <span className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                            {completionRate}%
+                        </span>
+                        <span className="text-xs text-slate-400">
+                            ({completedTasks} finished)
+                        </span>
                     </div>
-                    <div>
-                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                            {t("streak")}
-                        </p>
-                        <div className="flex items-baseline gap-2">
-                            <h3 className="text-2xl font-bold text-foreground">
-                                {streak}
-                            </h3>
-                            <span className="text-sm text-muted-foreground">days</span>
-                        </div>
-                    </div>
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                        {t("completion_rate") || "Completion Rate"}
+                    </p>
                 </div>
             </div>
         </div>

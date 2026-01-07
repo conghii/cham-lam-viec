@@ -5,29 +5,41 @@ import {
     subscribeToFeed,
     subscribeToFriendships,
     type Post,
-    type Friendship
+    type Friendship,
+    subscribeToGlobalFeed
 } from "@/lib/firebase/firestore"
 import { auth } from "@/lib/firebase/auth"
 import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
-import { BookOpen, Users, Image as ImageIcon, Link as LinkIcon, Lightbulb } from "lucide-react"
+import { Image as ImageIcon, Link as LinkIcon, Lightbulb, User } from "lucide-react"
 import { CreatePostDialog } from "@/components/dashboard/sharing/create-post-dialog"
 import { PostCard } from "@/components/dashboard/sharing/post-card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { TrendingSidebar } from "@/components/dashboard/sharing/trending-sidebar"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Badge } from "@/components/ui/badge"
-import { subscribeToGlobalFeed } from "@/lib/firebase/firestore"
 import { cn } from "@/lib/utils"
 import { useLanguage } from "@/components/shared/language-context"
+import { LeftSidebar } from "@/components/dashboard/sharing/left-sidebar"
+import { RightSidebar } from "@/components/dashboard/sharing/right-sidebar"
+import { BookOpen } from "lucide-react"
+import { useSearchParams, useRouter, usePathname } from "next/navigation"
+import { PostDetailDialog } from "@/components/dashboard/sharing/post-detail-dialog"
 
 export default function SharingPage() {
     const [user, setUser] = useState(auth.currentUser)
     const [posts, setPosts] = useState<Post[]>([])
     const [friendships, setFriendships] = useState<Friendship[]>([])
     const [loading, setLoading] = useState(true)
-    const [viewMode, setViewMode] = useState<'global' | 'circle'>('circle')
+    const [viewMode, setViewMode] = useState<'global' | 'circle'>('circle') // Default to 'circle' for personalization
     const { t } = useLanguage()
+
+    const searchParams = useSearchParams()
+    const router = useRouter()
+    const pathname = usePathname()
+    const postId = searchParams.get('post')
+
+    const handleClosePostDetail = (open: boolean) => {
+        if (!open) {
+            router.push(pathname, { scroll: false })
+        }
+    }
 
     useEffect(() => {
         const unsubAuth = auth.onAuthStateChanged((u) => {
@@ -85,70 +97,58 @@ export default function SharingPage() {
 
     return (
         <div className="min-h-[calc(100vh-4rem)] bg-slate-50/50 dark:bg-slate-950">
-            <div className="container max-w-[1600px] mx-auto flex justify-center gap-8 py-6 items-start px-4">
+            <div className="container max-w-[1400px] mx-auto flex justify-center gap-8 py-8 px-4 items-start">
 
-                {/* --- LEFT COLUMN: NAVIGATION (Sticky) --- */}
-                <div className="hidden lg:block w-64 shrink-0 sticky top-[5.5rem] self-start">
-                    {/* Navigation Card */}
-                    <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-2xl p-4 shadow-sm border border-slate-200/60 dark:border-slate-800">
-                        <h2 className="text-lg font-bold font-serif mb-4 px-2 text-slate-800 dark:text-slate-100">{t("knowledge_hub")}</h2>
-                        <div className="space-y-1">
-                            <Button
-                                variant={viewMode === 'global' ? "secondary" : "ghost"}
-                                className={cn("w-full justify-start gap-3 rounded-xl font-medium transition-all", viewMode === 'global' ? "bg-indigo-50 text-indigo-600 shadow-sm dark:bg-indigo-900/20 dark:text-indigo-300" : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800")}
-                                onClick={() => setViewMode('global')}
-                            >
-                                <BookOpen className="h-4 w-4" /> {t("global_feed")}
-                            </Button>
-                            <Button
-                                variant={viewMode === 'circle' ? "secondary" : "ghost"}
-                                className={cn("w-full justify-start gap-3 rounded-xl font-medium transition-all", viewMode === 'circle' ? "bg-indigo-50 text-indigo-600 shadow-sm dark:bg-indigo-900/20 dark:text-indigo-300" : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800")}
-                                onClick={() => setViewMode('circle')}
-                            >
-                                <Users className="h-4 w-4" /> {t("my_circle")}
-                            </Button>
-                        </div>
-                    </div>
+                {/* --- LEFT COLUMN --- */}
+                <div className="hidden lg:block">
+                    <LeftSidebar viewMode={viewMode} setViewMode={setViewMode} />
                 </div>
+
 
                 {/* --- CENTER COLUMN: MAIN FEED --- */}
                 <div className="flex-1 max-w-2xl w-full space-y-6 pb-20">
-                    {/* Quick Post Widget (Composer) */}
-                    <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm border border-slate-200 dark:border-slate-800 shadow-sm rounded-2xl p-4 transition-all hover:shadow-md">
-                        <div className="flex gap-4">
-                            <Avatar className="h-11 w-11 shrink-0 border-2 border-slate-50 relative z-0">
+                    {/* New Post Input Widget */}
+                    <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 shadow-sm border border-slate-100 dark:border-slate-800">
+                        <div className="flex gap-4 mb-4">
+                            <Avatar className="h-12 w-12 border-2 border-white dark:border-slate-800 shadow-sm">
                                 <AvatarImage src={user?.photoURL || "/avatars/01.png"} />
                                 <AvatarFallback>{user?.displayName?.[0] || 'U'}</AvatarFallback>
                             </Avatar>
+                            <CreatePostDialog>
+                                <div className="flex-1 bg-slate-100 dark:bg-slate-800 rounded-full px-6 py-3 cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors flex items-center">
+                                    <span className="text-slate-500 dark:text-slate-400 font-medium truncate">
+                                        {t("whats_on_your_mind") || `What's happening, ${user?.displayName?.split(' ')[0] || 'Alex'}?`}
+                                    </span>
+                                </div>
+                            </CreatePostDialog>
+                        </div>
 
-                            <div className="flex-1">
+                        <div className="flex items-center justify-between px-2">
+                            <div className="flex gap-4">
                                 <CreatePostDialog>
-                                    <div className="w-full text-left group cursor-pointer">
-                                        {/* Fake Input */}
-                                        <div className="w-full bg-slate-50 dark:bg-slate-800/50 group-hover:bg-slate-100 dark:group-hover:bg-slate-800 border border-transparent group-hover:border-slate-200 dark:group-hover:border-slate-700 rounded-2xl p-4 transition-all min-h-[70px] flex items-center">
-                                            <p className="text-slate-400 font-medium text-lg truncate">
-                                                {t("whats_on_your_mind")}{user?.displayName ? `, ${user.displayName.split(' ')[0]}` : ""}...
-                                            </p>
-                                        </div>
-
-                                        {/* Fake Toolbar */}
-                                        <div className="flex items-center gap-2 mt-3 pl-1">
-                                            <Button variant="ghost" size="sm" className="h-8 px-3 rounded-full text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 gap-2">
-                                                <ImageIcon className="h-4 w-4" />
-                                                <span className="text-xs font-medium">{t("image_btn")}</span>
-                                            </Button>
-                                            <Button variant="ghost" size="sm" className="h-8 px-3 rounded-full text-slate-500 hover:text-blue-600 hover:bg-blue-50 gap-2">
-                                                <LinkIcon className="h-4 w-4" />
-                                                <span className="text-xs font-medium">{t("link_btn")}</span>
-                                            </Button>
-                                            <Button variant="ghost" size="sm" className="h-8 px-3 rounded-full text-slate-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 gap-2">
-                                                <Lightbulb className="h-4 w-4" />
-                                                <span className="text-xs font-medium">{t("insight_btn")}</span>
-                                            </Button>
-                                        </div>
-                                    </div>
+                                    <button className="flex items-center gap-2 text-slate-500 hover:text-emerald-600 transition-colors text-sm font-bold">
+                                        <ImageIcon className="h-5 w-5 text-emerald-500" />
+                                        Photo
+                                    </button>
+                                </CreatePostDialog>
+                                <CreatePostDialog>
+                                    <button className="flex items-center gap-2 text-slate-500 hover:text-blue-600 transition-colors text-sm font-bold">
+                                        <LinkIcon className="h-5 w-5 text-blue-500" />
+                                        Link
+                                    </button>
+                                </CreatePostDialog>
+                                <CreatePostDialog>
+                                    <button className="flex items-center gap-2 text-slate-500 hover:text-purple-600 transition-colors text-sm font-bold">
+                                        <Lightbulb className="h-5 w-5 text-purple-500" />
+                                        Perspective
+                                    </button>
                                 </CreatePostDialog>
                             </div>
+                            <CreatePostDialog>
+                                <Button className="rounded-full px-6 font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200 dark:shadow-indigo-900/20">
+                                    Post
+                                </Button>
+                            </CreatePostDialog>
                         </div>
                     </div>
 
@@ -167,12 +167,9 @@ export default function SharingPage() {
                     </div>
 
                     {posts.length === 0 && (
-                        <div className="text-center py-20 border-2 border-dashed border-slate-200 rounded-3xl bg-slate-50/50">
-                            <div className="h-16 w-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
-                                <BookOpen className="h-8 w-8 text-slate-300" />
-                            </div>
-                            <h3 className="text-lg font-bold text-slate-800">{t("feed_quiet")}</h3>
-                            <p className="text-slate-500 mb-6 max-w-sm mx-auto mt-2">{t("feed_quiet_desc")}</p>
+                        <div className="text-center py-20">
+                            <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200">{t("feed_quiet")}</h3>
+                            <p className="text-slate-500 mb-6">{t("feed_quiet_desc")}</p>
                             <CreatePostDialog>
                                 <Button className="rounded-full px-6">{t("create_first_post")}</Button>
                             </CreatePostDialog>
@@ -180,36 +177,9 @@ export default function SharingPage() {
                     )}
                 </div>
 
-                {/* --- RIGHT COLUMN: TRENDING & TAGS (Sticky) --- */}
-                <div className="hidden xl:block w-80 shrink-0 sticky top-[5.5rem] self-start space-y-6">
-                    {/* Trending Section */}
-                    <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-2xl p-5 shadow-sm border border-slate-200/60 dark:border-slate-800">
-                        <TrendingSidebar />
-                    </div>
-
-                    {/* Tags Section */}
-                    <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-2xl p-5 shadow-sm border border-slate-200/60 dark:border-slate-800">
-                        <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">{t("popular_tags")}</h3>
-                        <div className="flex flex-wrap gap-2">
-                            {['productivity', 'learning', 'coding', 'health', 'books', 'mindset'].map(tag => (
-                                <Badge
-                                    key={tag}
-                                    variant="outline"
-                                    className="cursor-pointer bg-white/50 dark:bg-slate-900/50 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-200 dark:hover:border-indigo-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 rounded-lg py-1.5 px-3 font-medium transition-all"
-                                >
-                                    #{tag}
-                                </Badge>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Footer / Copyright Mock */}
-                    <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-slate-400 px-2 opacity-60 hover:opacity-100 transition-opacity">
-                        <span>© 2024 ChamLam</span>
-                        <a href="#" className="hover:underline">Privacy</a>
-                        <a href="#" className="hover:underline">Terms</a>
-                        <a href="#" className="hover:underline">Help</a>
-                    </div>
+                {/* --- RIGHT COLUMN --- */}
+                <div className="hidden xl:block">
+                    <RightSidebar />
                 </div>
 
             </div>

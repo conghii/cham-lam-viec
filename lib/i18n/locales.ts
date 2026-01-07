@@ -122,6 +122,8 @@ export const dictionaries = {
         "add_task": "Add Task",
 
 
+        "active_tasks": "Active Tasks",
+        "active_goals": "Active Goals",
         "completion_rate": "Completion Rate",
         "productivity": "Productivity",
         "focus_time": "Focus Time",
@@ -164,7 +166,7 @@ export const dictionaries = {
         "assignees_teams": "Assignees & Teams",
         "create_goal_button": "Create Objective",
         "total_progress": "Total Progress",
-        "active_goals": "Active Goals",
+
         "completed_goals": "Completed",
         "no_goals_visible": "No objectives visible to you.",
         "create_first_goal": "Start by creating your first big objective.",
@@ -231,6 +233,7 @@ export const dictionaries = {
         "global_feed": "Global Feed",
         "my_circle": "My Circle",
         "popular_tags": "Popular Tags",
+        "trending_now": "Trending Now",
         "whats_on_your_mind": "What's on your mind",
         "image_btn": "Image",
         "link_btn": "Link",
@@ -423,7 +426,8 @@ export const dictionaries = {
         "no_date": "Ngày",
         "add_task": "Thêm nhiệm vụ",
 
-
+        "active_tasks": "Nhiệm vụ đang làm",
+        "active_goals": "Mục tiêu đang làm",
         "completion_rate": "Tỷ lệ hoàn thành",
         "productivity": "Năng suất",
         "focus_time": "Thời gian tập trung",
@@ -485,7 +489,7 @@ export const dictionaries = {
         "assignees_teams": "Người được giao & Nhóm",
         "create_goal_button": "Tạo mục tiêu",
         "total_progress": "Tổng tiến độ",
-        "active_goals": "Mục tiêu đang thực hiện",
+
         "completed_goals": "Đã hoàn thành",
         "no_goals_visible": "Không có mục tiêu nào hiển thị với bạn.",
         "create_first_goal": "Bắt đầu bằng cách tạo mục tiêu lớn đầu tiên của bạn.",
@@ -532,6 +536,7 @@ export const dictionaries = {
         "global_feed": "Bảng tin chung",
         "my_circle": "Vòng tròn của tôi",
         "popular_tags": "Thẻ phổ biến",
+        "trending_now": "Đang thịnh hành",
         "whats_on_your_mind": "Bạn đang nghĩ gì",
         "image_btn": "Ảnh",
         "link_btn": "Liên kết",

@@ -21,6 +21,7 @@ import { ViewAttachmentDialog } from "./view-attachment-dialog"
 import { Edit } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner";
+import { MentionInput } from "./mention-input"
 
 // Dynamic import for emoji picker to avoid SSR issues
 const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false })
@@ -89,7 +90,7 @@ export function PostCard({ post, currentUserId, friendships = [] }: { post: Post
     const displayImages = [...imageAttachments, ...legacyImages]
 
     return (
-        <Card className="overflow-hidden border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow rounded-2xl bg-white dark:bg-slate-900">
+        <Card id={post.id} className="overflow-hidden border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow rounded-3xl bg-white dark:bg-slate-900">
             <CardHeader className="p-5 flex flex-row items-start gap-4 space-y-0">
                 <Link href={`/dashboard/profile/${post.authorId}`} className="cursor-pointer hover:opacity-80 transition-opacity">
                     <Avatar className="h-11 w-11 border border-slate-100">
@@ -278,8 +279,7 @@ export function PostCard({ post, currentUserId, friendships = [] }: { post: Post
 function CommentSection({ postId }: { postId: string }) {
     const [comments, setComments] = useState<SocialComment[]>([])
     const [newComment, setNewComment] = useState("")
-    const [showEmojiPicker, setShowEmojiPicker] = useState(false)
-    const commentInputRef = useRef<HTMLInputElement>(null)
+    const [mentions, setMentions] = useState<string[]>([])
 
     useEffect(() => {
         const unsub = subscribeToComments(postId, (data) => setComments(data))
@@ -288,28 +288,9 @@ function CommentSection({ postId }: { postId: string }) {
 
     const handleSend = async () => {
         if (!newComment.trim()) return
-        await addComment(postId, newComment)
+        await addComment(postId, newComment, mentions)
         setNewComment("")
-        setShowEmojiPicker(false)
-    }
-
-    const handleEmojiClick = (emojiData: any) => {
-        const emoji = emojiData.emoji
-        const input = commentInputRef.current
-        if (input) {
-            const start = input.selectionStart || 0
-            const end = input.selectionEnd || 0
-            const newText = newComment.substring(0, start) + emoji + newComment.substring(end)
-            setNewComment(newText)
-            // Set cursor position after emoji
-            setTimeout(() => {
-                input.focus()
-                input.setSelectionRange(start + emoji.length, start + emoji.length)
-            }, 0)
-        } else {
-            setNewComment(newComment + emoji)
-        }
-        setShowEmojiPicker(false)
+        setMentions([])
     }
 
     return (
@@ -328,7 +309,7 @@ function CommentSection({ postId }: { postId: string }) {
                                         <span className="font-bold text-xs text-slate-900 dark:text-slate-200">{c.author?.displayName}</span>
                                         <span className="text-[10px] text-slate-400 font-medium">{c.createdAt ? formatDistanceToNow(c.createdAt.toDate()) : "now"}</span>
                                     </div>
-                                    <p className="text-slate-700 dark:text-slate-300 text-[14px] leading-relaxed">{c.content}</p>
+                                    <p className="text-slate-700 dark:text-slate-300 text-[14px] leading-relaxed whitespace-pre-wrap">{c.content}</p>
                                 </div>
                             </div>
                         </div>
@@ -336,28 +317,22 @@ function CommentSection({ postId }: { postId: string }) {
                     {comments.length === 0 && <p className="text-sm text-center text-slate-400 py-6 italic">No comments yet. Start the conversation!</p>}
                 </div>
             </ScrollArea>
-            <div className="flex items-center gap-3 pt-2 relative">
-                <Avatar className="h-8 w-8 shrink-0 border border-slate-100">
+            <div className="flex items-start gap-3 pt-2 relative">
+                <Avatar className="h-8 w-8 shrink-0 border border-slate-100 mt-1">
                     <AvatarFallback className="bg-slate-50 text-slate-500 text-xs">Me</AvatarFallback>
                 </Avatar>
                 <div className="flex-1 relative">
-                    <Input
-                        ref={commentInputRef}
-                        placeholder="Write a comment..."
-                        className="min-h-[42px] h-11 text-[15px] pr-20 rounded-full bg-slate-50 dark:bg-slate-800 border-transparent focus:bg-white dark:focus:bg-slate-900 focus:border-slate-200 dark:focus:border-slate-700 focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800 transition-all font-medium placeholder:text-slate-400"
+                    <MentionInput
                         value={newComment}
-                        onChange={(e) => setNewComment(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                        onChange={(val: string, newMentions: string[]) => {
+                            setNewComment(val)
+                            setMentions(newMentions)
+                        }}
+                        onSubmit={handleSend}
+                        placeholder="Write a comment... (@ to mention)"
+                        className="min-h-[42px] py-3 text-[15px] pr-12 rounded-2xl bg-slate-50 dark:bg-slate-800 border-transparent focus:bg-white dark:focus:bg-slate-900 focus:border-slate-200 dark:focus:border-slate-700 focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800 transition-all font-medium placeholder:text-slate-400"
                     />
-                    <div className="absolute right-1.5 top-1.5 flex gap-1">
-                        <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-8 w-8 hover:bg-slate-200 text-slate-400 hover:text-slate-600 rounded-full transition-colors"
-                            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                        >
-                            <Smile className="h-5 w-5" />
-                        </Button>
+                    <div className="absolute right-1.5 bottom-1.5 flex gap-1">
                         <Button
                             size="icon"
                             variant="ghost"
@@ -367,11 +342,6 @@ function CommentSection({ postId }: { postId: string }) {
                             <Send className="h-4 w-4" />
                         </Button>
                     </div>
-                    {showEmojiPicker && (
-                        <div className="absolute bottom-14 right-0 z-50">
-                            <EmojiPicker onEmojiClick={handleEmojiClick} width={300} height={400} />
-                        </div>
-                    )}
                 </div>
             </div>
         </div>

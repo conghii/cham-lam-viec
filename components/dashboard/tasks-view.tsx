@@ -131,33 +131,7 @@ import { toast } from "sonner";
 import { useLanguage } from "@/components/shared/language-context";
 
 // Default tags if none exist
-const defaultTags: Tag[] = [
-    {
-        id: "general",
-        label: "General",
-        color: "bg-slate-50 text-slate-600 border-slate-100",
-    },
-    {
-        id: "coding",
-        label: "Coding",
-        color: "bg-blue-50 text-blue-600 border-blue-100",
-    },
-    {
-        id: "learning",
-        label: "Learning",
-        color: "bg-emerald-50 text-emerald-600 border-emerald-100",
-    },
-    {
-        id: "writing",
-        label: "Writing",
-        color: "bg-purple-50 text-purple-600 border-purple-100",
-    },
-    {
-        id: "design",
-        label: "Design",
-        color: "bg-pink-50 text-pink-600 border-pink-100",
-    },
-];
+const defaultTags: Tag[] = [];
 
 const presetColors = [
     { label: "Slate", value: "bg-slate-50 text-slate-600 border-slate-100" },
@@ -242,7 +216,7 @@ function TaskCard({
     const [priority, setPriority] = useState<"low" | "medium" | "high">(
         task.priority || "medium",
     );
-    const [tag, setTag] = useState(task.tag || "general");
+    const [tag, setTag] = useState(task.tag || "");
     const [goalId, setGoalId] = useState<string | null | undefined>(task.goalId);
     const [assigneeId, setAssigneeId] = useState<string | null | undefined>(
         task.assigneeId,
@@ -424,13 +398,16 @@ function TaskCard({
                                 {(() => {
                                     const availableTags = tags.length > 0 ? tags : defaultTags;
                                     const currentTag =
-                                        availableTags.find((t) => t.id === (task.tag || "general")) ||
+                                        availableTags.find((t) => t.id === (task.tag || "")) ||
                                         availableTags.find(
                                             (t) =>
                                                 t.label.toLowerCase() ===
-                                                (task.tag || "general").toLowerCase(),
+                                                (task.tag || "").toLowerCase(),
                                         ) ||
-                                        availableTags[0];
+                                        (availableTags.length > 0 ? availableTags[0] : null);
+
+                                    if (!currentTag) return null;
+
                                     return (
                                         <Badge
                                             variant="outline"
@@ -1210,6 +1187,7 @@ interface TasksViewProps {
 export function TasksView({ compact = false, className }: TasksViewProps) {
     const { t } = useLanguage()
     const [tasks, setTasks] = useState<Task[]>([]);
+    const [goals, setGoals] = useState<Goal[]>([]);
     const [columns, setColumns] = useState<TaskColumn[]>([]);
     const [newTaskTitle, setNewTaskTitle] = useState("");
     const [newTaskTag, setNewTaskTag] = useState("general");
@@ -1353,6 +1331,7 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
         loadMembers();
 
         const unsubscribeTasks = subscribeToTasks((data) => setTasks(data));
+        const unsubscribeGoals = subscribeToGoals((data) => setGoals(data));
         const unsubscribeColumns = subscribeToTaskColumns((data) => {
             setColumns(data);
         });
@@ -1370,6 +1349,7 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
         setLoading(false);
         return () => {
             unsubscribeTasks();
+            unsubscribeGoals();
             unsubscribeColumns();
             unsubscribeGroups();
             unsubscribeOrg();
@@ -1645,8 +1625,7 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
                 {!compact && (
                     <TasksMetrics
                         tasks={tasks}
-                        timeFilter={timeFilter}
-                        onTimeFilterChange={setTimeFilter}
+                        goals={goals}
                     />
                 )}
 

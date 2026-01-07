@@ -93,7 +93,7 @@ function KeyResultItem({ goalId, kr, onEdit, onDelete }: {
             </div>
 
             {/* Slider with z-index to ensure it's clickable */}
-            <div className="relative z-10 px-1">
+            <div className="relative z-10 px-1" onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
                 <Slider
                     value={[localCurrent]}
                     min={0}
@@ -234,6 +234,16 @@ export default function GoalsPage() {
             };
         }
     }, [selectedGoal, isDetailsOpen]);
+
+    // Keep selectedGoal in sync with goals updates (for Key Results etc)
+    useEffect(() => {
+        if (selectedGoal && goals.length > 0) {
+            const updatedGoal = goals.find(g => g.id === selectedGoal.id);
+            if (updatedGoal && JSON.stringify(updatedGoal) !== JSON.stringify(selectedGoal)) {
+                setSelectedGoal(updatedGoal);
+            }
+        }
+    }, [goals, selectedGoal]);
 
     const openGoalDetails = (goal: Goal, edit: boolean = false) => {
         setSelectedGoal(goal);

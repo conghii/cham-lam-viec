@@ -184,6 +184,9 @@ export type User = {
         github?: string;
         website?: string;
     };
+    // Social Graph
+    followers?: string[];
+    following?: string[];
 }
 
 export const createUser = async (user: User) => {
@@ -704,7 +707,7 @@ export const addBlogPost = async (title: string, excerpt: string, content: strin
                 senderName: user.displayName || "Unknown",
                 senderAvatar: user.photoURL || undefined,
                 type: 'mention',
-                resourceType: 'post',
+                resourceType: 'blog_post',
                 resourceId: docRef.id,
                 message: `mentioned you in blog post "${title}"`,
                 OrgId: orgId || undefined
@@ -2259,7 +2262,7 @@ export const toggleLikePost = async (postId: string, userId: string, isLiked: bo
     }
 };
 
-export const addComment = async (postId: string, content: string) => {
+export const addComment = async (postId: string, content: string, mentions: string[] = []) => {
     const { getCurrentUser } = await import("./auth");
     const user = await getCurrentUser();
     if (!user) return;
@@ -2271,7 +2274,8 @@ export const addComment = async (postId: string, content: string) => {
     batch.set(commentRef, {
         authorId: user.uid,
         content,
-        createdAt: serverTimestamp()
+        createdAt: serverTimestamp(),
+        mentions // Store mentions in the comment doc as well
     });
 
     batch.update(postRef, {
@@ -2279,6 +2283,47 @@ export const addComment = async (postId: string, content: string) => {
     });
 
     await batch.commit();
+
+    // Send notifications to mentioned users
+    if (mentions.length > 0) {
+        const postSnap = await getDoc(postRef);
+        const postTitle = postSnap.exists() ? postSnap.data()?.title || "a post" : "a post";
+
+        // Fetch full user profile to get orgId if needed, or rely on what we have.
+        // getCurrentUser returns the auth user which might not have orgId custom claim or property.
+        // Let's safe fetch or just use null if not sure.
+        let orgId = null;
+        if (user.uid) {
+            const uDoc = await getDoc(doc(db, "users", user.uid));
+            if (uDoc.exists()) {
+                orgId = uDoc.data().orgId || null;
+            }
+        }
+
+        mentions.forEach(async (id) => {
+            // Don't notify self
+            if (id === user.uid) return;
+
+            // Determine resource type based on post fields
+            // authorId -> Social Post (Sharing)
+            // userId -> Blog Post (Blog)
+            const postData = postSnap.data() || {};
+            const isSocialPost = !!postData.authorId;
+            const resourceType = isSocialPost ? 'social_post' : 'blog_post';
+
+            await createNotification({
+                recipientId: id,
+                senderId: user.uid,
+                senderName: user.displayName || "Unknown",
+                senderAvatar: user.photoURL || null, // Use null instead of undefined
+                type: 'mention',
+                resourceType: resourceType,
+                resourceId: postId,
+                message: `mentioned you in a comment on "${postTitle}"`,
+                OrgId: orgId // orgId is now string | null, which is valid
+            });
+        });
+    }
 };
 
 export const subscribeToComments = (postId: string, callback: (comments: SocialComment[]) => void) => {
@@ -2313,7 +2358,7 @@ export type Notification = {
     senderName: string;
     senderAvatar?: string;
     type: 'assignment' | 'mention' | 'comment' | 'system';
-    resourceType: 'task' | 'goal' | 'post' | 'comment';
+    resourceType: 'task' | 'goal' | 'post' | 'comment' | 'social_post' | 'blog_post';
     resourceId: string;
     message: string;
     read: boolean;
@@ -2349,6 +2394,30 @@ export const subscribeToNotifications = (userId: string, callback: (notification
     });
 };
 
+export const getFriends = async (userId: string) => {
+    const q = query(
+        collection(db, "friendships"),
+        or(
+            where("requesterId", "==", userId),
+            where("recipientId", "==", userId)
+        )
+    );
+
+    const snapshot = await getDocs(q);
+    const friendships = snapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() } as Friendship))
+        .filter(f => f.status === 'accepted');
+
+    const friendPromises = friendships.map(async (f) => {
+        const friendId = f.requesterId === userId ? f.recipientId : f.requesterId;
+        const friendSnap = await getDoc(doc(db, "users", friendId));
+        return friendSnap.exists() ? { uid: friendSnap.id, ...friendSnap.data() } as User : null;
+    });
+
+    const friends = await Promise.all(friendPromises);
+    return friends.filter((f): f is User => f !== null);
+};
+
 export const markNotificationAsRead = async (notificationId: string) => {
     await updateDoc(doc(db, "notifications", notificationId), {
         read: true
@@ -2370,4 +2439,18 @@ export const markAllNotificationsAsRead = async (userId: string) => {
     });
 
     await batch.commit();
+};
+
+export const getPost = async (postId: string): Promise<Post | null> => {
+    try {
+        const docRef = doc(db, "posts", postId);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            return { id: docSnap.id, ...docSnap.data() } as Post;
+        }
+        return null;
+    } catch (error) {
+        console.error("Error fetching post:", error);
+        return null;
+    }
 };

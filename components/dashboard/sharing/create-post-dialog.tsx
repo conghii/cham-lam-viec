@@ -8,11 +8,10 @@ import { Textarea } from "@/components/ui/textarea"
 import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Label } from "@/components/ui/label"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { Image as ImageIcon, X, Target, CheckSquare, StickyNote, PenTool, Loader2, Smile, Cloud } from "lucide-react"
 import { uploadFile } from "@/lib/firebase/storage"
-import { createPost, updatePost, type Post, type Attachment, subscribeToGoals, subscribeToTasks, subscribeToNotes, subscribeToBlogPosts, type Goal, type Task, type Note, type BlogPost } from "@/lib/firebase/firestore"
+import { createPost, updatePost, type Post, type Attachment } from "@/lib/firebase/firestore"
 import { auth } from "@/lib/firebase/auth"
 import { cn } from "@/lib/utils"
 import {
@@ -24,6 +23,12 @@ import {
 } from "@/components/ui/select"
 import { Globe, Users as UsersIcon } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+
+// Sub-components for lazy loading data
+import { GoalsSelector } from "./attachment-selectors/goals-selector"
+import { TasksSelector } from "./attachment-selectors/tasks-selector"
+import { NotesSelector } from "./attachment-selectors/notes-selector"
+import { BlogsSelector } from "./attachment-selectors/blogs-selector"
 
 // Dynamic import for emoji picker to avoid SSR issues
 const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false })
@@ -41,35 +46,18 @@ export function CreatePostDialog({ children, onPostCreated, postToEdit }: { chil
     const [showEmojiPicker, setShowEmojiPicker] = useState(false)
     const contentRef = useRef<HTMLTextAreaElement>(null)
 
-    // Data for attachments
-    const [myGoals, setMyGoals] = useState<Goal[]>([])
-    const [myTasks, setMyTasks] = useState<Task[]>([])
-    const [myNotes, setMyNotes] = useState<Note[]>([])
-    const [myBlogs, setMyBlogs] = useState<BlogPost[]>([])
     const [user] = useState(auth.currentUser)
 
-    // Load data when dialog opens
+    // Load initial data for EDIT mode only
     useEffect(() => {
         if (!open || !user) return
 
         if (postToEdit) {
             setTitle(postToEdit.title || "")
             setContent(postToEdit.content || "")
-            setTags(postToEdit.tags.join(", "))
+            setTags(postToEdit.tags?.join(", ") || "")
             setAttachments(postToEdit.attachments || [])
             setVisibility(postToEdit.visibility || 'public')
-        }
-
-        const unsubGoals = subscribeToGoals((data) => setMyGoals(data))
-        const unsubTasks = subscribeToTasks((data) => setMyTasks(data))
-        const unsubNotes = subscribeToNotes((data) => setMyNotes(data))
-        const unsubBlogs = subscribeToBlogPosts((data) => setMyBlogs(data))
-
-        return () => {
-            unsubGoals()
-            unsubTasks()
-            unsubNotes()
-            unsubBlogs()
         }
     }, [open, user, postToEdit])
 
@@ -329,92 +317,19 @@ export function CreatePostDialog({ children, onPostCreated, postToEdit }: { chil
                             </TabsContent>
 
                             <TabsContent value="goals" className="flex-1 flex flex-col mt-0 h-full">
-                                <div className="p-4 bg-emerald-50/30 dark:bg-emerald-900/10 border-b border-emerald-100/50 dark:border-emerald-900/20">
-                                    <p className="text-xs font-medium text-emerald-700 dark:text-emerald-400 flex items-center gap-2">
-                                        <Target className="h-3 w-3" /> Select a goal to link
-                                    </p>
-                                </div>
-                                <ScrollArea className="flex-1 p-2">
-                                    <div className="space-y-1">
-                                        {myGoals.map(g => (
-                                            <button
-                                                key={g.id}
-                                                onClick={() => handleAddAttachment('goal', g)}
-                                                className="w-full text-left p-3 rounded-xl hover:bg-white dark:hover:bg-slate-900 hover:shadow-sm border border-transparent hover:border-slate-100 dark:hover:border-slate-800 text-sm flex items-center gap-3 transition-all group"
-                                            >
-                                                <div className="h-2 w-2 rounded-full bg-emerald-400 shrink-0" />
-                                                <span className="truncate flex-1 font-medium text-slate-600 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white">{g.title}</span>
-                                                <span className="text-[10px] font-mono bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 px-1.5 py-0.5 rounded">{g.progress}%</span>
-                                            </button>
-                                        ))}
-                                    </div>
-                                </ScrollArea>
+                                <GoalsSelector onSelect={handleAddAttachment} />
                             </TabsContent>
 
                             <TabsContent value="tasks" className="flex-1 flex flex-col mt-0 h-full">
-                                <div className="p-4 bg-blue-50/30 dark:bg-blue-900/10 border-b border-blue-100/50 dark:border-blue-900/20">
-                                    <p className="text-xs font-medium text-blue-700 dark:text-blue-400 flex items-center gap-2">
-                                        <CheckSquare className="h-3 w-3" /> Select a task to link
-                                    </p>
-                                </div>
-                                <ScrollArea className="flex-1 p-2">
-                                    <div className="space-y-1">
-                                        {myTasks.filter(t => !t.completed).map(t => (
-                                            <button
-                                                key={t.id}
-                                                onClick={() => handleAddAttachment('task', t)}
-                                                className="w-full text-left p-3 rounded-xl hover:bg-white dark:hover:bg-slate-900 hover:shadow-sm border border-transparent hover:border-slate-100 dark:hover:border-slate-800 text-sm flex items-center gap-3 transition-all group"
-                                            >
-                                                <div className="h-2 w-2 rounded-full bg-blue-400 shrink-0" />
-                                                <span className="truncate flex-1 font-medium text-slate-600 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white">{t.title}</span>
-                                            </button>
-                                        ))}
-                                    </div>
-                                </ScrollArea>
+                                <TasksSelector onSelect={handleAddAttachment} />
                             </TabsContent>
 
                             <TabsContent value="notes" className="flex-1 flex flex-col mt-0 h-full">
-                                <div className="p-4 bg-orange-50/30 dark:bg-orange-900/10 border-b border-orange-100/50 dark:border-orange-900/20">
-                                    <p className="text-xs font-medium text-orange-700 dark:text-orange-400 flex items-center gap-2">
-                                        <StickyNote className="h-3 w-3" /> Select a note to link
-                                    </p>
-                                </div>
-                                <ScrollArea className="flex-1 p-2">
-                                    <div className="space-y-1">
-                                        {myNotes.map(n => (
-                                            <button
-                                                key={n.id}
-                                                onClick={() => handleAddAttachment('note', n)}
-                                                className="w-full text-left p-3 rounded-xl hover:bg-white dark:hover:bg-slate-900 hover:shadow-sm border border-transparent hover:border-slate-100 dark:hover:border-slate-800 text-sm flex items-center gap-3 transition-all group"
-                                            >
-                                                <div className="h-2 w-2 rounded-full bg-orange-400 shrink-0" />
-                                                <span className="truncate flex-1 font-medium text-slate-600 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white">{n.title || "Untitled"}</span>
-                                            </button>
-                                        ))}
-                                    </div>
-                                </ScrollArea>
+                                <NotesSelector onSelect={handleAddAttachment} />
                             </TabsContent>
 
                             <TabsContent value="blogs" className="flex-1 flex flex-col mt-0 h-full">
-                                <div className="p-4 bg-purple-50/30 dark:bg-purple-900/10 border-b border-purple-100/50 dark:border-purple-900/20">
-                                    <p className="text-xs font-medium text-purple-700 dark:text-purple-400 flex items-center gap-2">
-                                        <PenTool className="h-3 w-3" /> Select a blog to link
-                                    </p>
-                                </div>
-                                <ScrollArea className="flex-1 p-2">
-                                    <div className="space-y-1">
-                                        {myBlogs.map(b => (
-                                            <button
-                                                key={b.id}
-                                                onClick={() => handleAddAttachment('blog', b)}
-                                                className="w-full text-left p-3 rounded-xl hover:bg-white dark:hover:bg-slate-900 hover:shadow-sm border border-transparent hover:border-slate-100 dark:hover:border-slate-800 text-sm flex items-center gap-3 transition-all group"
-                                            >
-                                                <div className="h-2 w-2 rounded-full bg-purple-400 shrink-0" />
-                                                <span className="truncate flex-1 font-medium text-slate-600 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white">{b.title || "Untitled"}</span>
-                                            </button>
-                                        ))}
-                                    </div>
-                                </ScrollArea>
+                                <BlogsSelector onSelect={handleAddAttachment} />
                             </TabsContent>
                         </div>
                     </Tabs>
@@ -450,8 +365,8 @@ export function CreatePostDialog({ children, onPostCreated, postToEdit }: { chil
                             </div>
                         </div>
                     </div>
-                </div>
-            </DialogContent>
-        </Dialog>
+                </div >
+            </DialogContent >
+        </Dialog >
     )
 }

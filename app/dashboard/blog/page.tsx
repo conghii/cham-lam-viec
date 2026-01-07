@@ -297,11 +297,24 @@ function BlogCard({ post, canEdit, onTogglePin, onDelete, isPinned }: { post: Bl
                 isPinned ? "ring-2 ring-indigo-500/10 dark:ring-indigo-500/30" : ""
             )}>
                 {/* Cover Image Area */}
-                <div className={cn("h-32 w-full bg-gradient-to-br relative p-4 flex flex-col justify-between", gradient)}>
-                    {/* Overlay Icons */}
-                    <div className="absolute top-0 left-0 w-full h-full bg-black/5 dark:bg-black/20 group-hover:bg-black/0 transition-colors" />
+                {/* Cover Image Area */}
+                <div className={cn("h-32 w-full bg-gradient-to-br relative flex flex-col justify-between overflow-hidden", gradient)}>
+                    {/* Background Image if exists */}
+                    {post.coverImage && (
+                        <div className="absolute inset-0 z-0">
+                            <img
+                                src={post.coverImage}
+                                alt={post.title}
+                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                            />
+                            <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-300" />
+                        </div>
+                    )}
 
-                    <div className="relative z-10 flex justify-between items-start opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    {/* Overlay Icons */}
+                    <div className={cn("absolute top-0 left-0 w-full h-full transition-colors z-10", !post.coverImage && "bg-black/5 dark:bg-black/20 group-hover:bg-black/0")} />
+
+                    <div className="relative z-20 flex justify-between items-start opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4">
                         {canEdit && (
                             <button
                                 onClick={(e) => onTogglePin(e, post)}
@@ -317,7 +330,7 @@ function BlogCard({ post, canEdit, onTogglePin, onDelete, isPinned }: { post: Bl
                                         <MoreHorizontal className="h-3.5 w-3.5" />
                                     </button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-40 rounded-xl p-2 gap-1 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+                                <DropdownMenuContent align="end" className="w-40 rounded-xl p-2 gap-1 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-xl">
                                     <Link href={`/dashboard/blog/edit/${post.id}`} onClick={e => e.stopPropagation()}>
                                         <DropdownMenuItem className="rounded-lg cursor-pointer">
                                             <Pencil className="h-4 w-4 mr-2 text-slate-400" /> {canEdit ? "Edit" : ""}
@@ -335,11 +348,13 @@ function BlogCard({ post, canEdit, onTogglePin, onDelete, isPinned }: { post: Bl
                     </div>
 
                     {/* Default Icon if no cover image (simulated) */}
-                    <div className="self-center mt-2 transform group-hover:scale-110 transition-transform duration-500">
-                        {post.title.toLowerCase().includes("code") ? <FileText className="h-10 w-10 text-white/90 drop-shadow-md" /> :
-                            post.title.toLowerCase().includes("idea") ? <Star className="h-10 w-10 text-white/90 drop-shadow-md" /> :
-                                <BookOpen className="h-10 w-10 text-white/90 drop-shadow-md" />}
-                    </div>
+                    {!post.coverImage && (
+                        <div className="self-center mt-2 transform group-hover:scale-110 transition-transform duration-500 relative z-10">
+                            {post.title.toLowerCase().includes("code") ? <FileText className="h-10 w-10 text-white/90 drop-shadow-md" /> :
+                                post.title.toLowerCase().includes("idea") ? <Star className="h-10 w-10 text-white/90 drop-shadow-md" /> :
+                                    <BookOpen className="h-10 w-10 text-white/90 drop-shadow-md" />}
+                        </div>
+                    )}
                 </div>
 
                 <div className="p-5">

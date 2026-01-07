@@ -51,7 +51,11 @@ export default function NewBlogPostPage() {
         const file = e.target.files?.[0]
         if (!file) return
 
+        // Optimistic Preview
+        const objectUrl = URL.createObjectURL(file)
+        setCoverImage(objectUrl)
         setUploading(true)
+
         try {
             // Upload to "blog_covers/{timestamp}_{filename}"
             const path = `blog_covers/${Date.now()}_${file.name}`
@@ -59,6 +63,7 @@ export default function NewBlogPostPage() {
             setCoverImage(url)
         } catch (error) {
             console.error("Failed to upload image", error)
+            setCoverImage(null) // Revert on failure
         } finally {
             setUploading(false)
         }
@@ -134,8 +139,16 @@ export default function NewBlogPostPage() {
                             <img
                                 src={coverImage}
                                 alt="Cover"
-                                className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+                                className={cn("w-full h-full object-cover transition-transform duration-700 hover:scale-105", uploading && "opacity-50 blur-sm")}
                             />
+                            {uploading && (
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                    <div className="bg-background/80 backdrop-blur-md rounded-full px-4 py-2 flex items-center gap-2 shadow-lg">
+                                        <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                                        <span className="text-xs font-medium">Uploading...</span>
+                                    </div>
+                                </div>
+                            )}
                             <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <Button
                                     variant="secondary"
