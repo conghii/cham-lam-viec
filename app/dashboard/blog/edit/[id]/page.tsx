@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea" // Fallback if no rich editor
 import { ArrowLeft, Save, Image as ImageIcon, Loader2 } from "lucide-react"
-import { addBlogPost, updateBlogPost, getBlogPost } from "@/lib/firebase/firestore" // Need getBlogPost
+import { addBlogPost, updateBlogPost, getBlogPost, getUserOrganization } from "@/lib/firebase/firestore" // Need getBlogPost
 import { auth } from "@/lib/firebase/auth"
 import { toast } from "sonner"
 import Link from "next/link"
@@ -29,6 +29,7 @@ export default function EditBlogPage({ params }: { params: Promise<{ id: string 
     const [isLoading, setIsLoading] = useState(true)
     const [assigneeIds, setAssigneeIds] = useState<string[]>([])
     const [groupIds, setGroupIds] = useState<string[]>([])
+    const [orgId, setOrgId] = useState<string>("")
     const router = useRouter()
     const { t } = useLanguage()
 
@@ -50,6 +51,13 @@ export default function EditBlogPage({ params }: { params: Promise<{ id: string 
                 } else {
                     toast.error("Post not found");
                     router.push("/dashboard/blog");
+                }
+
+                // Fetch Org ID
+                const user = auth.currentUser;
+                if (user) {
+                    const org = await getUserOrganization(user.uid);
+                    if (org) setOrgId(org.id);
                 }
             } catch (error) {
                 console.error("Error fetching post:", error);
@@ -165,6 +173,7 @@ export default function EditBlogPage({ params }: { params: Promise<{ id: string 
                         <div className="space-y-2">
                             <Label>Assignee / Group</Label>
                             <UserGroupSelect
+                                orgId={orgId}
                                 assigneeIds={assigneeIds}
                                 groupIds={groupIds}
                                 onAssigneeChange={setAssigneeIds}
