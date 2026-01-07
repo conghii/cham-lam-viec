@@ -219,6 +219,11 @@ export const dictionaries = {
         "favorites": "Favorites",
         "journal": "Journal",
         "tech_docs": "Tech Docs",
+        "back_to_blog": "Back to Knowledge Garden",
+        "edit_entry": "Edit Entry",
+        "entry_title_placeholder": "Give it a title...",
+        "entry_content_placeholder": "What's on your mind?",
+        "saving": "Saving...",
 
         // Sharing
         "knowledge_hub": "Knowledge Hub",
@@ -514,6 +519,11 @@ export const dictionaries = {
         "favorites": "Yêu thích",
         "journal": "Nhật ký",
         "tech_docs": "Tài liệu kỹ thuật",
+        "back_to_blog": "Quay lại Vườn tri thức",
+        "edit_entry": "Chỉnh sửa bài viết",
+        "entry_title_placeholder": "Tiêu đề bài viết...",
+        "entry_content_placeholder": "Bạn đang nghĩ gì?",
+        "saving": "Đang lưu...",
 
         // Sharing
         "knowledge_hub": "Trung tâm tri thức",
