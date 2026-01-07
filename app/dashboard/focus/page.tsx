@@ -7,7 +7,7 @@ import {
     Layout, Calendar as CalendarIcon, Clock,
     MoreHorizontal, CheckCircle2, ChevronDown
 } from "lucide-react";
-import { subscribeToTasks, Task, addTask, deleteTask } from "@/lib/firebase/firestore";
+import { subscribeToTasks, Task, addTask, deleteTask, updateTaskTime } from "@/lib/firebase/firestore";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -85,11 +85,37 @@ export default function FocusPage() {
             // Play Completion Sound
             const audio = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
             audio.play().catch(e => console.error("Audio play failed", e));
+
+            // Save time!
+            if (activeTaskId) {
+                // If it finished normally, we add the full duration (or remaining time if we want to be precise)
+                // But simpler: we just track elapsed seconds in the interval.
+                // Actually, let's just save the increment when the timer stops.
+            }
         }
         return () => {
             if (timerRef.current) clearInterval(timerRef.current);
         };
     }, [isRunning, timeLeft]);
+
+    // Track elapsed time to save on pause/stop
+    const startTimeRef = useRef<number | null>(null);
+
+    useEffect(() => {
+        if (isRunning) {
+            startTimeRef.current = Date.now();
+        } else {
+            // Timer stopped (paused or finished)
+            if (startTimeRef.current && activeTaskId) {
+                const elapsedSeconds = Math.round((Date.now() - startTimeRef.current) / 1000);
+                if (elapsedSeconds > 0) {
+                    updateTaskTime(activeTaskId, elapsedSeconds).catch(err => console.error("Failed to save time", err));
+                    toast.success(`Saved ${Math.floor(elapsedSeconds / 60)}m ${elapsedSeconds % 60}s focus time`);
+                }
+            }
+            startTimeRef.current = null;
+        }
+    }, [isRunning, activeTaskId]);
 
     // Title Sync
     useEffect(() => {
@@ -168,19 +194,19 @@ export default function FocusPage() {
     const strokeDashoffset = circumference - (timeLeft / duration) * circumference;
 
     return (
-        <div className="flex h-[calc(100vh-4rem)] w-full bg-[#FAFBFC] font-sans text-slate-900 overflow-hidden">
+        <div className="flex h-[calc(100vh-4rem)] w-full bg-[#FAFBFC] dark:bg-slate-950/20 font-sans text-slate-900 dark:text-slate-100 overflow-hidden">
 
             {/* 1. Sidebar (25%ish - Fixed Width) */}
             <div className={cn(
-                "w-80 border-r border-slate-200 bg-[#F8F9FA] flex flex-col transition-all duration-500 ease-in-out relative z-20 shrink-0",
+                "w-80 border-r border-slate-200 dark:border-slate-800 bg-[#F8F9FA] dark:bg-slate-950 flex flex-col transition-all duration-500 ease-in-out relative z-20 shrink-0",
                 !isSidebarOpen && "-ml-80"
             )}>
                 {/* Sidebar Header */}
-                <div className="h-16 flex items-center justify-between px-4 border-b border-slate-200/50">
+                <div className="h-16 flex items-center justify-between px-4 border-b border-slate-200/50 dark:border-slate-800">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="font-semibold text-slate-700 hover:bg-slate-200/50 -ml-2">
-                                <CalendarIcon className="w-4 h-4 mr-2 text-slate-500" />
+                            <Button variant="ghost" size="sm" className="font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 -ml-2">
+                                <CalendarIcon className="w-4 h-4 mr-2 text-slate-500 dark:text-slate-400" />
                                 Today
                                 <ChevronDown className="w-3 h-3 ml-2 opacity-50" />
                             </Button>
@@ -192,18 +218,18 @@ export default function FocusPage() {
                         </DropdownMenuContent>
                     </DropdownMenu>
 
-                    <Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(false)} className="text-slate-400 hover:text-slate-600">
+                    <Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
                         <Layout className="w-4 h-4" />
                     </Button>
                 </div>
 
                 {/* Daily Progress */}
-                <div className="px-6 py-6 border-b border-slate-200/50">
+                <div className="px-6 py-6 border-b border-slate-200/50 dark:border-slate-800">
                     <div className="flex justify-between items-center mb-2">
-                        <span className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">Daily Progress</span>
-                        <span className="text-[10px] font-bold text-slate-500">0/4 Sessions</span>
+                        <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-wider uppercase">Daily Progress</span>
+                        <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">0/4 Sessions</span>
                     </div>
-                    <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
+                    <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
                         <div className="h-full bg-blue-500 w-0 rounded-full" />
                     </div>
                 </div>
@@ -223,19 +249,19 @@ export default function FocusPage() {
                                     className={cn(
                                         "p-3 rounded-xl border transition-all cursor-pointer group relative overflow-hidden",
                                         activeTaskId === task.id
-                                            ? "bg-blue-50 border-blue-200 shadow-sm border-l-4 border-l-blue-500"
-                                            : "bg-white border-slate-200 hover:border-slate-300 hover:shadow-sm"
+                                            ? "bg-blue-50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800/50 shadow-sm border-l-4 border-l-blue-500 dark:border-l-blue-500"
+                                            : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-sm dark:hover:bg-slate-800/50"
                                     )}
                                 >
                                     <div className="flex justify-between items-start mb-1">
                                         <span className={cn(
                                             "text-sm font-semibold truncate pr-2",
-                                            activeTaskId === task.id ? "text-blue-900" : "text-slate-700"
+                                            activeTaskId === task.id ? "text-blue-900 dark:text-blue-100" : "text-slate-700 dark:text-slate-300"
                                         )}>
                                             {typeof task.title === 'string' ? task.title : "Invalid Task Data"}
                                         </span>
                                         {activeTaskId === task.id && (
-                                            <span className="text-[10px] items-center flex font-bold text-blue-600 bg-blue-100 px-1.5 py-0.5 rounded-full whitespace-nowrap">
+                                            <span className="text-[10px] items-center flex font-bold text-blue-600 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/50 px-1.5 py-0.5 rounded-full whitespace-nowrap">
                                                 Active
                                             </span>
                                         )}
@@ -257,7 +283,7 @@ export default function FocusPage() {
 
                             <Dialog open={isAddTaskOpen} onOpenChange={setIsAddTaskOpen}>
                                 <DialogTrigger asChild>
-                                    <Button variant="ghost" className="w-full border-2 border-dashed border-slate-200 text-slate-400 hover:border-blue-300 hover:text-blue-500 rounded-xl justify-center h-12">
+                                    <Button variant="ghost" className="w-full border-2 border-dashed border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 hover:border-blue-300 dark:hover:border-blue-700 hover:text-blue-500 dark:hover:text-blue-400 rounded-xl justify-center h-12">
                                         <Plus className="w-4 h-4 mr-2" /> Add Task
                                     </Button>
                                 </DialogTrigger>
@@ -282,7 +308,7 @@ export default function FocusPage() {
             </div>
 
             {/* 2. Main Focus Zone (75%) */}
-            <div className="flex-1 relative flex flex-col items-center justify-center bg-gradient-to-br from-white to-blue-50/50">
+            <div className="flex-1 relative flex flex-col items-center justify-center bg-gradient-to-br from-white to-blue-50/50 dark:from-slate-950 dark:to-slate-900">
                 {/* Floating Open Sidebar Button */}
                 {!isSidebarOpen && (
                     <Button
@@ -305,9 +331,8 @@ export default function FocusPage() {
                                 cx="50%"
                                 cy="50%"
                                 r={radius}
-                                stroke="#F1F5F9"
+                                className="stroke-slate-100 dark:stroke-slate-800 fill-transparent"
                                 strokeWidth="8"
-                                fill="transparent"
                             />
                             {/* Progress */}
                             <circle
@@ -326,10 +351,10 @@ export default function FocusPage() {
 
                         {/* Center Content */}
                         <div className="absolute inset-0 flex flex-col items-center justify-center">
-                            <span className="text-8xl font-bold text-slate-900 tracking-tighter tabular-nums">
+                            <span className="text-8xl font-bold text-slate-900 dark:text-white tracking-tighter tabular-nums">
                                 {formatTime(timeLeft)}
                             </span>
-                            <span className="text-sm font-bold text-slate-400 tracking-[0.3em] uppercase mt-4">
+                            <span className="text-sm font-bold text-slate-400 dark:text-slate-500 tracking-[0.3em] uppercase mt-4">
                                 Focus Mode
                             </span>
                         </div>
@@ -338,11 +363,11 @@ export default function FocusPage() {
 
                 {/* Task Context */}
                 <div className="flex flex-col items-center space-y-4 mb-16 max-w-2xl px-8 text-center">
-                    <div className="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-bold tracking-wide uppercase">
-                        <span className="w-2 h-2 rounded-full bg-blue-600 mr-2 animate-pulse" />
+                    <div className="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-bold tracking-wide uppercase">
+                        <span className="w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-400 mr-2 animate-pulse" />
                         In Progress
                     </div>
-                    <h1 className="text-3xl md:text-4xl font-bold text-slate-800 leading-tight">
+                    <h1 className="text-3xl md:text-4xl font-bold text-slate-800 dark:text-slate-100 leading-tight">
                         {activeTask
                             ? (typeof activeTask.title === 'string' ? activeTask.title : "Invalid Task Data")
                             : "Select a task to begin"
@@ -355,7 +380,7 @@ export default function FocusPage() {
                     {/* Break */}
                     <Button
                         size="icon"
-                        className="h-14 w-14 rounded-full bg-white border border-slate-200 text-slate-500 shadow-sm hover:shadow-md hover:border-slate-300 hover:text-blue-500 transition-all"
+                        className="h-14 w-14 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 shadow-sm hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 hover:text-blue-500 dark:hover:text-blue-400 transition-all"
                         onClick={setShortBreak}
                         title="Take a Break"
                     >
@@ -365,7 +390,7 @@ export default function FocusPage() {
                     {/* Reset */}
                     <Button
                         size="icon"
-                        className="h-14 w-14 rounded-full bg-white border border-slate-200 text-slate-500 shadow-sm hover:shadow-md hover:border-slate-300 hover:text-red-500 transition-all"
+                        className="h-14 w-14 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 shadow-sm hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 hover:text-red-500 dark:hover:text-red-400 transition-all"
                         onClick={resetTimer}
                         title="Reset Timer"
                     >
@@ -378,8 +403,8 @@ export default function FocusPage() {
                         className={cn(
                             "h-20 w-20 rounded-full shadow-lg transition-all duration-300 flex items-center justify-center",
                             isRunning
-                                ? "bg-white border-2 border-slate-200 text-slate-700 hover:bg-slate-50 hover:scale-95"
-                                : "bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 hover:shadow-blue-500/25 hover:scale-105"
+                                ? "bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 hover:scale-95"
+                                : "bg-gradient-to-r from-blue-500 to-blue-600 shadow-blue-500/25 dark:shadow-blue-900/20 text-white hover:from-blue-600 hover:to-blue-700 hover:shadow-blue-500/40 hover:scale-105"
                         )}
                         onClick={toggleTimer}
                     >
@@ -393,7 +418,7 @@ export default function FocusPage() {
                     {/* Add Time */}
                     <Button
                         size="icon"
-                        className="h-14 w-14 rounded-full bg-white border border-slate-200 text-slate-500 shadow-sm hover:shadow-md hover:border-slate-300 hover:text-green-500 transition-all"
+                        className="h-14 w-14 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 shadow-sm hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 hover:text-green-500 dark:hover:text-green-400 transition-all"
                         onClick={addTime}
                         title="Add 5 Minutes"
                     >

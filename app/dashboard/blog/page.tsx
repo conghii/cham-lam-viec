@@ -132,16 +132,16 @@ export default function BlogListPage() {
     const canEdit = userRole === 'owner' || userRole === 'member';
 
     return (
-        <div className="flex h-[calc(100vh-4rem)] bg-slate-50/50 -m-6 p-6 overflow-hidden">
+        <div className="flex h-[calc(100vh-4rem)] bg-slate-50/50 dark:bg-slate-950/20 -m-6 p-6 overflow-hidden transition-colors duration-500">
             {/* Left Sidebar */}
-            <div className="w-64 hidden xl:flex flex-col gap-6 pr-6 border-r border-slate-200/60 sticky top-0 h-full">
+            <div className="w-64 hidden xl:flex flex-col gap-6 pr-6 border-r border-slate-200/60 dark:border-slate-800/60 sticky top-0 h-full">
                 <div className="flex items-center gap-2 px-2 py-1">
-                    <div className="h-8 w-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white shadow-lg shadow-indigo-200">
+                    <div className="h-8 w-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white shadow-lg shadow-indigo-200 dark:shadow-indigo-900/20">
                         <BookOpen className="h-5 w-5" />
                     </div>
                     <div>
-                        <h2 className="font-bold text-slate-800 leading-none">Knowledge</h2>
-                        <span className="text-[10px] text-slate-400 font-medium tracking-wide uppercase">Garden</span>
+                        <h2 className="font-bold text-slate-800 dark:text-slate-200 leading-none">Knowledge</h2>
+                        <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium tracking-wide uppercase">Garden</span>
                     </div>
                 </div>
 
@@ -159,20 +159,20 @@ export default function BlogListPage() {
                             className={cn(
                                 "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
                                 activeTab === item.id
-                                    ? "bg-white text-indigo-600 shadow-sm ring-1 ring-slate-100"
-                                    : "text-slate-600 hover:bg-white/50 hover:text-slate-900"
+                                    ? "bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm ring-1 ring-slate-100 dark:ring-slate-700"
+                                    : "text-slate-600 dark:text-slate-400 hover:bg-white/50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-slate-200"
                             )}
                         >
-                            <item.icon className={cn("h-4 w-4", activeTab === item.id ? "text-indigo-600" : "text-slate-400")} />
+                            <item.icon className={cn("h-4 w-4", activeTab === item.id ? "text-indigo-600 dark:text-indigo-400" : "text-slate-400 dark:text-slate-500")} />
                             {item.label}
                         </button>
                     ))}
                 </div>
 
                 <div className="mt-auto">
-                    <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl p-4 border border-indigo-100/50">
-                        <p className="text-xs font-semibold text-indigo-900 mb-1">Weekly Insight</p>
-                        <p className="text-xs text-indigo-700/80 leading-relaxed">
+                    <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-slate-900 dark:to-slate-900 rounded-2xl p-4 border border-indigo-100/50 dark:border-slate-800">
+                        <p className="text-xs font-semibold text-indigo-900 dark:text-indigo-300 mb-1">Weekly Insight</p>
+                        <p className="text-xs text-indigo-700/80 dark:text-slate-400 leading-relaxed">
                             "Writing is the painting of the voice." – Voltaire
                         </p>
                     </div>
@@ -192,27 +192,27 @@ export default function BlogListPage() {
                                     placeholder="Search your mind..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="pl-12 h-14 rounded-2xl border-slate-200 bg-white shadow-sm text-base focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500 transition-all font-medium placeholder:text-slate-400"
+                                    className="pl-12 h-14 rounded-2xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm text-base focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500 transition-all font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500 dark:text-slate-200"
                                 />
                             </div>
                             <div className="flex items-center gap-3">
-                                <div className="hidden md:flex items-center gap-1 bg-white p-1 rounded-xl border border-slate-200/60 shadow-sm">
+                                <div className="hidden md:flex items-center gap-1 bg-white dark:bg-slate-900 p-1 rounded-xl border border-slate-200/60 dark:border-slate-800 shadow-sm">
                                     <button
                                         onClick={() => setSortOption("date")}
-                                        className={cn("px-3 py-1.5 rounded-lg text-xs font-medium transition-all", sortOption === "date" ? "bg-slate-100 text-slate-900" : "text-slate-500 hover:text-slate-700")}
+                                        className={cn("px-3 py-1.5 rounded-lg text-xs font-medium transition-all", sortOption === "date" ? "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-200" : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300")}
                                     >
                                         Date
                                     </button>
                                     <button
                                         onClick={() => setSortOption("title")}
-                                        className={cn("px-3 py-1.5 rounded-lg text-xs font-medium transition-all", sortOption === "title" ? "bg-slate-100 text-slate-900" : "text-slate-500 hover:text-slate-700")}
+                                        className={cn("px-3 py-1.5 rounded-lg text-xs font-medium transition-all", sortOption === "title" ? "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-200" : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300")}
                                     >
                                         A-Z
                                     </button>
                                 </div>
                                 {canEdit && (
                                     <Link href="/dashboard/blog/new">
-                                        <Button size="lg" className="h-14 rounded-2xl px-6 shadow-lg shadow-indigo-200 hover:shadow-indigo-300 transition-all bg-indigo-600 hover:bg-indigo-700 text-white font-semibold">
+                                        <Button size="lg" className="h-14 rounded-2xl px-6 shadow-lg shadow-indigo-200 dark:shadow-indigo-900/20 hover:shadow-indigo-300 transition-all bg-indigo-600 hover:bg-indigo-700 text-white font-semibold">
                                             <Plus className="h-5 w-5 mr-2" /> New Entry
                                         </Button>
                                     </Link>
@@ -230,7 +230,7 @@ export default function BlogListPage() {
                     {/* Pinned Section */}
                     {pinnedPosts.length > 0 && (
                         <div className="mb-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                            <div className="flex items-center gap-2 mb-4 text-sm font-bold text-slate-700 uppercase tracking-wider">
+                            <div className="flex items-center gap-2 mb-4 text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                                 <Pin className="h-4 w-4 text-indigo-500 fill-indigo-500" /> Pinned
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -243,20 +243,20 @@ export default function BlogListPage() {
 
                     {/* Masonry Grid */}
                     <div className="mt-8">
-                        <div className="flex items-center gap-2 mb-4 text-sm font-bold text-slate-700 uppercase tracking-wider">
+                        <div className="flex items-center gap-2 mb-4 text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                             <LayoutGrid className="h-4 w-4 text-slate-400" /> Recent Entries
                         </div>
                         {loading ? (
                             <div className="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6 space-y-6">
-                                {[1, 2, 3, 4, 5, 6].map(i => <div key={i} className="h-64 bg-slate-200 rounded-3xl animate-pulse break-inside-avoid" />)}
+                                {[1, 2, 3, 4, 5, 6].map(i => <div key={i} className="h-64 bg-slate-200 dark:bg-slate-800 rounded-3xl animate-pulse break-inside-avoid" />)}
                             </div>
                         ) : unpinnedPosts.length === 0 && pinnedPosts.length === 0 ? (
-                            <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-200">
-                                <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <BookOpen className="h-10 w-10 text-indigo-400" />
+                            <div className="text-center py-20 bg-white dark:bg-slate-900 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800">
+                                <div className="w-20 h-20 bg-indigo-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <BookOpen className="h-10 w-10 text-indigo-400 dark:text-slate-600" />
                                 </div>
-                                <h3 className="text-xl font-bold text-slate-900">Your garden is empty</h3>
-                                <p className="text-slate-500 mt-2">Plant your first seed of knowledge today.</p>
+                                <h3 className="text-xl font-bold text-slate-900 dark:text-slate-200">Your garden is empty</h3>
+                                <p className="text-slate-500 dark:text-slate-400 mt-2">Plant your first seed of knowledge today.</p>
                             </div>
                         ) : (
                             <div className="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6 space-y-6 pb-20">
@@ -291,13 +291,13 @@ function BlogCard({ post, canEdit, onTogglePin, onDelete, isPinned }: { post: Bl
     return (
         <Link href={`/dashboard/blog/view/${post.id}`}>
             <div className={cn(
-                "group relative bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-[0_2px_10px_-2px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.1)] hover:-translate-y-1 transition-all duration-300",
-                isPinned ? "ring-2 ring-indigo-500/10" : ""
+                "group relative bg-white dark:bg-slate-900 rounded-3xl overflow-hidden border border-slate-100 dark:border-slate-800 shadow-[0_2px_10px_-2px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.1)] hover:-translate-y-1 transition-all duration-300",
+                isPinned ? "ring-2 ring-indigo-500/10 dark:ring-indigo-500/30" : ""
             )}>
                 {/* Cover Image Area */}
                 <div className={cn("h-32 w-full bg-gradient-to-br relative p-4 flex flex-col justify-between", gradient)}>
                     {/* Overlay Icons */}
-                    <div className="absolute top-0 left-0 w-full h-full bg-black/5 group-hover:bg-black/0 transition-colors" />
+                    <div className="absolute top-0 left-0 w-full h-full bg-black/5 dark:bg-black/20 group-hover:bg-black/0 transition-colors" />
 
                     <div className="relative z-10 flex justify-between items-start opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                         {canEdit && (
@@ -315,8 +315,8 @@ function BlogCard({ post, canEdit, onTogglePin, onDelete, isPinned }: { post: Bl
                                         <MoreHorizontal className="h-3.5 w-3.5" />
                                     </button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-40 rounded-xl p-2 gap-1">
-                                    <Link href={`/dashboard/blog/${post.id}`} onClick={e => e.stopPropagation()}>
+                                <DropdownMenuContent align="end" className="w-40 rounded-xl p-2 gap-1 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+                                    <Link href={`/dashboard/blog/edit/${post.id}`} onClick={e => e.stopPropagation()}>
                                         <DropdownMenuItem className="rounded-lg cursor-pointer">
                                             <Pencil className="h-4 w-4 mr-2 text-slate-400" /> Edit
                                         </DropdownMenuItem>
@@ -343,24 +343,24 @@ function BlogCard({ post, canEdit, onTogglePin, onDelete, isPinned }: { post: Bl
                 <div className="p-5">
                     <div className="flex flex-wrap gap-1.5 mb-3">
                         {tags.map((tag, i) => (
-                            <span key={i} className="px-2 py-0.5 rounded-md bg-slate-50 border border-slate-100 text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
+                            <span key={i} className="px-2 py-0.5 rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
                                 #{tag}
                             </span>
                         ))}
                     </div>
 
-                    <h3 className="text-xl font-bold text-slate-900 leading-tight mb-2 group-hover:text-indigo-600 transition-colors line-clamp-2">
+                    <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 leading-tight mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-2">
                         {post.title}
                     </h3>
-                    <p className="text-sm text-slate-500 line-clamp-2 leading-relaxed mb-4">
+                    <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed mb-4">
                         {post.excerpt || post.content.replace(/<[^>]*>/g, '').substring(0, 100)}
                     </p>
 
-                    <div className="flex items-center justify-between pt-4 border-t border-slate-50">
+                    <div className="flex items-center justify-between pt-4 border-t border-slate-50 dark:border-slate-800">
                         <span className="text-xs font-medium text-slate-400">
                             {post.createdAt ? format(post.createdAt.toDate(), 'MMMM d') : 'Just now'}
                         </span>
-                        <div className="h-6 w-6 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-500">
+                        <div className="h-6 w-6 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-[10px] font-bold text-slate-500 dark:text-slate-400">
                             {post.title.charAt(0)}
                         </div>
                     </div>

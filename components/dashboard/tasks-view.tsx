@@ -363,13 +363,13 @@ function TaskCard({
             <div
                 {...(dragHandleProps || {})}
                 className={cn(
-                    "group flex flex-col gap-2 p-4 rounded-xl bg-white border border-gray-100 transition-all duration-300",
-                    "hover:shadow-md hover:scale-[1.01] hover:border-primary/20",
+                    "group flex flex-col gap-2 p-4 rounded-xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 transition-all duration-300",
+                    "hover:shadow-md hover:scale-[1.01] hover:border-primary/20 dark:hover:border-primary/20",
                     isDragging ? "transition-none shadow-xl border-primary/50 z-50 scale-105" : "",
                     "border-l-[4px]",
                     priorityStyle.borderColor,
                     task.completed &&
-                    "opacity-75 bg-gray-50/50 border-gray-100 hover:border-gray-200 hover:shadow-none hover:scale-100 border-l-gray-300 contrast-75 saturate-50",
+                    "opacity-75 bg-gray-50/50 dark:bg-slate-900/50 border-gray-100 dark:border-slate-800 hover:border-gray-200 dark:hover:border-slate-700 hover:shadow-none hover:scale-100 border-l-gray-300 dark:border-l-slate-700 contrast-75 saturate-50",
                     dragHandleProps && "cursor-grab active:cursor-grabbing",
                 )}
             >
@@ -404,7 +404,7 @@ function TaskCard({
                         className={cn(
                             "mt-1 h-5 w-5 rounded-full border-2 transition-all duration-300",
                             "data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500 data-[state=checked]:scale-110",
-                            !task.completed && "border-slate-300 hover:border-emerald-400 hover:bg-emerald-50",
+                            !task.completed && "border-slate-300 dark:border-slate-600 hover:border-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20",
                             isReadOnly && "opacity-50 cursor-not-allowed",
                         )}
                     />
@@ -430,7 +430,7 @@ function TaskCard({
                                         variant="outline"
                                         className={cn(
                                             "rounded-md border-0 px-2 py-0.5 font-medium capitalize",
-                                            currentTag.color || "bg-slate-100 text-slate-600",
+                                            currentTag.color || "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400",
                                         )}
                                     >
                                         <TagIcon className="h-3 w-3 mr-1 opacity-70" />
@@ -444,8 +444,8 @@ function TaskCard({
                                     className={cn(
                                         "px-2 py-0.5 rounded-full font-medium flex items-center gap-1 transition-colors",
                                         new Date(task.dueDate) < new Date() && !task.completed
-                                            ? "text-rose-600 bg-rose-50 border border-rose-100"
-                                            : "text-slate-500 bg-slate-50 border border-slate-100",
+                                            ? "text-rose-600 bg-rose-50 border border-rose-100 dark:bg-rose-950/30 dark:border-rose-900"
+                                            : "text-slate-500 bg-slate-50 border border-slate-100 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400",
                                     )}
                                 >
                                     <CalendarIcon className="h-3 w-3" />
@@ -491,7 +491,7 @@ function TaskCard({
                                     </span>
                                     <span>{subtasksCompleted}/{subtasksTotal}</span>
                                 </div>
-                                <div className="h-1 bg-slate-100 rounded-full overflow-hidden w-full">
+                                <div className="h-1 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden w-full">
                                     <div
                                         className={cn(
                                             "h-full rounded-full transition-all duration-500 ease-out",
@@ -1509,7 +1509,7 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
 
     return (
         <DragDropContext onDragEnd={onDragEnd}>
-            <div className={cn("space-y-6 p-6 bg-slate-50/30 rounded-2xl", className)}>
+            <div className={cn("space-y-6 p-6 bg-slate-50/30 dark:bg-slate-950/30 rounded-2xl", className)}>
                 {/* Header & Controls */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                     <div>
@@ -1554,7 +1554,7 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
                 )}
 
                 {/* Add Task Bar */}
-                <div className="bg-white border border-border/40 shadow-sm hover:shadow-md focus-within:shadow-md focus-within:ring-2 focus-within:ring-primary/10 transition-all rounded-2xl p-2 md:p-3 relative z-10">
+                <div className="bg-white dark:bg-slate-900 border border-border/40 dark:border-slate-800 shadow-sm hover:shadow-md focus-within:shadow-md focus-within:ring-2 focus-within:ring-primary/10 transition-all rounded-2xl p-2 md:p-3 relative z-10">
                     <form
                         onSubmit={handleAddTask}
                         className="flex flex-col md:flex-row gap-2 items-center"
@@ -1564,7 +1564,7 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
                                 placeholder="What needs to be done?"
                                 value={newTaskTitle}
                                 onChange={(e) => setNewTaskTitle(e.target.value)}
-                                className="h-12 border-transparent bg-transparent text-lg focus-visible:ring-0 px-4 placeholder:text-muted-foreground/60 shadow-none"
+                                className="h-12 border-transparent bg-transparent text-lg focus-visible:ring-0 px-4 placeholder:text-muted-foreground/60 dark:text-slate-100 shadow-none"
                             />
                         </div>
 
@@ -1575,9 +1575,9 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
                                         variant={"outline"}
                                         size="sm"
                                         className={cn(
-                                            "h-9 w-[130px] justify-start text-left font-normal border-blue-200/50 bg-blue-50/50 hover:bg-blue-100/50 hover:border-blue-300/50 transition-colors",
+                                            "h-9 w-[130px] justify-start text-left font-normal border-blue-200/50 bg-blue-50/50 hover:bg-blue-100/50 hover:border-blue-300/50 transition-colors dark:bg-blue-900/20 dark:border-blue-800/50 dark:hover:bg-blue-900/30",
                                             !newTaskDate && "text-muted-foreground",
-                                            newTaskDate && "text-blue-700 border-blue-300/70 bg-blue-100/70"
+                                            newTaskDate && "text-blue-700 border-blue-300/70 bg-blue-100/70 dark:text-blue-400 dark:bg-blue-900/40"
                                         )}
                                     >
                                         <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />

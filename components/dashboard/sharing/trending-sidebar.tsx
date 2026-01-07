@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Loader2, TrendingUp, MessageSquare, Heart } from "lucide-react"
 import Link from "next/link"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Separator } from "@/components/ui/separator"
 
 export function TrendingSidebar() {
     const [posts, setPosts] = useState<Post[]>([])
@@ -21,41 +22,43 @@ export function TrendingSidebar() {
     }, [])
 
     return (
-        <div className="space-y-5">
-            <div className="flex items-center gap-2 mb-2">
-                <div className="h-8 w-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600">
-                    <TrendingUp className="h-4 w-4" />
+        <Card className="overflow-hidden border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow rounded-2xl bg-white dark:bg-slate-900">
+            <CardHeader className="p-5 flex flex-row items-start gap-4 space-y-0">
+                <div className="flex items-center gap-2">
+                    <div className="h-8 w-8 rounded-full bg-emerald-100 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                        <TrendingUp className="h-4 w-4" />
+                    </div>
+                    <h2 className="text-lg font-bold text-slate-800 dark:text-white">Trending Now</h2>
                 </div>
-                <h2 className="text-lg font-bold text-slate-800">Trending Now</h2>
-            </div>
+            </CardHeader>
+            <Separator className="bg-slate-50 dark:bg-slate-800" />
+            <CardContent className="p-5">
+                {loading ? (
+                    <div className="flex justify-center p-4">
+                        <Loader2 className="h-6 w-6 animate-spin text-slate-300" />
+                    </div>
+                ) : posts.length === 0 ? (
+                    <p className="text-sm text-slate-400 text-center py-4">No trending posts yet.</p>
+                ) : (
+                    <div className="space-y-5">
+                        {posts
+                            .filter(post => post.visibility === 'public')
+                            .map((post, index) => (
+                                <Link key={post.id} href={`/dashboard/sharing?post=${post.id}`} className="block group">
+                                    <div className="flex gap-4 items-start relative">
+                                        <div className="flex flex-col items-center gap-1 min-w-[24px]">
+                                            <span className="text-sm font-black text-slate-300 group-hover:text-emerald-500 transition-colors">
+                                                0{index + 1}
+                                            </span>
+                                        </div>
 
-            {loading ? (
-                <div className="flex justify-center p-4">
-                    <Loader2 className="h-6 w-6 animate-spin text-slate-300" />
-                </div>
-            ) : posts.length === 0 ? (
-                <p className="text-sm text-slate-400 text-center py-4">No trending posts yet.</p>
-            ) : (
-                <div className="space-y-5">
-                    {posts
-                        .filter(post => post.visibility === 'public')
-                        .map((post, index) => (
-                            <Link key={post.id} href={`/dashboard/sharing?post=${post.id}`} className="block group">
-                                <div className="flex gap-4 items-start relative">
-                                    <div className="flex flex-col items-center gap-1 min-w-[24px]">
-                                        <span className="text-sm font-black text-slate-300 group-hover:text-emerald-500 transition-colors">
-                                            0{index + 1}
-                                        </span>
-                                    </div>
+                                        <div className="space-y-1.5 flex-1 min-w-0">
+                                            <h4 className="text-[14px] font-bold leading-snug text-slate-700 dark:text-slate-200 group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors line-clamp-2">
+                                                {post.title || post.content.substring(0, 50)}
+                                            </h4>
 
-                                    <div className="space-y-1.5 flex-1 min-w-0">
-                                        <h4 className="text-[14px] font-bold leading-snug text-slate-700 group-hover:text-emerald-700 transition-colors line-clamp-2">
-                                            {post.title || post.content.substring(0, 50)}
-                                        </h4>
-
-                                        <div className="flex items-center gap-2">
                                             <div className="flex items-center gap-2">
-                                                <Avatar className="h-4 w-4 border border-slate-100">
+                                                <Avatar className="h-4 w-4 border border-slate-100 dark:border-slate-800">
                                                     <AvatarImage src={post.author?.photoURL} />
                                                     <AvatarFallback className="text-[8px]">{post.author?.displayName?.[0]}</AvatarFallback>
                                                 </Avatar>
@@ -63,22 +66,22 @@ export function TrendingSidebar() {
                                                     {post.author?.displayName}
                                                 </span>
                                             </div>
-                                        </div>
 
-                                        <div className="flex items-center gap-3 pt-1">
-                                            <span className="flex items-center gap-1 text-[10px] font-bold text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded-full">
-                                                <TrendingUp className="h-2.5 w-2.5 text-emerald-500" /> Hot
-                                            </span>
-                                            <span className="flex items-center gap-1 text-[11px] text-slate-400">
-                                                <Heart className="h-3 w-3" /> {post.likes?.length || 0}
-                                            </span>
+                                            <div className="flex items-center gap-3 pt-1">
+                                                <span className="flex items-center gap-1 text-[10px] font-bold text-slate-400 bg-slate-50 dark:bg-slate-800 px-1.5 py-0.5 rounded-full">
+                                                    <TrendingUp className="h-2.5 w-2.5 text-emerald-500" /> Hot
+                                                </span>
+                                                <span className="flex items-center gap-1 text-[11px] text-slate-400">
+                                                    <Heart className="h-3 w-3" /> {post.likes?.length || 0}
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </Link>
-                        ))}
-                </div>
-            )}
-        </div>
+                                </Link>
+                            ))}
+                    </div>
+                )}
+            </CardContent>
+        </Card>
     )
 }

@@ -150,9 +150,9 @@ export function Sidebar({ isCollapsed = false }: { isCollapsed?: boolean }) {
     return (
         <aside
             data-collapsed={isCollapsed}
-            className="group hidden h-screen w-full flex-col border-r border-border/40 bg-card/50 backdrop-blur-xl md:flex data-[collapsed=true]:w-[50px]"
+            className="group hidden h-screen w-full flex-col border-r border-border/40 dark:border-slate-800 bg-card/50 dark:bg-slate-950 backdrop-blur-xl md:flex data-[collapsed=true]:w-[50px] transition-all duration-300"
         >
-            <div className="flex h-16 items-center px-4 border-b border-border/40">
+            <div className="flex h-16 items-center px-4 border-b border-border/40 dark:border-slate-800">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="w-full justify-between px-2 hover:bg-accent/50 h-12">
@@ -251,8 +251,8 @@ export function Sidebar({ isCollapsed = false }: { isCollapsed?: boolean }) {
                             <Button
                                 variant={pathname === item.href ? "secondary" : "ghost"}
                                 className={cn(
-                                    "w-full justify-start gap-4 px-4 py-6 font-medium text-muted-foreground transition-all hover:text-foreground",
-                                    pathname === item.href && "bg-secondary text-foreground shadow-sm",
+                                    "w-full justify-start gap-4 px-4 py-6 font-medium text-muted-foreground dark:text-slate-400 transition-all hover:text-foreground dark:hover:text-slate-100",
+                                    pathname === item.href && "bg-secondary dark:bg-slate-800 text-foreground dark:text-white shadow-sm",
                                     isCollapsed && "justify-center px-2"
                                 )}
                             >
@@ -279,8 +279,8 @@ export function Sidebar({ isCollapsed = false }: { isCollapsed?: boolean }) {
                             <Button
                                 variant={pathname === item.href ? "secondary" : "ghost"}
                                 className={cn(
-                                    "w-full justify-start gap-3 px-3 py-2 h-9 text-sm font-medium text-muted-foreground transition-all hover:text-foreground hover:bg-accent/50",
-                                    pathname === item.href && "bg-secondary text-foreground shadow-sm",
+                                    "w-full justify-start gap-3 px-3 py-2 h-9 text-sm font-medium text-muted-foreground dark:text-slate-400 transition-all hover:text-foreground dark:hover:text-slate-100 hover:bg-accent/50 dark:hover:bg-slate-800/50",
+                                    pathname === item.href && "bg-secondary dark:bg-slate-800 text-foreground dark:text-white shadow-sm",
                                     isCollapsed && "justify-center px-2 h-12"
                                 )}
                             >

@@ -153,13 +153,13 @@ export function TasksMetrics({ tasks, timeFilter, onTimeFilterChange }: TasksMet
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {/* Completion Rate Card */}
-                <Card className="p-4 bg-gradient-to-br from-emerald-50 to-white border-emerald-200/50 hover:shadow-md transition-shadow">
+                <Card className="p-4 bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-950/20 dark:to-slate-900 border-emerald-200/50 dark:border-emerald-900/50 hover:shadow-md transition-shadow">
                     <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">
                             <p className="text-xs font-medium text-muted-foreground mb-1">
                                 Tỷ lệ hoàn thành
                             </p>
-                            <p className="text-3xl font-bold text-emerald-600">
+                            <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
                                 {completionRate}%
                             </p>
                         </div>
@@ -173,7 +173,7 @@ export function TasksMetrics({ tasks, timeFilter, onTimeFilterChange }: TasksMet
                                     stroke="currentColor"
                                     strokeWidth="4"
                                     fill="none"
-                                    className="text-emerald-100"
+                                    className="text-emerald-100 dark:text-emerald-900/30"
                                 />
                                 <circle
                                     cx="24"
@@ -196,23 +196,23 @@ export function TasksMetrics({ tasks, timeFilter, onTimeFilterChange }: TasksMet
                 </Card>
 
                 {/* Productivity Velocity Card */}
-                <Card className="p-4 bg-gradient-to-br from-blue-50 to-white border-blue-200/50 hover:shadow-md transition-shadow">
+                <Card className="p-4 bg-gradient-to-br from-blue-50 to-white dark:from-blue-950/20 dark:to-slate-900 border-blue-200/50 dark:border-blue-900/50 hover:shadow-md transition-shadow">
                     <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">
                             <p className="text-xs font-medium text-muted-foreground mb-1">
                                 Năng suất
                             </p>
-                            <p className="text-3xl font-bold text-blue-600">
+                            <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
                                 {completedTasks.length}
                             </p>
                         </div>
-                        <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                            <TrendingUp className="h-5 w-5 text-blue-600" />
+                        <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                            <TrendingUp className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                         </div>
                     </div>
                     <p className={cn(
                         "text-xs font-medium flex items-center gap-1",
-                        velocityChange >= 0 ? "text-emerald-600" : "text-rose-600"
+                        velocityChange >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
                     )}>
                         {velocityChange >= 0 ? "↑" : "↓"} {Math.abs(velocityChange)}% vs {
                             timeFilter === "today" ? "hôm qua" :
@@ -222,34 +222,42 @@ export function TasksMetrics({ tasks, timeFilter, onTimeFilterChange }: TasksMet
                     </p>
                 </Card>
 
-                {/* Time Focus Card (Placeholder) */}
-                <Card className="p-4 bg-gradient-to-br from-purple-50 to-white border-purple-200/50 hover:shadow-md transition-shadow">
+                {/* Time Focus Card (Real Data) */}
+                <Card className="p-4 bg-gradient-to-br from-purple-50 to-white dark:from-purple-950/20 dark:to-slate-900 border-purple-200/50 dark:border-purple-900/50 hover:shadow-md transition-shadow">
                     <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">
                             <p className="text-xs font-medium text-muted-foreground mb-1">
                                 Thời gian tập trung
                             </p>
-                            <p className="text-3xl font-bold text-purple-600">
-                                {Math.round(completedTasks.length * 0.5)}h
+                            <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">
+                                {(() => {
+                                    const totalSeconds = completedTasks.reduce((acc, t) => acc + (t.totalTimeSpent || 0), 0);
+                                    const hours = (totalSeconds / 3600).toFixed(1);
+                                    return `${hours}h`;
+                                })()}
                             </p>
                         </div>
-                        <div className="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center">
-                            <Clock className="h-5 w-5 text-purple-600" />
+                        <div className="h-10 w-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                            <Clock className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                         </div>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                        ~{completedTasks.length > 0 ? "30" : "0"} phút / task
+                        {(() => {
+                            const totalSeconds = completedTasks.reduce((acc, t) => acc + (t.totalTimeSpent || 0), 0);
+                            const avgMinutes = completedTasks.length > 0 ? Math.round((totalSeconds / 60) / completedTasks.length) : 0;
+                            return `~${avgMinutes} phút / task`;
+                        })()}
                     </p>
                 </Card>
 
                 {/* Streak Card */}
-                <Card className="p-4 bg-gradient-to-br from-orange-50 to-white border-orange-200/50 hover:shadow-md transition-shadow">
+                <Card className="p-4 bg-gradient-to-br from-orange-50 to-white dark:from-orange-950/20 dark:to-slate-900 border-orange-200/50 dark:border-orange-900/50 hover:shadow-md transition-shadow">
                     <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">
                             <p className="text-xs font-medium text-muted-foreground mb-1">
                                 Chuỗi ngày
                             </p>
-                            <p className="text-3xl font-bold text-orange-600 flex items-center gap-2">
+                            <p className="text-3xl font-bold text-orange-600 dark:text-orange-400 flex items-center gap-2">
                                 {streak}
                                 <Flame className="h-6 w-6 text-orange-500" />
                             </p>

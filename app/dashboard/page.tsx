@@ -17,8 +17,8 @@ export default function DashboardPage() {
 
             <div className="grid gap-8">
                 {/* Main Tasks Section */}
-                <div className="bg-background rounded-2xl">
-                    <TasksView compact={true} className="border-t pt-6" />
+                <div className="bg-background dark:bg-transparent rounded-2xl">
+                    <TasksView compact={true} className="border-t dark:border-none pt-6" />
                 </div>
 
                 {/* Bottom Widgets */}

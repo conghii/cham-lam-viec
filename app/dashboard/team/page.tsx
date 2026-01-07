@@ -226,6 +226,20 @@ export default function TeamPage() {
         }
     };
 
+    const handleLeaveOrg = async () => {
+        if (!org || !currentUser) return;
+        // if (!confirm("Are you sure you want to leave this organization?")) return;
+
+        try {
+            await removeMemberFromOrganization(org.id, currentUser.uid);
+            toast.success("You have left the organization.");
+            window.location.reload();
+        } catch (error) {
+            console.error("Error leaving org:", error);
+            toast.error("Failed to leave organization.");
+        }
+    };
+
     const handleRemoveMember = async (memberId: string) => {
         if (!org) return;
         if (!confirm("Are you sure you want to remove this member?")) return;
@@ -385,13 +399,13 @@ export default function TeamPage() {
                     <div className="md:col-span-4 bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between relative overflow-hidden group">
                         <div>
                             <div className="flex items-center gap-2 text-slate-500 text-sm font-medium mb-1">
-                                <Activity className="h-4 w-4 text-emerald-500" />
-                                Team Velocity
+                                <Users className="h-4 w-4 text-indigo-500" />
+                                Total Members
                             </div>
                             <div className="flex items-end gap-3">
-                                <span className="text-4xl font-bold text-slate-900 dark:text-white tracking-tight">85%</span>
-                                <span className="text-sm font-medium text-emerald-600 mb-1.5 flex items-center">
-                                    <TrendingUp className="h-3 w-3 mr-1" /> +12%
+                                <span className="text-4xl font-bold text-slate-900 dark:text-white tracking-tight">{members.length}</span>
+                                <span className="text-sm font-medium text-slate-400 mb-1.5 flex items-center">
+                                    Active
                                 </span>
                             </div>
                         </div>
@@ -402,8 +416,8 @@ export default function TeamPage() {
                                 <div className="text-xl font-bold text-slate-900 dark:text-white mt-1">{groups.length}</div>
                             </div>
                             <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3">
-                                <div className="text-slate-500 text-xs font-medium uppercase tracking-wider">Completed</div>
-                                <div className="text-xl font-bold text-slate-900 dark:text-white mt-1">142</div>
+                                <div className="text-slate-500 text-xs font-medium uppercase tracking-wider">Pending Invites</div>
+                                <div className="text-xl font-bold text-slate-900 dark:text-white mt-1">{pendingInvites.length}</div>
                             </div>
                         </div>
                     </div>
@@ -415,7 +429,7 @@ export default function TeamPage() {
                                 <div className="text-sm font-medium text-slate-500">Team Status</div>
                                 <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-900 text-xs text-emerald-600 font-medium">
                                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                                    5 Online
+                                    {members.length} Total
                                 </div>
                             </div>
 
@@ -795,9 +809,13 @@ export default function TeamPage() {
                                     <Button onClick={handleUpdateOrg} disabled={!isOwner || !orgName.trim()} className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm font-medium">
                                         Save Changes
                                     </Button>
-                                    {isOwner && (
+                                    {isOwner ? (
                                         <Button variant="ghost" className="text-slate-400 hover:text-red-600 hover:bg-red-50" onClick={() => handleDeleteOrg(org.id)}>
                                             Delete Organization
+                                        </Button>
+                                    ) : (
+                                        <Button variant="ghost" className="text-slate-400 hover:text-red-600 hover:bg-red-50" onClick={handleLeaveOrg}>
+                                            Leave Organization
                                         </Button>
                                     )}
                                 </CardFooter>

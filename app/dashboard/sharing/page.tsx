@@ -82,26 +82,26 @@ export default function SharingPage() {
     )
 
     return (
-        <div className="min-h-[calc(100vh-4rem)] bg-slate-50/50">
-            <div className="container max-w-6xl mx-auto flex gap-8 py-8 items-start">
+        <div className="min-h-[calc(100vh-4rem)] bg-slate-50/50 dark:bg-slate-950">
+            <div className="container max-w-6xl mx-auto flex gap-8 py-2 pt-6 items-start">
                 {/* Left Sidebar - Navigation & Trending */}
                 {/* STICKY positioning applied here */}
-                <div className="hidden lg:block w-72 shrink-0 sticky top-24 self-start">
+                <div className="hidden lg:block w-72 shrink-0 sticky top-20 self-start max-h-[calc(100vh-8rem)] overflow-y-auto no-scrollbar">
                     <div className="flex flex-col gap-8">
                         {/* Navigation Card */}
-                        <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100/60">
-                            <h2 className="text-xl font-bold font-serif mb-4 px-2 text-slate-800">Knowledge Hub</h2>
+                        <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border border-slate-100/60 dark:border-slate-800">
+                            <h2 className="text-xl font-bold font-serif mb-4 px-2 text-slate-800 dark:text-slate-100">Knowledge Hub</h2>
                             <div className="space-y-1">
                                 <Button
                                     variant={viewMode === 'global' ? "secondary" : "ghost"}
-                                    className={cn("w-full justify-start gap-3 rounded-xl font-medium", viewMode === 'global' ? "bg-slate-100 text-slate-900" : "text-slate-600 hover:bg-slate-50")}
+                                    className={cn("w-full justify-start gap-3 rounded-xl font-medium", viewMode === 'global' ? "bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-white" : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800")}
                                     onClick={() => setViewMode('global')}
                                 >
                                     <BookOpen className="h-4 w-4" /> Global Feed
                                 </Button>
                                 <Button
                                     variant={viewMode === 'circle' ? "secondary" : "ghost"}
-                                    className={cn("w-full justify-start gap-3 rounded-xl font-medium", viewMode === 'circle' ? "bg-slate-100 text-slate-900" : "text-slate-600 hover:bg-slate-50")}
+                                    className={cn("w-full justify-start gap-3 rounded-xl font-medium", viewMode === 'circle' ? "bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-white" : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800")}
                                     onClick={() => setViewMode('circle')}
                                 >
                                     <Users className="h-4 w-4" /> My Circle
@@ -110,7 +110,7 @@ export default function SharingPage() {
                         </div>
 
                         {/* Trending Section */}
-                        <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100/60">
+                        <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-slate-100/60 dark:border-slate-800">
                             <TrendingSidebar />
                         </div>
 
@@ -122,7 +122,7 @@ export default function SharingPage() {
                                     <Badge
                                         key={tag}
                                         variant="outline"
-                                        className="cursor-pointer bg-white hover:bg-slate-100 text-slate-600 border-slate-200 rounded-full py-1.5 px-3 font-normal transition-colors"
+                                        className="cursor-pointer bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 rounded-full py-1.5 px-3 font-normal transition-colors"
                                     >
                                         #{tag}
                                     </Badge>
@@ -135,7 +135,7 @@ export default function SharingPage() {
                 {/* Main Feed */}
                 <div className="flex-1 max-w-2xl mx-auto space-y-8 pb-20">
                     {/* Quick Post Widget (Composer) */}
-                    <div className="bg-white border border-slate-100 shadow-sm rounded-2xl p-4 transition-all hover:shadow-md">
+                    <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm rounded-2xl p-4 transition-all hover:shadow-md">
                         <div className="flex gap-4">
                             <Avatar className="h-11 w-11 shrink-0 border-2 border-slate-50">
                                 <AvatarImage src={user?.photoURL || "/avatars/01.png"} />
@@ -146,7 +146,7 @@ export default function SharingPage() {
                                 <CreatePostDialog>
                                     <div className="w-full text-left">
                                         {/* Fake Input */}
-                                        <div className="w-full bg-slate-50/50 hover:bg-slate-50 border border-transparent hover:border-slate-200 rounded-xl p-4 transition-all cursor-text min-h-[80px]">
+                                        <div className="w-full bg-slate-50/50 dark:bg-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800 border border-transparent hover:border-slate-200 dark:hover:border-slate-700 rounded-xl p-4 transition-all cursor-text min-h-[80px]">
                                             <p className="text-slate-400 font-medium text-lg">
                                                 What&apos;s on your mind{user?.displayName ? `, ${user.displayName.split(' ')[0]}` : ""}?
                                             </p>
@@ -162,7 +162,7 @@ export default function SharingPage() {
                                                 <LinkIcon className="h-4 w-4" />
                                                 <span className="text-xs font-medium">Link</span>
                                             </Button>
-                                            <Button variant="ghost" size="sm" className="h-8 px-3 rounded-full text-slate-500 hover:text-amber-600 hover:bg-amber-50 gap-2">
+                                            <Button variant="ghost" size="sm" className="h-8 px-3 rounded-full text-slate-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 gap-2">
                                                 <Lightbulb className="h-4 w-4" />
                                                 <span className="text-xs font-medium">Insight</span>
                                             </Button>

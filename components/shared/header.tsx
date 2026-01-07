@@ -12,6 +12,7 @@ import { auth, logOut } from "@/lib/firebase/auth"
 import { subscribeToUserProfile, subscribeToChats, type Chat } from "@/lib/firebase/firestore"
 
 import { getDailyQuote } from "@/lib/quotes"
+import { toast } from "sonner"
 
 export function Header() {
     const [greeting, setGreeting] = useState("Good Morning")
@@ -19,6 +20,7 @@ export function Header() {
     const [userData, setUserData] = useState<any>(null)
     const [quote, setQuote] = useState(getDailyQuote())
     const [unreadCount, setUnreadCount] = useState(0)
+    const [invitations, setInvitations] = useState<any[]>([])
 
     useEffect(() => {
         const hour = new Date().getHours()
@@ -46,7 +48,9 @@ export function Header() {
 
     useEffect(() => {
         if (!user) return;
-        const unsub = subscribeToChats((chats: Chat[]) => {
+
+        // Subscribe to chats
+        const unsubChats = subscribeToChats((chats: Chat[]) => {
             let count = 0;
             chats.forEach(c => {
                 if (c.unreadCount && c.unreadCount[user.uid] && c.unreadCount[user.uid] > 0) {
@@ -55,7 +59,25 @@ export function Header() {
             });
             setUnreadCount(count);
         });
-        return () => unsub();
+
+        // Subscribe to invitations
+        // We need to fetch invitations where email matches user's email
+        // But initially user might not be loaded or email might be null, so check user.email
+        let unsubInvites = () => { };
+        if (user.email) {
+            // Import dynamically to avoid circular deps if any, or just standard import
+            // Assuming getUserInvitations is available
+            import("@/lib/firebase/firestore").then(({ getUserInvitations }) => {
+                unsubInvites = getUserInvitations(user.email!, (invites) => {
+                    setInvitations(invites);
+                });
+            });
+        }
+
+        return () => {
+            unsubChats();
+            unsubInvites();
+        };
     }, [user])
 
     const handleLogout = async () => {
@@ -67,21 +89,44 @@ export function Header() {
         }
     }
 
+    const handleAcceptInvite = async (inviteId: string) => {
+        try {
+            const { acceptInvitation } = await import("@/lib/firebase/firestore");
+            await acceptInvitation(inviteId);
+            toast.success("Invitation accepted! You are now a member.");
+            // Optionally redirect to team page or refresh Not needed as real-time
+        } catch (error) {
+            console.error(error);
+            toast.error("Failed to accept invitation.");
+        }
+    }
+
+    const handleRejectInvite = async (inviteId: string) => {
+        try {
+            const { rejectInvitation } = await import("@/lib/firebase/firestore");
+            await rejectInvitation(inviteId);
+            toast.success("Invitation rejected.");
+        } catch (error) {
+            console.error(error);
+            toast.error("Failed to reject invitation.");
+        }
+    }
+
     const displayName = userData?.displayName || user?.displayName || "User"
     const displayEmail = user?.email || ""
     const photoURL = userData?.photoURL || user?.photoURL || "/avatars/01.png"
     const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || "U"
 
     return (
-        <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-6">
+        <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b dark:border-slate-800 bg-background/95 dark:bg-slate-950/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-6 transition-colors duration-300">
             <div className="flex flex-1 flex-col justify-center py-2">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
                     <span>{greeting}, {displayName}</span>
                     <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />
                     <span>{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</span>
                 </div>
-                <h1 className="text-sm md:text-base font-serif italic text-foreground/90 mt-0.5">
-                    "{quote.text}" <span className="text-muted-foreground not-italic text-xs ml-1 font-sans">- {quote.author}</span>
+                <h1 className="text-sm md:text-base font-serif italic text-foreground/90 dark:text-white mt-0.5">
+                    "{quote.text}" <span className="text-muted-foreground dark:text-slate-400 not-italic text-xs ml-1 font-sans">- {quote.author}</span>
                 </h1>
             </div>
             <div className="flex items-center gap-4">
@@ -96,9 +141,68 @@ export function Header() {
                         )}
                     </Button>
                 </Link>
-                <Button variant="ghost" size="icon">
-                    <Bell className="h-5 w-5" />
-                </Button>
+
+                {/* NOTIFICATIONS DROPDOWN */}
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="relative">
+                            <Bell className="h-5 w-5" />
+                            {invitations.length > 0 && (
+                                <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-rose-500 border border-white dark:border-slate-950"></span>
+                            )}
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-80">
+                        <DropdownMenuLabel className="font-normal text-xs text-muted-foreground uppercase tracking-wider">
+                            Notifications
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        {invitations.length === 0 ? (
+                            <div className="py-8 text-center text-sm text-muted-foreground">
+                                No new notifications
+                            </div>
+                        ) : (
+                            <div className="max-h-[300px] overflow-y-auto">
+                                {invitations.map(invite => (
+                                    <div key={invite.id} className="p-4 border-b last:border-0 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors">
+                                        <div className="flex items-start gap-3">
+                                            <div className="h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
+                                                <Users className="h-4 w-4" />
+                                            </div>
+                                            <div className="flex-1 space-y-1">
+                                                <p className="text-sm text-foreground">
+                                                    You have been invited to join <span className="font-semibold">{invite.orgName}</span>
+                                                </p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {new Date(invite.createdAt?.seconds * 1000).toLocaleDateString()}
+                                                </p>
+                                                <div className="flex items-center gap-2 mt-2">
+                                                    <Button
+                                                        size="sm"
+                                                        variant="default"
+                                                        className="h-7 text-xs bg-indigo-600 hover:bg-indigo-700"
+                                                        onClick={() => handleAcceptInvite(invite.id)}
+                                                    >
+                                                        Accept
+                                                    </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="outline"
+                                                        className="h-7 text-xs"
+                                                        onClick={() => handleRejectInvite(invite.id)}
+                                                    >
+                                                        Decline
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </DropdownMenuContent>
+                </DropdownMenu>
+
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="relative h-8 w-8 rounded-full">

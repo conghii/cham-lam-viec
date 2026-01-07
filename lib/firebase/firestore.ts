@@ -52,6 +52,7 @@ export type Task = {
     assigneeId?: string | null;
     assigneeIds?: string[];
     groupIds?: string[];
+    totalTimeSpent?: number; // accumulated focus time in seconds
 }
 
 export type Comment = {
@@ -179,6 +180,13 @@ export const addTaskComment = async (taskId: string, content: string) => {
         createdAt: serverTimestamp(),
         userDisplayName: user.displayName || "Unknown",
         userPhotoURL: user.photoURL || ""
+    });
+};
+
+export const updateTaskTime = async (taskId: string, seconds: number) => {
+    const taskRef = doc(db, "tasks", taskId);
+    await updateDoc(taskRef, {
+        totalTimeSpent: increment(seconds)
     });
 };
 

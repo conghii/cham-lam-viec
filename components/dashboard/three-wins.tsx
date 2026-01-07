@@ -73,9 +73,9 @@ export function ThreeWins() {
     }
 
     return (
-        <Card className="h-full flex flex-col">
+        <Card className="h-full flex flex-col bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-lg font-medium text-foreground/80">
+                <CardTitle className="text-lg font-bold text-foreground/80 dark:text-white">
                     3 Wins for Today
                 </CardTitle>
                 <div className="flex items-center gap-2">
@@ -99,7 +99,7 @@ export function ThreeWins() {
                 {wins.map((win, index) => (
                     <div key={index} className="flex items-center gap-3">
                         <div className={cn("flex h-8 w-8 items-center justify-center rounded-full border-2 text-sm font-bold transition-colors",
-                            win ? "border-green-500 bg-green-500/10 text-green-500" : "border-muted text-muted-foreground"
+                            win ? "border-green-500 bg-green-500/10 text-green-500" : "border-muted text-muted-foreground dark:border-slate-700 dark:text-slate-500"
                         )}>
                             {index + 1}
                         </div>
@@ -107,7 +107,7 @@ export function ThreeWins() {
                             value={win}
                             onChange={(e) => handleWinChange(index, e.target.value)}
                             placeholder={`Win #${index + 1}`}
-                            className="flex-1 border-none bg-secondary/50 shadow-none focus-visible:ring-1"
+                            className="flex-1 border-none bg-secondary/50 dark:bg-slate-800/50 shadow-none focus-visible:ring-1 dark:text-slate-200 dark:placeholder:text-slate-600"
                         />
                         <CheckCircle2 className={cn(
                             "h-5 w-5 transition-all duration-300",

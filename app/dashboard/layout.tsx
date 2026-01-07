@@ -51,8 +51,8 @@ export default function DashboardLayout({
 
     return (
         <div className={cn(
-            "flex h-screen overflow-hidden transition-colors duration-700 ease-in-out",
-            isFocusMode ? "bg-slate-50" : "bg-background"
+            "flex h-screen overflow-hidden transition-colors duration-700 ease-in-out bg-background dark:bg-slate-950",
+            isFocusMode && "bg-slate-50 dark:bg-slate-950"
         )}>
             <ResizablePanelGroup
                 direction="horizontal"

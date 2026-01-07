@@ -143,7 +143,7 @@ export default function MVSPage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center min-h-screen bg-slate-50">
+            <div className="flex items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-950">
                 <Loader2 className="h-8 w-8 animate-spin text-primary/50" />
             </div>
         );
@@ -152,12 +152,12 @@ export default function MVSPage() {
     const canEdit = userRole === 'owner' || userRole === 'member';
 
     return (
-        <div className="min-h-screen bg-slate-50/50 pb-20">
+        <div className="min-h-screen bg-slate-50/50 dark:bg-transparent pb-20">
             {/* Top Toolbar */}
-            <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 px-6 py-4 flex justify-between items-center">
+            <div className="sticky top-0 z-50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-gray-100 dark:border-slate-800 px-6 py-4 flex justify-between items-center">
                 <div>
-                    <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Organization DNA</span>
-                    <h1 className="text-xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text text-transparent">The North Star</h1>
+                    <span className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">Organization DNA</span>
+                    <h1 className="text-xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400 bg-clip-text text-transparent">The North Star</h1>
                 </div>
                 {canEdit && (
                     <div className="flex gap-3">
@@ -172,7 +172,7 @@ export default function MVSPage() {
                                 </Button>
                             </>
                         ) : (
-                            <Button size="sm" variant="outline" onClick={handleEdit} className="hover:bg-slate-100 border-dashed border-slate-300">
+                            <Button size="sm" variant="outline" onClick={handleEdit} className="hover:bg-slate-100 dark:hover:bg-slate-800 border-dashed border-slate-300 dark:border-slate-700 dark:text-slate-300">
                                 <Pencil className="h-3.5 w-3.5 mr-2" /> Edit MVS
                             </Button>
                         )}
@@ -184,10 +184,10 @@ export default function MVSPage() {
 
                 {/* HERO SECTION: MISSION */}
                 <section className="relative group">
-                    <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/10 via-purple-500/5 to-white rounded-3xl blur-3xl -z-10" />
+                    <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/10 via-purple-500/5 to-white dark:to-slate-900/50 rounded-3xl blur-3xl -z-10" />
                     <div className={cn(
-                        "relative rounded-3xl p-8 md:p-12 transition-all duration-300 border border-white/50 shadow-sm",
-                        isEditing ? "bg-white/80 ring-2 ring-indigo-500/20" : "bg-white/60 backdrop-blur-sm"
+                        "relative rounded-3xl p-8 md:p-12 transition-all duration-300 border border-white/50 dark:border-slate-800 shadow-sm",
+                        isEditing ? "bg-white/80 dark:bg-slate-900/80 ring-2 ring-indigo-500/20" : "bg-white/60 dark:bg-slate-900/40 backdrop-blur-sm"
                     )}>
                         <div className="flex items-center gap-4 mb-6">
                             <div className="h-12 w-12 rounded-2xl bg-indigo-500 text-white flex items-center justify-center shadow-lg shadow-indigo-500/30">
@@ -205,14 +205,14 @@ export default function MVSPage() {
                             />
                         ) : (
                             <h2 className={cn(
-                                "text-3xl md:text-5xl font-black tracking-tight leading-tight text-slate-900",
-                                !mvs?.mission && "text-slate-300 italic"
+                                "text-3xl md:text-5xl font-black tracking-tight leading-tight text-slate-900 dark:text-white",
+                                !mvs?.mission && "text-slate-300 dark:text-slate-600 italic"
                             )}>
                                 {mvs?.mission || "What is your reason for being?"}
                             </h2>
                         )}
 
-                        <p className="mt-6 text-slate-500 max-w-2xl font-medium">
+                        <p className="mt-6 text-slate-500 dark:text-slate-400 max-w-2xl font-medium">
                             This is our "Why". It guides every decision we make.
                         </p>
                     </div>
@@ -221,14 +221,14 @@ export default function MVSPage() {
                 {/* VISION SECTION */}
                 <section className="relative md:pl-20">
                     {/* Connecting Line */}
-                    <div className="absolute left-8 md:left-[3.5rem] top-[-4rem] h-24 w-0.5 bg-gradient-to-b from-indigo-200 to-cyan-200 -z-10 hidden md:block" />
+                    <div className="absolute left-8 md:left-[3.5rem] top-[-4rem] h-24 w-0.5 bg-gradient-to-b from-indigo-200 to-cyan-200 dark:from-indigo-900 dark:to-cyan-900 -z-10 hidden md:block" />
 
                     <div className={cn(
-                        "relative rounded-3xl p-8 transition-all duration-300 border border-slate-100",
-                        isEditing ? "bg-white ring-2 ring-cyan-500/20" : "bg-gradient-to-br from-white to-cyan-50/30 hover:shadow-md"
+                        "relative rounded-3xl p-8 transition-all duration-300 border border-slate-100 dark:border-slate-800",
+                        isEditing ? "bg-white dark:bg-slate-900 ring-2 ring-cyan-500/20" : "bg-gradient-to-br from-white to-cyan-50/30 dark:from-slate-900 dark:to-cyan-950/10 hover:shadow-md"
                     )}>
                         <div className="flex items-start gap-6">
-                            <div className="h-10 w-10 shrink-0 rounded-2xl bg-cyan-100 text-cyan-600 flex items-center justify-center">
+                            <div className="h-10 w-10 shrink-0 rounded-2xl bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 flex items-center justify-center">
                                 <Telescope className="h-5 w-5" />
                             </div>
                             <div className="flex-1">
@@ -242,8 +242,8 @@ export default function MVSPage() {
                                     />
                                 ) : (
                                     <p className={cn(
-                                        "text-xl md:text-2xl font-medium leading-relaxed text-slate-700",
-                                        !mvs?.vision && "text-slate-300 italic"
+                                        "text-xl md:text-2xl font-medium leading-relaxed text-slate-700 dark:text-slate-200",
+                                        !mvs?.vision && "text-slate-300 dark:text-slate-600 italic"
                                     )}>
                                         {mvs?.vision || "Paint a picture of the future we are building."}
                                     </p>
@@ -256,9 +256,9 @@ export default function MVSPage() {
                 {/* STRATEGIES SECTION */}
                 <section>
                     <div className="flex items-center gap-4 mb-8">
-                        <div className="h-px bg-slate-200 flex-1" />
-                        <span className="text-sm font-bold uppercase tracking-widest text-slate-400">Core Strategies</span>
-                        <div className="h-px bg-slate-200 flex-1" />
+                        <div className="h-px bg-slate-200 dark:bg-slate-800 flex-1" />
+                        <span className="text-sm font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">Core Strategies</span>
+                        <div className="h-px bg-slate-200 dark:bg-slate-800 flex-1" />
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -274,7 +274,7 @@ export default function MVSPage() {
                                 >
                                     <div className={cn(
                                         "relative h-full rounded-2xl p-6 border transition-all duration-300 flex flex-col group",
-                                        isEditing ? "bg-white border-dashed border-slate-300" : "bg-white border-slate-100 hover:shadow-lg hover:-translate-y-1 shadow-sm"
+                                        isEditing ? "bg-white dark:bg-slate-900 border-dashed border-slate-300 dark:border-slate-700" : "bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 hover:shadow-lg dark:hover:shadow-slate-900/50 hover:-translate-y-1 shadow-sm"
                                     )}>
                                         {isEditing && (
                                             <button
@@ -286,10 +286,10 @@ export default function MVSPage() {
                                         )}
 
                                         <div className="mb-4 flex items-center justify-between">
-                                            <div className="text-4xl font-black text-slate-100 select-none">
+                                            <div className="text-4xl font-black text-slate-100 dark:text-slate-800 select-none">
                                                 0{index + 1}
                                             </div>
-                                            <div className="h-8 w-8 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600">
+                                            <div className="h-8 w-8 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
                                                 <Target className="h-4 w-4" />
                                             </div>
                                         </div>
@@ -311,10 +311,10 @@ export default function MVSPage() {
                                             </>
                                         ) : (
                                             <>
-                                                <h3 className="font-bold text-lg text-slate-800 mb-2">
+                                                <h3 className="font-bold text-lg text-slate-800 dark:text-slate-200 mb-2">
                                                     {strategy.title || "Untitled"}
                                                 </h3>
-                                                <p className="text-sm text-slate-500 leading-relaxed">
+                                                <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
                                                     {strategy.description || "No description provided."}
                                                 </p>
                                             </>
@@ -328,7 +328,7 @@ export default function MVSPage() {
                                 <motion.button
                                     layout
                                     onClick={addStrategy}
-                                    className="h-full min-h-[200px] rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 flex flex-col items-center justify-center gap-2 text-slate-400 hover:text-slate-600 hover:border-slate-300 hover:bg-slate-100 transition-all"
+                                    className="h-full min-h-[200px] rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col items-center justify-center gap-2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-900 transition-all"
                                 >
                                     <Plus className="h-8 w-8" />
                                     <span className="font-medium text-sm">Add Strategy</span>

@@ -89,7 +89,7 @@ export function PostCard({ post, currentUserId, friendships = [] }: { post: Post
     const displayImages = [...imageAttachments, ...legacyImages]
 
     return (
-        <Card className="overflow-hidden border-slate-100 shadow-sm hover:shadow-md transition-shadow rounded-2xl bg-white">
+        <Card className="overflow-hidden border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow rounded-2xl bg-white dark:bg-slate-900">
             <CardHeader className="p-5 flex flex-row items-start gap-4 space-y-0">
                 <Link href={`/dashboard/profile/${post.authorId}`} className="cursor-pointer hover:opacity-80 transition-opacity">
                     <Avatar className="h-11 w-11 border border-slate-100">
@@ -102,7 +102,7 @@ export function PostCard({ post, currentUserId, friendships = [] }: { post: Post
                         <div>
                             <div className="flex items-center">
                                 <Link href={`/dashboard/profile/${post.authorId}`} className="hover:underline">
-                                    <p className="font-bold text-slate-900 text-[15px]">{post.author?.displayName || "Unknown"}</p>
+                                    <p className="font-bold text-slate-900 dark:text-slate-100 text-[15px]">{post.author?.displayName || "Unknown"}</p>
                                 </Link>
                                 {canAddFriend && (
                                     <Button
@@ -140,11 +140,11 @@ export function PostCard({ post, currentUserId, friendships = [] }: { post: Post
                         {currentUserId === post.authorId && (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-600 rounded-full">
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-full">
                                         <MoreHorizontal className="h-4 w-4" />
                                     </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="rounded-xl border-slate-100">
+                                <DropdownMenuContent align="end" className="rounded-xl border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
                                     <CreatePostDialog postToEdit={post}>
                                         <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="cursor-pointer">
                                             <Edit className="h-4 w-4 mr-2" /> Edit Post
@@ -170,7 +170,7 @@ export function PostCard({ post, currentUserId, friendships = [] }: { post: Post
                                 dangerouslySetInnerHTML={{ __html: post.title }}
                             />
                         ) : (
-                            <div className="font-bold text-lg leading-tight text-slate-900 mb-2">
+                            <div className="font-bold text-lg leading-tight text-slate-900 dark:text-slate-100 mb-2">
                                 {post.title}
                             </div>
                         )
@@ -181,7 +181,7 @@ export function PostCard({ post, currentUserId, friendships = [] }: { post: Post
                             dangerouslySetInnerHTML={{ __html: post.content }}
                         />
                     ) : (
-                        <div className="whitespace-pre-wrap text-[15px] text-slate-700 leading-relaxed">
+                        <div className="whitespace-pre-wrap text-[15px] text-slate-700 dark:text-slate-300 leading-relaxed">
                             {post.content}
                         </div>
                     )}
@@ -192,8 +192,8 @@ export function PostCard({ post, currentUserId, friendships = [] }: { post: Post
                     <div className="grid gap-2">
                         {otherAttachments.map(att => (
                             <ViewAttachmentDialog key={att.id} attachment={att}>
-                                <div className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-colors cursor-pointer group">
-                                    <div className={cn("h-10 w-10 rounded-lg flex items-center justify-center shrink-0 shadow-sm bg-white border border-slate-100",
+                                <div className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer group">
+                                    <div className={cn("h-10 w-10 rounded-lg flex items-center justify-center shrink-0 shadow-sm bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800",
                                         att.type === 'goal' ? "text-emerald-500" :
                                             att.type === 'task' ? "text-blue-500" : "text-amber-500"
                                     )}>
@@ -202,8 +202,8 @@ export function PostCard({ post, currentUserId, friendships = [] }: { post: Post
                                         {att.type === 'note' && <StickyNote className="h-5 w-5" />}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className="font-semibold text-slate-700 text-sm truncate group-hover:text-primary transition-colors">{att.title}</p>
-                                        <p className="text-xs text-slate-500 truncate font-medium">{att.preview || capitalize(att.type)}</p>
+                                        <p className="font-semibold text-slate-700 dark:text-slate-200 text-sm truncate group-hover:text-primary transition-colors">{att.title}</p>
+                                        <p className="text-xs text-slate-500 dark:text-slate-400 truncate font-medium">{att.preview || capitalize(att.type)}</p>
                                     </div>
                                 </div>
                             </ViewAttachmentDialog>
@@ -226,7 +226,7 @@ export function PostCard({ post, currentUserId, friendships = [] }: { post: Post
                 {post.tags && post.tags.length > 0 && (
                     <div className="flex flex-wrap gap-2 pt-1">
                         {post.tags.map((tag, i) => (
-                            <Badge key={i} variant="secondary" className="font-medium text-xs px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 pointer-events-none border-transparent">
+                            <Badge key={i} variant="secondary" className="font-medium text-xs px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 pointer-events-none border-transparent">
                                 #{tag}
                             </Badge>
                         ))}
@@ -234,9 +234,9 @@ export function PostCard({ post, currentUserId, friendships = [] }: { post: Post
                 )}
             </CardContent>
 
-            <Separator className="bg-slate-50" />
+            <Separator className="bg-slate-50 dark:bg-slate-800" />
 
-            <CardFooter className="p-2 flex flex-col bg-white">
+            <CardFooter className="p-2 flex flex-col bg-white dark:bg-slate-900">
                 <div className="flex items-center justify-between w-full px-2">
                     <Button
                         variant="ghost"
@@ -264,7 +264,7 @@ export function PostCard({ post, currentUserId, friendships = [] }: { post: Post
                         </span>
                     </Button>
 
-                    <Button variant="ghost" size="sm" className="gap-2 flex-1 justify-center h-10 rounded-xl text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-colors">
+                    <Button variant="ghost" size="sm" className="gap-2 flex-1 justify-center h-10 rounded-xl text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200 transition-colors">
                         <Share2 className="h-4.5 w-4.5" />
                         <span className="text-sm font-semibold">Share</span>
                     </Button>
@@ -313,22 +313,22 @@ function CommentSection({ postId }: { postId: string }) {
     }
 
     return (
-        <div className="w-full border-t border-slate-50 p-4 space-y-4 animate-in slide-in-from-top-2 duration-200">
+        <div className="w-full border-t border-slate-50 dark:border-slate-800 p-4 space-y-4 animate-in slide-in-from-top-2 duration-200">
             <ScrollArea className="max-h-[300px]">
                 <div className="space-y-4 pr-3">
                     {comments.map(c => (
                         <div key={c.id} className="flex gap-3 text-sm group">
-                            <Avatar className="h-8 w-8 shrink-0 mt-0.5 border border-slate-100">
+                            <Avatar className="h-8 w-8 shrink-0 mt-0.5 border border-slate-100 dark:border-slate-800">
                                 <AvatarImage src={c.author?.photoURL} />
-                                <AvatarFallback className="text-[10px] text-slate-500 bg-slate-50">{c.author?.displayName?.[0]}</AvatarFallback>
+                                <AvatarFallback className="text-[10px] text-slate-500 bg-slate-50 dark:bg-slate-800">{c.author?.displayName?.[0]}</AvatarFallback>
                             </Avatar>
                             <div className="flex-1 space-y-1">
-                                <div className="bg-slate-50/80 p-3 rounded-2xl rounded-tl-none hover:bg-slate-100 transition-colors">
+                                <div className="bg-slate-50/80 dark:bg-slate-800/80 p-3 rounded-2xl rounded-tl-none hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                                     <div className="flex items-baseline justify-between gap-2 mb-1">
-                                        <span className="font-bold text-xs text-slate-900">{c.author?.displayName}</span>
+                                        <span className="font-bold text-xs text-slate-900 dark:text-slate-200">{c.author?.displayName}</span>
                                         <span className="text-[10px] text-slate-400 font-medium">{c.createdAt ? formatDistanceToNow(c.createdAt.toDate()) : "now"}</span>
                                     </div>
-                                    <p className="text-slate-700 text-[14px] leading-relaxed">{c.content}</p>
+                                    <p className="text-slate-700 dark:text-slate-300 text-[14px] leading-relaxed">{c.content}</p>
                                 </div>
                             </div>
                         </div>
@@ -344,7 +344,7 @@ function CommentSection({ postId }: { postId: string }) {
                     <Input
                         ref={commentInputRef}
                         placeholder="Write a comment..."
-                        className="min-h-[42px] h-11 text-[15px] pr-20 rounded-full bg-slate-50 border-transparent focus:bg-white focus:border-slate-200 focus:ring-2 focus:ring-slate-100 transition-all font-medium placeholder:text-slate-400"
+                        className="min-h-[42px] h-11 text-[15px] pr-20 rounded-full bg-slate-50 dark:bg-slate-800 border-transparent focus:bg-white dark:focus:bg-slate-900 focus:border-slate-200 dark:focus:border-slate-700 focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800 transition-all font-medium placeholder:text-slate-400"
                         value={newComment}
                         onChange={(e) => setNewComment(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && handleSend()}
