@@ -71,6 +71,7 @@ export type TaskColumn = {
     order: number;
     userId: string;
     orgId?: string;
+    width?: number;
 }
 
 export type KeyResult = {

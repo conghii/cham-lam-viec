@@ -23,6 +23,7 @@ import {
     type Task,
     subscribeToTaskColumns,
     addTaskColumn,
+    updateTaskColumn,
     deleteTaskColumn,
     batchUpdateColumnOrders,
     type TaskColumn,
@@ -416,61 +417,126 @@ function TaskCard({
                         onClick={() => openDetails(false)}
                     >
                         {/* Tags and Date Row (Moved above title for hierarchy) */}
-                        <div className="flex flex-wrap items-center gap-2 text-xs">
-                            {(() => {
-                                const availableTags = tags.length > 0 ? tags : defaultTags;
-                                const currentTag =
-                                    availableTags.find((t) => t.id === (task.tag || "general")) ||
-                                    availableTags.find(
-                                        (t) =>
-                                            t.label.toLowerCase() ===
-                                            (task.tag || "general").toLowerCase(),
-                                    ) ||
-                                    availableTags[0];
-                                return (
+                        <div className="flex items-start justify-between gap-2">
+                            {/* Tags and Dates */}
+                            <div className="flex flex-wrap items-center gap-2 text-xs">
+                                {(() => {
+                                    const availableTags = tags.length > 0 ? tags : defaultTags;
+                                    const currentTag =
+                                        availableTags.find((t) => t.id === (task.tag || "general")) ||
+                                        availableTags.find(
+                                            (t) =>
+                                                t.label.toLowerCase() ===
+                                                (task.tag || "general").toLowerCase(),
+                                        ) ||
+                                        availableTags[0];
+                                    return (
+                                        <Badge
+                                            variant="outline"
+                                            className={cn(
+                                                "rounded-md border-0 px-2 py-0.5 font-medium capitalize",
+                                                currentTag.color || "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400",
+                                            )}
+                                        >
+                                            <TagIcon className="h-3 w-3 mr-1 opacity-70" />
+                                            {currentTag.label}
+                                        </Badge>
+                                    );
+                                })()}
+
+                                {task.dueDate && (
+                                    <span
+                                        className={cn(
+                                            "px-2 py-0.5 rounded-full font-medium flex items-center gap-1 transition-colors",
+                                            new Date(task.dueDate) < new Date() && !task.completed
+                                                ? "text-rose-600 bg-rose-50 border border-rose-100 dark:bg-rose-950/30 dark:border-rose-900"
+                                                : "text-slate-500 bg-slate-50 border border-slate-100 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400",
+                                        )}
+                                    >
+                                        <CalendarIcon className="h-3 w-3" />
+                                        {new Date(task.dueDate) < new Date() && !task.completed && "!"}
+                                        {format(
+                                            new Date(task.dueDate),
+                                            compact ? "MMM d" : "MMM d",
+                                        )}
+                                    </span>
+                                )}
+
+                                {!compact && task.priority && task.priority !== "medium" && (
                                     <Badge
                                         variant="outline"
                                         className={cn(
-                                            "rounded-md border-0 px-2 py-0.5 font-medium capitalize",
-                                            currentTag.color || "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400",
+                                            "rounded-md border-0 px-1.5 font-normal capitalize h-5",
+                                            priorityConfig[task.priority as keyof typeof priorityConfig]
+                                                ?.color,
                                         )}
                                     >
-                                        <TagIcon className="h-3 w-3 mr-1 opacity-70" />
-                                        {currentTag.label}
+                                        {task.priority}
                                     </Badge>
-                                );
-                            })()}
+                                )}
+                            </div>
 
-                            {task.dueDate && (
-                                <span
-                                    className={cn(
-                                        "px-2 py-0.5 rounded-full font-medium flex items-center gap-1 transition-colors",
-                                        new Date(task.dueDate) < new Date() && !task.completed
-                                            ? "text-rose-600 bg-rose-50 border border-rose-100 dark:bg-rose-950/30 dark:border-rose-900"
-                                            : "text-slate-500 bg-slate-50 border border-slate-100 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400",
-                                    )}
+                            {/* Quick Actions (Moved here) */}
+                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="text-muted-foreground hover:text-primary hover:bg-primary/10 h-6 w-6"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        openDetails(true);
+                                    }}
+                                    title="Edit Task"
                                 >
-                                    <CalendarIcon className="h-3 w-3" />
-                                    {new Date(task.dueDate) < new Date() && !task.completed && "!"}
-                                    {format(
-                                        new Date(task.dueDate),
-                                        compact ? "MMM d" : "MMM d",
-                                    )}
-                                </span>
-                            )}
+                                    <Pencil className="h-3 w-3" />
+                                </Button>
 
-                            {!compact && task.priority && task.priority !== "medium" && (
-                                <Badge
-                                    variant="outline"
-                                    className={cn(
-                                        "rounded-md border-0 px-1.5 font-normal capitalize h-5",
-                                        priorityConfig[task.priority as keyof typeof priorityConfig]
-                                            ?.color,
-                                    )}
-                                >
-                                    {task.priority}
-                                </Badge>
-                            )}
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="text-muted-foreground h-6 w-6"
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
+                                            <MoreVertical className="h-3 w-3" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuItem
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                openDetails(true);
+                                            }}
+                                        >
+                                            <Edit2 className="h-4 w-4 mr-2" /> {t("edit_task")}
+                                        </DropdownMenuItem>
+                                        {columns && onMove && !dragHandleProps && (
+                                            <>
+                                                <DropdownMenuSeparator />
+                                                {columns.map((col) => (
+                                                    <DropdownMenuItem
+                                                        key={col.id}
+                                                        onClick={() => onMove(task.id, col.id)}
+                                                    >
+                                                        {t("move_to")} {col.title}
+                                                    </DropdownMenuItem>
+                                                ))}
+                                                <DropdownMenuSeparator />
+                                            </>
+                                        )}
+                                        <DropdownMenuItem
+                                            className="text-destructive focus:text-destructive"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                deleteTask(task.id);
+                                            }}
+                                        >
+                                            <Trash2 className="h-4 w-4 mr-2" /> {t("delete_task")}
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
                         </div>
 
                         <span
@@ -542,67 +608,8 @@ function TaskCard({
                         groups={groups}
                         className="scale-90 origin-left"
                     />
-                    {/* Quick Actions */}
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-muted-foreground hover:text-primary hover:bg-primary/10 h-7 w-7"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                openDetails(true);
-                            }}
-                            title="Edit Task"
-                        >
-                            <Pencil className="h-3.5 w-3.5" />
-                        </Button>
 
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="text-muted-foreground h-7 w-7"
-                                    onClick={(e) => e.stopPropagation()}
-                                >
-                                    <MoreVertical className="h-3.5 w-3.5" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        openDetails(true);
-                                    }}
-                                >
-                                    <Edit2 className="h-4 w-4 mr-2" /> {t("edit_task")}
-                                </DropdownMenuItem>
-                                {columns && onMove && !dragHandleProps && (
-                                    <>
-                                        <DropdownMenuSeparator />
-                                        {columns.map((col) => (
-                                            <DropdownMenuItem
-                                                key={col.id}
-                                                onClick={() => onMove(task.id, col.id)}
-                                            >
-                                                {t("move_to")} {col.title}
-                                            </DropdownMenuItem>
-                                        ))}
-                                        <DropdownMenuSeparator />
-                                    </>
-                                )}
-                                <DropdownMenuItem
-                                    className="text-destructive focus:text-destructive"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        deleteTask(task.id);
-                                    }}
-                                >
-                                    <Trash2 className="h-4 w-4 mr-2" /> {t("delete_task")}
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
+
                 </div>
 
             </div>
@@ -1231,6 +1238,94 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
     // Column Management state
     const [isAddingColumn, setIsAddingColumn] = useState(false);
     const [newColumnTitle, setNewColumnTitle] = useState("");
+
+    // Column Resizing State
+    const [resizingColId, setResizingColId] = useState<string | null>(null);
+    const [resizeStartX, setResizeStartX] = useState(0);
+    const [resizeStartWidth, setResizeStartWidth] = useState(0);
+    const [resizeContainerWidth, setResizeContainerWidth] = useState(0); // New state for container width
+    const [columnWidths, setColumnWidths] = useState<Record<string, number>>({});
+
+    // Initialize/Sync column widths from Firestore
+    useEffect(() => {
+        const widths: Record<string, number> = {};
+        columns.forEach(col => {
+            if (col.width) widths[col.id] = col.width;
+        });
+        setColumnWidths(prev => ({ ...prev, ...widths }));
+    }, [columns]);
+
+    // Handle Resize Events
+    useEffect(() => {
+        const handleMouseMove = (e: MouseEvent) => {
+            if (!resizingColId) return;
+
+            const diff = e.clientX - resizeStartX;
+
+            // Calculate new width in pixels first
+            let newWidthPx = resizeStartWidth;
+
+            // If starting width was percentage (<=1), convert to px first
+            if (resizeStartWidth <= 1) {
+                newWidthPx = resizeStartWidth * resizeContainerWidth;
+            }
+
+            newWidthPx += diff;
+
+            // Enforce min width of 250px
+            if (newWidthPx < 250) newWidthPx = 250;
+
+            // Convert to percentage
+            const newWidthPercent = newWidthPx / resizeContainerWidth;
+
+            setColumnWidths(prev => ({
+                ...prev,
+                [resizingColId]: newWidthPercent
+            }));
+        };
+
+        const handleMouseUp = () => {
+            if (resizingColId) {
+                // Save to Firestore
+                const finalWidth = columnWidths[resizingColId];
+                if (finalWidth) {
+                    updateTaskColumn(resizingColId, { width: finalWidth });
+                }
+                setResizingColId(null);
+                setResizeContainerWidth(0);
+                document.body.style.cursor = 'default';
+            }
+        };
+
+        if (resizingColId) {
+            window.addEventListener('mousemove', handleMouseMove);
+            window.addEventListener('mouseup', handleMouseUp);
+            document.body.style.cursor = 'col-resize';
+        }
+
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+            document.body.style.cursor = 'default';
+        };
+    }, [resizingColId, resizeStartX, resizeStartWidth, resizeContainerWidth, columnWidths]);
+
+    const startResize = (e: React.MouseEvent, col: TaskColumn) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Find the board container to get total width
+        const boardContainer = e.currentTarget.closest('.board-container');
+        if (!boardContainer) return;
+
+        const containerWidth = boardContainer.getBoundingClientRect().width;
+
+        setResizingColId(col.id);
+        setResizeStartX(e.clientX);
+        setResizeContainerWidth(containerWidth);
+        const currentWidth = columnWidths[col.id] || col.width || 300;
+        setResizeStartWidth(currentWidth);
+    };
 
     useEffect(() => {
         const loadMembers = async () => {
@@ -1935,7 +2030,7 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
                                             <div
                                                 ref={provided.innerRef}
                                                 {...provided.droppableProps}
-                                                className="flex gap-6 pb-6 items-start h-full"
+                                                className="flex gap-6 pb-6 items-start h-full board-container"
                                             >
                                                 {columns.map((col, index) => (
                                                     <Draggable
@@ -1948,8 +2043,15 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
                                                                 <div
                                                                     ref={provided.innerRef}
                                                                     {...provided.draggableProps}
-                                                                    className="min-w-[300px] w-[300px] flex flex-col gap-4 bg-gray-50/50 rounded-xl p-3 border border-border/30"
-                                                                    style={provided.draggableProps.style}
+                                                                    className="flex flex-col gap-4 bg-gray-50/50 rounded-xl p-3 border border-border/30 relative group/col"
+                                                                    style={{
+                                                                        ...provided.draggableProps.style,
+                                                                        width: (columnWidths[col.id] || col.width || 0) <= 1
+                                                                            ? `${(columnWidths[col.id] || col.width || 0) * 100}%`
+                                                                            : (columnWidths[col.id] || col.width || 300),
+                                                                        minWidth: 250,
+                                                                        flexShrink: 0 // Prevent squashing below min-width
+                                                                    }}
                                                                 >
                                                                     <div
                                                                         {...provided.dragHandleProps}
@@ -1997,6 +2099,12 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
                                                                             </DropdownMenuContent>
                                                                         </DropdownMenu>
                                                                     </div>
+
+                                                                    {/* Resize Handle */}
+                                                                    <div
+                                                                        className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-primary/50 transition-colors z-10"
+                                                                        onMouseDown={(e) => startResize(e, col)}
+                                                                    />
 
                                                                     <Droppable droppableId={col.id} type="TASK">
                                                                         {(provided, snapshot) => (
@@ -2063,7 +2171,9 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
                                                                                                             ...provided.draggableProps
                                                                                                                 .style,
                                                                                                             width: snapshot.isDragging
-                                                                                                                ? "300px"
+                                                                                                                ? ((columnWidths[col.id] || col.width || 0) <= 1
+                                                                                                                    ? `${(columnWidths[col.id] || col.width || 0) * 100}%`
+                                                                                                                    : (columnWidths[col.id] || col.width || 300))
                                                                                                                 : "auto",
                                                                                                             zIndex: 9999,
                                                                                                             pointerEvents:
@@ -2084,6 +2194,7 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
                                                                                                             members={members}
                                                                                                             role={role}
                                                                                                             orgId={orgId}
+                                                                                                            tags={availableTags}
                                                                                                             onEditTag={(tag) => {
                                                                                                                 setEditingTag(tag);
                                                                                                                 setNewTagName(
@@ -2140,7 +2251,8 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
                                                                                 )}
                                                                                 {provided.placeholder}
                                                                             </div>
-                                                                        )}
+                                                                        )
+                                                                        }
                                                                     </Droppable>
                                                                 </div>
                                                             );
@@ -2334,6 +2446,25 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
                                                                         groups={groups}
                                                                         role={role}
                                                                         orgId={orgId}
+                                                                        tags={availableTags}
+                                                                        onEditTag={(tag) => {
+                                                                            setEditingTag(tag);
+                                                                            setNewTagName(tag.label);
+                                                                            setNewTagColor(
+                                                                                tag.color || presetColors[0].value,
+                                                                            );
+                                                                            setIsTagManagerOpen(true);
+                                                                        }}
+                                                                        onDeleteTag={(tagId) => {
+                                                                            if (orgId)
+                                                                                deleteTagFromOrganization(orgId, tagId);
+                                                                        }}
+                                                                        onCreateTag={() => {
+                                                                            setEditingTag(null);
+                                                                            setNewTagName("");
+                                                                            setNewTagColor(presetColors[0].value);
+                                                                            setIsTagManagerOpen(true);
+                                                                        }}
                                                                     />
                                                                 </div>
                                                             );
@@ -2396,6 +2527,25 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
                                                                         groups={groups}
                                                                         role={role}
                                                                         orgId={orgId}
+                                                                        tags={availableTags}
+                                                                        onEditTag={(tag) => {
+                                                                            setEditingTag(tag);
+                                                                            setNewTagName(tag.label);
+                                                                            setNewTagColor(
+                                                                                tag.color || presetColors[0].value,
+                                                                            );
+                                                                            setIsTagManagerOpen(true);
+                                                                        }}
+                                                                        onDeleteTag={(tagId) => {
+                                                                            if (orgId)
+                                                                                deleteTagFromOrganization(orgId, tagId);
+                                                                        }}
+                                                                        onCreateTag={() => {
+                                                                            setEditingTag(null);
+                                                                            setNewTagName("");
+                                                                            setNewTagColor(presetColors[0].value);
+                                                                            setIsTagManagerOpen(true);
+                                                                        }}
                                                                     />
                                                                 </div>
                                                             );
@@ -2493,8 +2643,9 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
                             </div>
                         )}
                     </>
-                )}
-            </div>
-        </DragDropContext>
+                )
+                }
+            </div >
+        </DragDropContext >
     );
 }
