@@ -91,6 +91,7 @@ export default function FocusPage() {
         } else if (timeLeft === 0) {
             setIsRunning(false);
             if (timerRef.current) clearInterval(timerRef.current);
+            setIsSidebarOpen(true); // Show sidebar when timer finishes
 
             // Play Completion Sound
             const audio = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
@@ -149,6 +150,9 @@ export default function FocusPage() {
         if (!isRunning) {
             // Starting the timer - Close Sidebar
             setIsSidebarOpen(false);
+        } else {
+            // Pausing the timer - Open Sidebar
+            setIsSidebarOpen(true);
         }
         setIsRunning(!isRunning);
     };
@@ -157,6 +161,7 @@ export default function FocusPage() {
         setIsRunning(false);
         setTimeLeft(25 * 60);
         setDuration(25 * 60);
+        setIsSidebarOpen(true); // Show sidebar upon reset
     };
     const addTime = () => {
         setTimeLeft((prev) => prev + 5 * 60);
@@ -166,6 +171,7 @@ export default function FocusPage() {
         setIsRunning(false);
         setTimeLeft(5 * 60);
         setDuration(5 * 60);
+        setIsSidebarOpen(true); // Show sidebar for break
     };
 
     const handleAddTask = async (e: React.FormEvent) => {

@@ -467,75 +467,6 @@ export default function GoalsPage() {
     return (
         <div className="min-h-screen bg-slate-50/50 dark:bg-transparent">
             <div className="space-y-8 max-w-7xl mx-auto p-6 md:p-8 pb-32">
-                {/* Header & Actions */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-                    <div>
-                        <h2 className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                            {t("goals_title")}
-                        </h2>
-                        <p className="text-muted-foreground mt-2 text-lg">
-                            {t("goals_description")}
-                        </p>
-                    </div>
-                    {canEdit && (
-                        <Dialog open={isAddGoalOpen} onOpenChange={setIsAddGoalOpen}>
-                            <DialogTrigger asChild>
-                                <Button size="lg" className="shadow-lg hover:shadow-primary/20 transition-all">
-                                    <Plus className="h-5 w-5 mr-2" /> {t("create_objective")}
-                                </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                                <DialogHeader>
-                                    <DialogTitle>{t("create_objective")}</DialogTitle>
-                                </DialogHeader>
-                                <form onSubmit={handleAddGoal} className="space-y-4 mt-4">
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium">{t("objective_title")}</label>
-                                        <Input
-                                            placeholder={t("objective_placeholder")}
-                                            value={newGoalTitle}
-                                            onChange={(e) => setNewGoalTitle(e.target.value)}
-                                            autoFocus
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium">{t("overview")}</label>
-                                        <Input
-                                            placeholder={t("description_placeholder")}
-                                            value={newGoalDesc}
-                                            onChange={(e) => setNewGoalDesc(e.target.value)}
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium">{t("target_date")}</label>
-                                        <Input
-                                            type="date"
-                                            value={newGoalDate}
-                                            onChange={(e) => setNewGoalDate(e.target.value)}
-                                        />
-                                    </div>
-                                    {orgId && (
-                                        <div className="space-y-2">
-                                            <label className="text-sm font-medium">{t("assignees_teams")}</label>
-                                            <UserGroupSelect
-                                                orgId={orgId}
-                                                assigneeIds={newGoalAssigneeIds}
-                                                groupIds={newGoalGroupIds}
-                                                onAssigneeChange={setNewGoalAssigneeIds}
-                                                onGroupChange={setNewGoalGroupIds}
-                                                members={members}
-                                            />
-                                        </div>
-                                    )}
-                                    <DialogFooter>
-                                        <Button type="submit">{t("create_goal_button")}</Button>
-                                    </DialogFooter>
-                                </form>
-                            </DialogContent>
-                        </Dialog>
-                    )}
-                </div>
-
                 {/* Stats Overview */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <Card className="border-none shadow-sm bg-white dark:bg-slate-900 ring-1 ring-slate-100 dark:ring-slate-800 hover:shadow-md transition-all duration-200">
@@ -601,6 +532,67 @@ export default function GoalsPage() {
                             </div>
                         </CardContent>
                     </Card>
+                </div>
+
+                {/* Actions */}
+                <div className="flex justify-end">
+                    {canEdit && (
+                        <Dialog open={isAddGoalOpen} onOpenChange={setIsAddGoalOpen}>
+                            <DialogTrigger asChild>
+                                <Button size="lg" className="shadow-lg hover:shadow-primary/20 transition-all">
+                                    <Plus className="h-5 w-5 mr-2" /> {t("create_objective")}
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>{t("create_objective")}</DialogTitle>
+                                </DialogHeader>
+                                <form onSubmit={handleAddGoal} className="space-y-4 mt-4">
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium">{t("objective_title")}</label>
+                                        <Input
+                                            placeholder={t("objective_placeholder")}
+                                            value={newGoalTitle}
+                                            onChange={(e) => setNewGoalTitle(e.target.value)}
+                                            autoFocus
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium">{t("overview")}</label>
+                                        <Input
+                                            placeholder={t("description_placeholder")}
+                                            value={newGoalDesc}
+                                            onChange={(e) => setNewGoalDesc(e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium">{t("target_date")}</label>
+                                        <Input
+                                            type="date"
+                                            value={newGoalDate}
+                                            onChange={(e) => setNewGoalDate(e.target.value)}
+                                        />
+                                    </div>
+                                    {orgId && (
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium">{t("assignees_teams")}</label>
+                                            <UserGroupSelect
+                                                orgId={orgId}
+                                                assigneeIds={newGoalAssigneeIds}
+                                                groupIds={newGoalGroupIds}
+                                                onAssigneeChange={setNewGoalAssigneeIds}
+                                                onGroupChange={setNewGoalGroupIds}
+                                                members={members}
+                                            />
+                                        </div>
+                                    )}
+                                    <DialogFooter>
+                                        <Button type="submit">{t("create_goal_button")}</Button>
+                                    </DialogFooter>
+                                </form>
+                            </DialogContent>
+                        </Dialog>
+                    )}
                 </div>
 
                 {/* Goals Grid */}

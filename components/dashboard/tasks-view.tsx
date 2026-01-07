@@ -1641,40 +1641,6 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
     return (
         <DragDropContext onDragEnd={onDragEnd}>
             <div className={cn("space-y-6 p-6 bg-slate-50/30 dark:bg-slate-950/30 rounded-2xl", className)}>
-                {/* Header & Controls */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-                    <div>
-                        {!compact && (
-                            <>
-                                <h2 className="text-3xl font-extrabold tracking-tight text-foreground">
-                                    {t("tasks_title")}
-                                </h2>
-                                <p className="text-muted-foreground mt-1 text-lg">
-                                    {t("tasks_description")}
-                                </p>
-                            </>
-                        )}
-                    </div>
-
-                    <Tabs
-                        value={view}
-                        onValueChange={setView}
-                        className="w-full md:w-auto"
-                    >
-                        <TabsList className="grid w-full md:w-[300px] grid-cols-3">
-                            <TabsTrigger value="list">
-                                <LayoutList className="h-4 w-4 mr-2" /> {t("list_view")}
-                            </TabsTrigger>
-                            <TabsTrigger value="board">
-                                <Kanban className="h-4 w-4 mr-2" /> {t("board_view")}
-                            </TabsTrigger>
-                            <TabsTrigger value="matrix">
-                                <Grid2X2 className="h-4 w-4 mr-2" /> {t("matrix_view")}
-                            </TabsTrigger>
-                        </TabsList>
-                    </Tabs>
-                </div>
-
                 {/* Tasks Metrics Dashboard */}
                 {!compact && (
                     <TasksMetrics
@@ -1683,6 +1649,33 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
                         onTimeFilterChange={setTimeFilter}
                     />
                 )}
+
+                {/* Header & Controls */}
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                    <div>
+                        {/* Title removed as per user request */}
+                    </div>
+
+                    <Tabs
+                        value={view}
+                        onValueChange={setView}
+                        className="w-full md:w-auto"
+                    >
+                        <TabsList className="grid w-full md:w-auto grid-cols-3 gap-1 bg-slate-100/50 dark:bg-slate-800/50 p-1 rounded-xl">
+                            <TabsTrigger value="list" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm transition-all duration-200">
+                                <LayoutList className="h-4 w-4 mr-2" /> {t("list_view")}
+                            </TabsTrigger>
+                            <TabsTrigger value="board" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm transition-all duration-200">
+                                <Kanban className="h-4 w-4 mr-2" /> {t("board_view")}
+                            </TabsTrigger>
+                            <TabsTrigger value="matrix" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm transition-all duration-200">
+                                <Grid2X2 className="h-4 w-4 mr-2" /> {t("matrix_view")}
+                            </TabsTrigger>
+                        </TabsList>
+                    </Tabs>
+                </div>
+
+
 
                 {/* Add Task Bar */}
                 <div className="bg-white dark:bg-slate-900 border border-border/40 dark:border-slate-800 shadow-sm hover:shadow-md focus-within:shadow-md focus-within:ring-2 focus-within:ring-primary/10 transition-all rounded-2xl p-2 md:p-3 relative z-10">

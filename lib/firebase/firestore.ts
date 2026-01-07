@@ -93,6 +93,7 @@ export type Goal = {
     keyResults?: KeyResult[];
     assigneeIds?: string[];
     groupIds?: string[];
+    orgId?: string;
 }
 
 export type Strategy = {
@@ -128,7 +129,7 @@ export const addTask = async (title: string, tag: string = "general", dueDate?: 
         finalAssigneeIds.push(assigneeId);
     }
 
-    await addDoc(collection(db, "tasks"), {
+    const docRef = await addDoc(collection(db, "tasks"), {
         title,
         completed: false,
         userId: user.uid,
@@ -143,6 +144,69 @@ export const addTask = async (title: string, tag: string = "general", dueDate?: 
         assigneeIds: finalAssigneeIds,
         groupIds
     });
+
+    // Send notifications to assignees
+    if (finalAssigneeIds.length > 0) {
+        finalAssigneeIds.forEach(async (id) => {
+            await createNotification({
+                recipientId: id,
+                senderId: user.uid,
+                senderName: user.displayName || "Unknown",
+                senderAvatar: user.photoURL || undefined,
+                type: 'assignment',
+                resourceType: 'task',
+                resourceId: docRef.id,
+                message: `assigned you to task "${title}"`,
+                OrgId: orgId || undefined
+            });
+        });
+    }
+};
+
+export type User = {
+    uid: string;
+    email: string;
+    displayName: string;
+    photoURL?: string;
+    orgId?: string;
+    role?: 'owner' | 'member';
+    createdAt: Timestamp;
+    // Extended Profile
+    jobTitle?: string;
+    bio?: string;
+    strengths?: string[];
+    weaknesses?: string[];
+    hobbies?: string[];
+    birthday?: string; // ISO date YYYY-MM-DD
+    socialLinks?: {
+        linkedin?: string;
+        twitter?: string;
+        github?: string;
+        website?: string;
+    };
+}
+
+export const createUser = async (user: User) => {
+    await setDoc(doc(db, "users", user.uid), user);
+};
+
+export const updateUser = async (userId: string, data: Partial<User>) => {
+    const userRef = doc(db, "users", userId);
+    await updateDoc(userRef, data);
+};
+
+export const updateUserDetails = async (userId: string, data: Partial<User>) => {
+    const userRef = doc(db, "users", userId);
+    await updateDoc(userRef, data);
+};
+
+export const getUser = async (userId: string) => {
+    const userRef = doc(db, "users", userId);
+    const userSnap = await getDoc(userRef);
+    if (userSnap.exists()) {
+        return userSnap.data() as User;
+    }
+    return null;
 };
 
 export const toggleTaskCompletion = async (taskId: string, currentStatus: boolean) => {
@@ -161,10 +225,33 @@ export const updateTaskStatus = async (taskId: string, status: string) => {
     await updateDoc(taskRef, { status });
 };
 
-// Generic update task function
 export const updateTask = async (taskId: string, updates: Partial<Task>) => {
     const taskRef = doc(db, "tasks", taskId);
     await updateDoc(taskRef, updates);
+
+    // Trigger notification if assignees changed
+    if (updates.assigneeIds && updates.assigneeIds.length > 0) {
+        const { getCurrentUser } = await import("./auth");
+        const user = await getCurrentUser();
+        if (user) {
+            const taskSnap = await getDoc(taskRef);
+            const taskTitle = taskSnap.exists() ? taskSnap.data()?.title : "a task";
+
+            updates.assigneeIds.forEach(async (id) => {
+                await createNotification({
+                    recipientId: id,
+                    senderId: user.uid,
+                    senderName: user.displayName || "Unknown",
+                    senderAvatar: user.photoURL || undefined,
+                    type: 'assignment',
+                    resourceType: 'task',
+                    resourceId: taskId,
+                    message: `assigned you to task "${taskTitle}"`,
+                    OrgId: taskSnap.exists() ? taskSnap.data()?.orgId : undefined
+                });
+            });
+        }
+    }
 };
 
 // --- Comments ---
@@ -329,7 +416,7 @@ export const addGoal = async (title: string, targetDate: string, description: st
     const userSnap = await getDoc(userRef);
     const orgId = userSnap.exists() ? userSnap.data().orgId : null;
 
-    await addDoc(collection(db, "goals"), {
+    const docRef = await addDoc(collection(db, "goals"), {
         title,
         description,
         progress: 0,
@@ -341,6 +428,23 @@ export const addGoal = async (title: string, targetDate: string, description: st
         assigneeIds,
         groupIds
     });
+
+    // Send notifications
+    if (assigneeIds.length > 0) {
+        assigneeIds.forEach(async (id) => {
+            await createNotification({
+                recipientId: id,
+                senderId: user.uid,
+                senderName: user.displayName || "Unknown",
+                senderAvatar: user.photoURL || undefined,
+                type: 'assignment',
+                resourceType: 'goal',
+                resourceId: docRef.id,
+                message: `assigned you to objective "${title}"`,
+                OrgId: orgId || undefined
+            });
+        });
+    }
 };
 
 export const addKeyResult = async (goalId: string, keyResult: Omit<KeyResult, "id">) => {
@@ -407,6 +511,29 @@ export const updateGoalProgress = async (goalId: string, progress: number) => {
 export const updateGoal = async (goalId: string, data: Partial<Pick<Goal, "title" | "description" | "targetDate" | "assigneeIds" | "groupIds">>) => {
     const goalRef = doc(db, "goals", goalId);
     await updateDoc(goalRef, data);
+
+    if (data.assigneeIds && data.assigneeIds.length > 0) {
+        const { getCurrentUser } = await import("./auth");
+        const user = await getCurrentUser();
+        if (user) {
+            const goalSnap = await getDoc(goalRef);
+            const goalTitle = goalSnap.exists() ? goalSnap.data()?.title : "an objective";
+
+            data.assigneeIds.forEach(async (id) => {
+                await createNotification({
+                    recipientId: id,
+                    senderId: user.uid,
+                    senderName: user.displayName || "Unknown",
+                    senderAvatar: user.photoURL || undefined,
+                    type: 'assignment',
+                    resourceType: 'goal',
+                    resourceId: goalId,
+                    message: `assigned you to objective "${goalTitle}"`,
+                    OrgId: goalSnap.exists() ? goalSnap.data()?.orgId : undefined
+                });
+            });
+        }
+    }
 };
 
 export const updateKeyResult = async (goalId: string, keyResult: KeyResult) => {
@@ -554,7 +681,7 @@ export const addBlogPost = async (title: string, excerpt: string, content: strin
     const userSnap = await getDoc(userRef);
     const orgId = userSnap.exists() ? userSnap.data().orgId : null;
 
-    await addDoc(collection(db, "posts"), {
+    const docRef = await addDoc(collection(db, "posts"), {
         title,
         excerpt,
         content,
@@ -567,11 +694,58 @@ export const addBlogPost = async (title: string, excerpt: string, content: strin
         tags,
         pinned
     });
+
+    // Notifications
+    if (assigneeIds.length > 0) {
+        assigneeIds.forEach(async (id) => {
+            await createNotification({
+                recipientId: id,
+                senderId: user.uid,
+                senderName: user.displayName || "Unknown",
+                senderAvatar: user.photoURL || undefined,
+                type: 'mention',
+                resourceType: 'post',
+                resourceId: docRef.id,
+                message: `mentioned you in blog post "${title}"`,
+                OrgId: orgId || undefined
+            });
+        });
+    }
 };
 
 export const updateBlogPost = async (postId: string, data: Partial<BlogPost>) => {
     const postRef = doc(db, "posts", postId);
-    await updateDoc(postRef, data);
+
+    // Remove undefined fields
+    const cleanData = Object.fromEntries(
+        Object.entries(data).filter(([_, v]) => v !== undefined)
+    );
+
+    await updateDoc(postRef, cleanData);
+
+    // Notifications
+    if (data.assigneeIds && data.assigneeIds.length > 0) {
+        const { getCurrentUser } = await import("./auth");
+        const user = await getCurrentUser();
+        if (user) {
+            const postSnap = await getDoc(postRef);
+            const postTitle = postSnap.exists() ? postSnap.data()?.title : "a blog post";
+
+            data.assigneeIds.forEach(async (id) => {
+                await createNotification({
+                    recipientId: id,
+                    senderId: user.uid,
+                    senderName: user.displayName || "Unknown",
+                    senderAvatar: user.photoURL || undefined,
+                    type: 'mention',
+                    resourceType: 'post',
+                    resourceId: postId,
+                    message: `mentioned you in blog post "${postTitle}"`,
+                    OrgId: postSnap.exists() ? postSnap.data()?.orgId : undefined
+                });
+            });
+        }
+    }
 };
 
 export const deleteBlogPost = async (postId: string) => {
@@ -906,6 +1080,12 @@ export type OrganizationMember = {
     displayName?: string;
     photoURL?: string;
     role: 'owner' | 'member' | 'viewer' | 'restricted';
+    jobTitle?: string;
+    bio?: string;
+    strengths?: string[];
+    weaknesses?: string[];
+    hobbies?: string[];
+    birthday?: string;
 }
 
 export const createOrganization = async (name: string, isPersonal: boolean = false) => {
@@ -1194,7 +1374,13 @@ export const getOrganizationMembers = async (orgId: string) => {
             email: data?.email,
             displayName: data?.displayName || "Unknown User",
             photoURL: data?.photoURL,
-            role: orgSnap.data().roles?.[snap.id] || 'member'
+            role: orgSnap.data().roles?.[snap.id] || 'member',
+            jobTitle: data?.jobTitle,
+            bio: data?.bio,
+            strengths: data?.strengths,
+            weaknesses: data?.weaknesses,
+            hobbies: data?.hobbies,
+            birthday: data?.birthday
         };
     });
 };
@@ -2118,4 +2304,70 @@ export const subscribeToComments = (postId: string, callback: (comments: SocialC
 
         callback(hydrated as SocialComment[]);
     });
+};
+
+export type Notification = {
+    id: string;
+    recipientId: string;
+    senderId: string;
+    senderName: string;
+    senderAvatar?: string;
+    type: 'assignment' | 'mention' | 'comment' | 'system';
+    resourceType: 'task' | 'goal' | 'post' | 'comment';
+    resourceId: string;
+    message: string;
+    read: boolean;
+    createdAt: Timestamp;
+    OrgId?: string;
+}
+
+export const createNotification = async (notification: Omit<Notification, "id" | "createdAt" | "read">) => {
+    // Don't notify self
+    if (notification.recipientId === notification.senderId) return;
+
+    await addDoc(collection(db, "notifications"), {
+        ...notification,
+        read: false,
+        createdAt: serverTimestamp()
+    });
+};
+
+export const subscribeToNotifications = (userId: string, callback: (notifications: Notification[]) => void) => {
+    const q = query(
+        collection(db, "notifications"),
+        where("recipientId", "==", userId),
+        orderBy("createdAt", "desc"),
+        limit(50)
+    );
+
+    return onSnapshot(q, (snapshot) => {
+        const notifications = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        })) as Notification[];
+        callback(notifications);
+    });
+};
+
+export const markNotificationAsRead = async (notificationId: string) => {
+    await updateDoc(doc(db, "notifications", notificationId), {
+        read: true
+    });
+};
+
+export const markAllNotificationsAsRead = async (userId: string) => {
+    const q = query(
+        collection(db, "notifications"),
+        where("recipientId", "==", userId),
+        where("read", "==", false)
+    );
+
+    const snapshot = await getDocs(q);
+    const batch = writeBatch(db);
+
+    snapshot.docs.forEach((doc) => {
+        batch.update(doc.ref, { read: true });
+    });
+
+    await batch.commit();
 };

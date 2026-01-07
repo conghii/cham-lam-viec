@@ -209,6 +209,17 @@ export default function PlannerPage() {
         }
     }
 
+    const handleDeletePlan = async (planId: string) => {
+        try {
+            await deletePlan(planId)
+            toast.success("Plan deleted")
+            if (selectedPlan?.id === planId) setSelectedPlan(null)
+        } catch (error) {
+            console.error("Error deleting plan", error)
+            toast.error("Failed to delete plan")
+        }
+    }
+
     const formatDate = (timestamp: any) => {
         if (!timestamp) return ""
         return new Date(timestamp.toMillis()).toLocaleDateString()
@@ -245,47 +256,65 @@ export default function PlannerPage() {
                 ) : !plan ? (
                     <div className="grid lg:grid-cols-2 gap-12 w-full items-center">
                         {/* Left: Intro & Visuals */}
-                        <div className="space-y-8 text-center lg:text-left">
-                            <div className="space-y-4">
-                                <h1 className="text-5xl md:text-7xl font-bold tracking-tighter text-slate-900 dark:text-white pb-2">
-                                    {t("planner_title")}
-                                </h1>
-                                <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 font-light max-w-lg mx-auto lg:mx-0 leading-relaxed">
-                                    {t("planner_subtitle")}
-                                </p>
+                        {/* Left: My Plans List */}
+                        <div className="space-y-6 h-full min-h-[500px] flex flex-col justify-center">
+                            <div className="flex items-center justify-between px-1">
+                                <h2 className="text-sm font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                                    {t("my_plans")} ({savedPlans.length})
+                                </h2>
                             </div>
 
-                            {/* 3D Visual */}
-                            <div className="relative w-64 h-64 mx-auto lg:mx-0 hidden md:block">
-                                <div className="absolute inset-0 bg-gradient-to-tr from-indigo-200/50 to-purple-200/50 dark:from-indigo-900/30 dark:to-purple-900/30 rounded-full blur-3xl animate-pulse" />
-                                <img
-                                    src="/images/ai-mascot.png"
-                                    alt="AI Assistant"
-                                    className="relative w-full h-full object-contain drop-shadow-xl animate-in slide-in-from-bottom-8 duration-1000"
-                                    style={{ filter: "drop-shadow(0 0 20px rgba(99, 102, 241, 0.2))" }}
-                                />
-                            </div>
-
-                            {/* Saved Plans Teaser */}
-                            {savedPlans.length > 0 && (
-                                <div className="pt-8 border-t border-slate-200 dark:border-slate-800">
-                                    <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 mb-4 justify-center lg:justify-start">
-                                        <History className="h-4 w-4" /> {t("recent_plans")}
-                                    </div>
-                                    <div className="flex gap-3 overflow-x-auto pb-2 justify-center lg:justify-start snap-x">
-                                        {savedPlans.slice(0, 3).map(saved => (
+                            <ScrollArea className="flex-1 pr-6 -mr-6 h-[500px]">
+                                <div className="space-y-4 pb-4 pt-1">
+                                    {savedPlans.length === 0 ? (
+                                        <div className="text-center py-16 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-3xl bg-white/30 dark:bg-slate-900/30">
+                                            <p className="text-slate-500 dark:text-slate-400 font-medium">{t("no_plans_yet")}</p>
+                                        </div>
+                                    ) : (
+                                        savedPlans.map((saved) => (
                                             <div
                                                 key={saved.id}
+                                                className={cn(
+                                                    "group relative p-5 rounded-2xl border transition-all duration-300 cursor-pointer",
+                                                    selectedPlan?.id === saved.id
+                                                        ? "bg-white dark:bg-slate-900 border-indigo-500/50 shadow-lg shadow-indigo-100 dark:shadow-indigo-900/20 ring-1 ring-indigo-500/20"
+                                                        : "bg-white/60 dark:bg-slate-900/60 border-white/50 dark:border-slate-800 backdrop-blur-md hover:bg-white hover:dark:bg-slate-900 hover:shadow-md hover:border-indigo-200 dark:hover:border-indigo-800 hover:-translate-y-0.5"
+                                                )}
                                                 onClick={() => setSelectedPlan(saved)}
-                                                className="shrink-0 w-48 p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700 hover:shadow-md transition-all cursor-pointer snap-start"
                                             >
-                                                <p className="font-medium text-sm truncate text-slate-700 dark:text-slate-300">{saved.title}</p>
-                                                <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1">{formatDate(saved.createdAt)}</p>
+                                                <div className="flex justify-between items-start">
+                                                    <div className="space-y-2">
+                                                        <h3 className={cn(
+                                                            "font-bold text-lg transition-colors",
+                                                            selectedPlan?.id === saved.id
+                                                                ? "text-indigo-600 dark:text-indigo-400"
+                                                                : "text-slate-800 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400"
+                                                        )}>
+                                                            {saved.title}
+                                                        </h3>
+                                                        <div className="flex items-center gap-3 text-xs font-medium text-slate-400 dark:text-slate-500">
+                                                            <span className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-full">
+                                                                <Clock className="w-3 h-3" /> {formatDate(saved.createdAt)}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8 -mr-2 -mt-2 text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 opacity-0 group-hover:opacity-100 transition-all scale-90 group-hover:scale-100"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation()
+                                                            handleDeletePlan(saved.id)
+                                                        }}
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </Button>
+                                                </div>
                                             </div>
-                                        ))}
-                                    </div>
+                                        ))
+                                    )}
                                 </div>
-                            )}
+                            </ScrollArea>
                         </div>
 
                         {/* Right: Conversational UI Form */}

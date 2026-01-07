@@ -123,15 +123,9 @@ export function TasksMetrics({ tasks, timeFilter, onTimeFilterChange }: TasksMet
     return (
         <div className="space-y-6">
             {/* Header with Time Filter */}
+            {/* Header with Time Filter */}
             <div className="flex items-center justify-between">
-                <div>
-                    <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
-                        {t("overview")}
-                    </h2>
-                    <p className="text-sm text-muted-foreground">
-                        Track your productivity
-                    </p>
-                </div>
+                <div />
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" size="sm" className="gap-2 h-9 rounded-full bg-white/50 backdrop-blur-sm border-slate-200 dark:border-slate-800">
@@ -154,95 +148,73 @@ export function TasksMetrics({ tasks, timeFilter, onTimeFilterChange }: TasksMet
                 </DropdownMenu>
             </div>
 
-            {/* Stats Cards - Premium Layout */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Focus Time Cards */}
-                <Card className="p-6 bg-white dark:bg-slate-900 border-none shadow-sm rounded-3xl relative overflow-hidden group hover:shadow-md transition-all duration-300">
-                    <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
-                        <div className="h-24 w-24 bg-blue-500 rounded-full blur-3xl" />
+            {/* Stats Cards - Compact Layout */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Focus Time Card */}
+                <div className="flex items-center gap-4 p-4 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl shadow-sm">
+                    <div className="h-12 w-12 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 flex items-center justify-center shrink-0">
+                        <Clock className="h-6 w-6" />
                     </div>
-
-                    <div className="flex justify-between items-start z-10 relative">
-                        <div>
-                            <p className="text-sm font-semibold tracking-wider text-muted-foreground uppercase mb-1">
-                                {t("focus_time")}
-                            </p>
-                            <h3 className="text-4xl font-bold text-foreground tracking-tight">
+                    <div>
+                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                            {t("focus_time")}
+                        </p>
+                        <div className="flex items-baseline gap-2">
+                            <h3 className="text-2xl font-bold text-foreground">
                                 {(() => {
                                     const totalSeconds = completedTasks.reduce((acc, t) => acc + (t.totalTimeSpent || 0), 0);
                                     const hours = (totalSeconds / 3600).toFixed(1);
                                     return `${hours}h`;
                                 })()}
                             </h3>
-                        </div>
-                        <div className="h-12 w-12 rounded-2xl bg-blue-50 dark:bg-blue-900/30 text-blue-500 flex items-center justify-center">
-                            <Clock className="h-6 w-6" />
+                            <span className="text-xs text-muted-foreground">
+                                {(() => {
+                                    const totalSeconds = completedTasks.reduce((acc, t) => acc + (t.totalTimeSpent || 0), 0);
+                                    const avgMinutes = completedTasks.length > 0 ? Math.round((totalSeconds / 60) / completedTasks.length) : 0;
+                                    return `~${avgMinutes}m/task`;
+                                })()}
+                            </span>
                         </div>
                     </div>
-                    <div className="mt-4 flex items-center gap-2">
-                        <span className="text-xs font-medium text-muted-foreground bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-lg">
-                            {(() => {
-                                const totalSeconds = completedTasks.reduce((acc, t) => acc + (t.totalTimeSpent || 0), 0);
-                                const avgMinutes = completedTasks.length > 0 ? Math.round((totalSeconds / 60) / completedTasks.length) : 0;
-                                return `~${avgMinutes}m / task`;
-                            })()}
-                        </span>
-                    </div>
-                </Card>
+                </div>
 
                 {/* Task Completion Card */}
-                <Card className="p-6 bg-white dark:bg-slate-900 border-none shadow-sm rounded-3xl relative overflow-hidden group hover:shadow-md transition-all duration-300">
-                    <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
-                        <div className="h-24 w-24 bg-emerald-500 rounded-full blur-3xl" />
+                <div className="flex items-center gap-4 p-4 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl shadow-sm">
+                    <div className="h-12 w-12 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 flex items-center justify-center shrink-0">
+                        <CheckCircle2 className="h-6 w-6" />
                     </div>
-
-                    <div className="flex justify-between items-start z-10 relative">
-                        <div>
-                            <p className="text-sm font-semibold tracking-wider text-muted-foreground uppercase mb-1">
-                                {t("tasks")}
-                            </p>
-                            <h3 className="text-4xl font-bold text-foreground tracking-tight">
-                                {completedTasks.length}/{totalTasks}
+                    <div>
+                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                            {t("tasks")}
+                        </p>
+                        <div className="flex items-baseline gap-2">
+                            <h3 className="text-2xl font-bold text-foreground">
+                                {completedTasks.length} <span className="text-lg text-muted-foreground font-medium">/ {totalTasks}</span>
                             </h3>
+                            <span className="text-xs text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full font-medium">
+                                {completionRate}% Rate
+                            </span>
                         </div>
-                        <div className="h-12 w-12 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-500 flex items-center justify-center">
-                            <CheckCircle2 className="h-6 w-6" />
-                        </div>
                     </div>
-                    <div className="mt-4 w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
-                        <div
-                            className="bg-emerald-500 h-full rounded-full transition-all duration-500"
-                            style={{ width: `${completionRate}%` }}
-                        />
-                    </div>
-                </Card>
+                </div>
 
-                {/* Streak/OKR Card */}
-                <Card className="p-6 bg-white dark:bg-slate-900 border-none shadow-sm rounded-3xl relative overflow-hidden group hover:shadow-md transition-all duration-300">
-                    <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
-                        <div className="h-24 w-24 bg-orange-500 rounded-full blur-3xl" />
+                {/* Streak Card */}
+                <div className="flex items-center gap-4 p-4 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl shadow-sm">
+                    <div className="h-12 w-12 rounded-xl bg-orange-50 dark:bg-orange-900/20 text-orange-600 flex items-center justify-center shrink-0">
+                        <Flame className="h-6 w-6" />
                     </div>
-
-                    <div className="flex justify-between items-start z-10 relative">
-                        <div>
-                            <p className="text-sm font-semibold tracking-wider text-muted-foreground uppercase mb-1">
-                                {t("streak")}
-                            </p>
-                            <h3 className="text-4xl font-bold text-foreground tracking-tight flex items-center gap-2">
+                    <div>
+                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                            {t("streak")}
+                        </p>
+                        <div className="flex items-baseline gap-2">
+                            <h3 className="text-2xl font-bold text-foreground">
                                 {streak}
-                                <span className="text-lg text-muted-foreground font-normal">days</span>
                             </h3>
-                        </div>
-                        <div className="h-12 w-12 rounded-2xl bg-orange-50 dark:bg-orange-900/30 text-orange-500 flex items-center justify-center">
-                            <Flame className="h-6 w-6" />
+                            <span className="text-sm text-muted-foreground">days</span>
                         </div>
                     </div>
-                    <div className="mt-4 flex items-center gap-2">
-                        <span className="text-xs font-medium text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/30 px-2 py-1 rounded-lg flex items-center gap-1">
-                            {streak > 0 ? t("keep_it_up") : t("start_streak")}
-                        </span>
-                    </div>
-                </Card>
+                </div>
             </div>
         </div>
     );

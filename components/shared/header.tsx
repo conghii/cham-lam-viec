@@ -9,6 +9,7 @@ import { Bell, Users, Menu } from "lucide-react"
 import { ModeToggle } from "@/components/theme-toggle"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Sidebar } from "@/components/shared/sidebar"
+import { NotificationsPopover } from "@/components/shared/notifications-popover"
 
 import { auth, logOut } from "@/lib/firebase/auth"
 import { subscribeToUserProfile, subscribeToChats, subscribeToFriendships, acceptFriendRequest, rejectFriendRequest, type Chat, type Friendship } from "@/lib/firebase/firestore"
@@ -193,103 +194,7 @@ export function Header() {
                 </Link>
 
                 {/* NOTIFICATIONS DROPDOWN */}
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="relative">
-                            <Bell className="h-5 w-5" />
-                            {(invitations.length > 0 || friendRequests.length > 0) && (
-                                <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-rose-500 border border-white dark:border-slate-950"></span>
-                            )}
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-80">
-                        <DropdownMenuLabel className="font-normal text-xs text-muted-foreground uppercase tracking-wider">
-                            Notifications
-                        </DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        {invitations.length === 0 && friendRequests.length === 0 ? (
-                            <div className="py-8 text-center text-sm text-muted-foreground">
-                                No new notifications
-                            </div>
-                        ) : (
-                            <div className="max-h-[300px] overflow-y-auto">
-                                {/* Team Invitations */}
-                                {invitations.map(invite => (
-                                    <div key={invite.id} className="p-4 border-b last:border-0 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors">
-                                        <div className="flex items-start gap-3">
-                                            <div className="h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
-                                                <Users className="h-4 w-4" />
-                                            </div>
-                                            <div className="flex-1 space-y-1">
-                                                <p className="text-sm text-foreground">
-                                                    You have been invited to join <span className="font-semibold">{invite.orgName}</span>
-                                                </p>
-                                                <p className="text-xs text-muted-foreground">
-                                                    {new Date(invite.createdAt?.seconds * 1000).toLocaleDateString()}
-                                                </p>
-                                                <div className="flex items-center gap-2 mt-2">
-                                                    <Button
-                                                        size="sm"
-                                                        variant="default"
-                                                        className="h-7 text-xs bg-indigo-600 hover:bg-indigo-700"
-                                                        onClick={() => handleAcceptInvite(invite.id)}
-                                                    >
-                                                        Accept
-                                                    </Button>
-                                                    <Button
-                                                        size="sm"
-                                                        variant="outline"
-                                                        className="h-7 text-xs"
-                                                        onClick={() => handleRejectInvite(invite.id)}
-                                                    >
-                                                        Decline
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-
-                                {/* Friend Requests */}
-                                {friendRequests.map(freq => (
-                                    <div key={freq.id} className="p-4 border-b last:border-0 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors">
-                                        <div className="flex items-start gap-3">
-                                            <div className="h-8 w-8 rounded-full bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center text-rose-600 dark:text-rose-400 shrink-0">
-                                                <Users className="h-4 w-4" />
-                                            </div>
-                                            <div className="flex-1 space-y-1">
-                                                <p className="text-sm text-foreground">
-                                                    <span className="font-semibold">{freq.friend?.displayName || "Someone"}</span> sent you a friend request
-                                                </p>
-                                                <p className="text-xs text-muted-foreground">
-                                                    View profile
-                                                </p>
-                                                <div className="flex items-center gap-2 mt-2">
-                                                    <Button
-                                                        size="sm"
-                                                        variant="default"
-                                                        className="h-7 text-xs bg-rose-600 hover:bg-rose-700"
-                                                        onClick={() => handleAcceptFriend(freq.id)}
-                                                    >
-                                                        Accept
-                                                    </Button>
-                                                    <Button
-                                                        size="sm"
-                                                        variant="outline"
-                                                        className="h-7 text-xs"
-                                                        onClick={() => handleRejectFriend(freq.id)}
-                                                    >
-                                                        Decline
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                <NotificationsPopover />
 
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>

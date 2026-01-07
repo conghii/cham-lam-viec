@@ -182,78 +182,84 @@ export default function MVSPage() {
                 )}
             </div>
 
-            <div className="max-w-5xl mx-auto px-6 py-10 space-y-16">
+            <div className="max-w-7xl mx-auto px-6 py-10 space-y-16">
 
-                {/* HERO SECTION: MISSION */}
-                <section className="relative group">
-                    <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/10 via-purple-500/5 to-white dark:to-slate-900/50 rounded-3xl blur-3xl -z-10" />
-                    <div className={cn(
-                        "relative rounded-3xl p-8 md:p-12 transition-all duration-300 border border-white/50 dark:border-slate-800 shadow-sm",
-                        isEditing ? "bg-white/80 dark:bg-slate-900/80 ring-2 ring-indigo-500/20" : "bg-white/60 dark:bg-slate-900/40 backdrop-blur-sm"
-                    )}>
-                        <div className="flex items-center gap-4 mb-6">
-                            <div className="h-12 w-12 rounded-2xl bg-indigo-500 text-white flex items-center justify-center shadow-lg shadow-indigo-500/30">
-                                <Rocket className="h-6 w-6" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+                    {/* HERO SECTION: MISSION */}
+                    <section className="relative group h-full">
+                        <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/10 via-purple-500/5 to-white dark:to-slate-900/50 rounded-3xl blur-3xl -z-10 opacity-50" />
+                        <div className={cn(
+                            "relative rounded-3xl p-8 md:p-10 transition-all duration-300 border border-white/50 dark:border-slate-800 shadow-sm h-full flex flex-col",
+                            isEditing ? "bg-white/80 dark:bg-slate-900/80 ring-2 ring-indigo-500/20" : "bg-white/60 dark:bg-slate-900/40 backdrop-blur-sm"
+                        )}>
+                            <div className="flex items-center gap-4 mb-6">
+                                <div className="h-12 w-12 rounded-2xl bg-indigo-500 text-white flex items-center justify-center shadow-lg shadow-indigo-500/30 shrink-0">
+                                    <Rocket className="h-6 w-6" />
+                                </div>
+                                <h2 className="text-sm font-bold uppercase tracking-widest text-indigo-600">{t("our_mission")}</h2>
                             </div>
-                            <h2 className="text-sm font-bold uppercase tracking-widest text-indigo-600">{t("our_mission")}</h2>
+
+                            <div className="flex-1 flex flex-col">
+                                {isEditing ? (
+                                    <Textarea
+                                        value={editMission}
+                                        onChange={(e) => setEditMission(e.target.value)}
+                                        placeholder={t("mission_placeholder")}
+                                        className="text-2xl md:text-3xl font-black tracking-tight leading-tight min-h-[140px] bg-transparent border-none p-0 focus-visible:ring-0 placeholder:text-slate-300 resize-none flex-1"
+                                    />
+                                ) : (
+                                    <h2 className={cn(
+                                        "text-2xl md:text-3xl font-black tracking-tight leading-tight text-slate-900 dark:text-white flex-1",
+                                        !mvs?.mission && "text-slate-300 dark:text-slate-600 italic"
+                                    )}>
+                                        {mvs?.mission || t("mission_fallback")}
+                                    </h2>
+                                )}
+
+                                <p className="mt-8 text-slate-500 dark:text-slate-400 font-medium text-sm border-t border-slate-100 dark:border-slate-800 pt-6">
+                                    {t("mission_why")}
+                                </p>
+                            </div>
                         </div>
+                    </section>
 
-                        {isEditing ? (
-                            <Textarea
-                                value={editMission}
-                                onChange={(e) => setEditMission(e.target.value)}
-                                placeholder={t("mission_placeholder")}
-                                className="text-3xl md:text-5xl font-black tracking-tight leading-tight min-h-[140px] bg-transparent border-none p-0 focus-visible:ring-0 placeholder:text-slate-300 resize-none"
-                            />
-                        ) : (
-                            <h2 className={cn(
-                                "text-3xl md:text-5xl font-black tracking-tight leading-tight text-slate-900 dark:text-white",
-                                !mvs?.mission && "text-slate-300 dark:text-slate-600 italic"
-                            )}>
-                                {mvs?.mission || t("mission_fallback")}
-                            </h2>
-                        )}
-
-                        <p className="mt-6 text-slate-500 dark:text-slate-400 max-w-2xl font-medium">
-                            {t("mission_why")}
-                        </p>
-                    </div>
-                </section>
-
-                {/* VISION SECTION */}
-                <section className="relative md:pl-20">
-                    {/* Connecting Line */}
-                    <div className="absolute left-8 md:left-[3.5rem] top-[-4rem] h-24 w-0.5 bg-gradient-to-b from-indigo-200 to-cyan-200 dark:from-indigo-900 dark:to-cyan-900 -z-10 hidden md:block" />
-
-                    <div className={cn(
-                        "relative rounded-3xl p-8 transition-all duration-300 border border-slate-100 dark:border-slate-800",
-                        isEditing ? "bg-white dark:bg-slate-900 ring-2 ring-cyan-500/20" : "bg-gradient-to-br from-white to-cyan-50/30 dark:from-slate-900 dark:to-cyan-950/10 hover:shadow-md"
-                    )}>
-                        <div className="flex items-start gap-6">
-                            <div className="h-10 w-10 shrink-0 rounded-2xl bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 flex items-center justify-center">
-                                <Telescope className="h-5 w-5" />
+                    {/* VISION SECTION */}
+                    <section className="relative h-full">
+                        <div className={cn(
+                            "relative rounded-3xl p-8 md:p-10 transition-all duration-300 border border-slate-100 dark:border-slate-800 h-full flex flex-col",
+                            isEditing ? "bg-white dark:bg-slate-900 ring-2 ring-cyan-500/20" : "bg-gradient-to-br from-white to-cyan-50/30 dark:from-slate-900 dark:to-cyan-950/10 hover:shadow-md"
+                        )}>
+                            <div className="flex items-center gap-4 mb-6">
+                                <div className="h-12 w-12 rounded-2xl bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 flex items-center justify-center shrink-0">
+                                    <Telescope className="h-6 w-6" />
+                                </div>
+                                <h3 className="text-sm font-bold uppercase tracking-widest text-cyan-600">{t("our_vision")}</h3>
                             </div>
-                            <div className="flex-1">
-                                <h3 className="text-sm font-bold uppercase tracking-widest text-cyan-600 mb-3">{t("our_vision")}</h3>
+
+                            <div className="flex-1 flex flex-col">
                                 {isEditing ? (
                                     <Textarea
                                         value={editVision}
                                         onChange={(e) => setEditVision(e.target.value)}
                                         placeholder={t("vision_placeholder")}
-                                        className="text-xl md:text-2xl font-medium leading-relaxed min-h-[100px] bg-transparent border-none p-0 focus-visible:ring-0 placeholder:text-slate-300 resize-none"
+                                        className="text-xl md:text-2xl font-medium leading-relaxed min-h-[140px] bg-transparent border-none p-0 focus-visible:ring-0 placeholder:text-slate-300 resize-none flex-1"
                                     />
                                 ) : (
                                     <p className={cn(
-                                        "text-xl md:text-2xl font-medium leading-relaxed text-slate-700 dark:text-slate-200",
+                                        "text-xl md:text-2xl font-medium leading-relaxed text-slate-700 dark:text-slate-200 flex-1",
                                         !mvs?.vision && "text-slate-300 dark:text-slate-600 italic"
                                     )}>
                                         {mvs?.vision || t("vision_fallback")}
                                     </p>
                                 )}
+
+                                <p className="mt-8 text-slate-400 dark:text-slate-500 font-medium text-sm border-t border-slate-100 dark:border-slate-800 pt-6 italic">
+                                    {t("vision_why") || "Painting the picture of the future we are building."}
+                                </p>
                             </div>
                         </div>
-                    </div>
-                </section>
+                    </section>
+                </div>
 
                 {/* STRATEGIES SECTION */}
                 <section>
