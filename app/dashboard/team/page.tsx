@@ -991,46 +991,7 @@ export default function TeamPage() {
                     </TabsContent>
                 </Tabs>
 
-                {/* UPGRADE BANNER (Bottom) */}
-                {org.isPersonal && (
-                    <div className="mt-12 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 p-8 text-white relative overflow-hidden">
-                        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-                            <div>
-                                <h3 className="text-2xl font-bold mb-2">Ready to scale your team?</h3>
-                                <p className="text-indigo-100 max-w-xl">
-                                    Upgrade to a shared organization to unlock advanced features, unlimited members, and enhanced collaboration tools.
-                                </p>
-                            </div>
-                            <Dialog open={isCreateOrgOpen} onOpenChange={setIsCreateOrgOpen}>
-                                <DialogTrigger asChild>
-                                    <Button size="lg" className="bg-white text-indigo-600 hover:bg-indigo-50 border-none font-bold">
-                                        <Rocket className="h-4 w-4 mr-2" /> Upgrade Now
-                                    </Button>
-                                </DialogTrigger>
-                                <DialogContent>
-                                    <DialogHeader>
-                                        <DialogTitle>Create New Organization</DialogTitle>
-                                        <DialogDescription>Enter a name for your team workspace.</DialogDescription>
-                                    </DialogHeader>
-                                    <div className="space-y-2 py-4">
-                                        <Label>Organization Name</Label>
-                                        <Input
-                                            value={newOrgName}
-                                            onChange={e => setNewOrgName(e.target.value)}
-                                            placeholder="e.g. Acme Corp, Design Team"
-                                        />
-                                    </div>
-                                    <DialogFooter>
-                                        <Button onClick={handleCreateOrg}>Create Organization</Button>
-                                    </DialogFooter>
-                                </DialogContent>
-                            </Dialog>
-                        </div>
-                        {/* Decorative Circles */}
-                        <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 rounded-full bg-white/10 blur-3xl"></div>
-                        <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-purple-500/20 blur-3xl"></div>
-                    </div>
-                )}
+
             </div>
 
             {/* Member Profile Modal */}

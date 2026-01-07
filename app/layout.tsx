@@ -9,7 +9,7 @@ import { LanguageProvider } from "@/components/shared/language-context";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Stitch. | Personal Productivity System",
+  title: "ChamLam. | Personal Productivity System",
   description: "A minimalist, goal-oriented system to help you win every day.",
 };
 

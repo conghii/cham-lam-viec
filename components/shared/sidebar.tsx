@@ -171,7 +171,7 @@ export function Sidebar({ isCollapsed = false, className }: { isCollapsed?: bool
                                 </div>
                                 {!isCollapsed && (
                                     <div className="text-left bg-transparent">
-                                        <p className="font-semibold text-sm leading-none truncate max-w-[120px]">{currentOrg?.name || "Stitch."}</p>
+                                        <p className="font-semibold text-sm leading-none truncate max-w-[120px]">{currentOrg?.name || "ChamLam."}</p>
                                         <p className="text-[10px] text-muted-foreground mt-0.5">{currentOrg?.isPersonal ? "Personal Space" : "Shared Team"}</p>
                                     </div>
                                 )}

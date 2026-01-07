@@ -136,7 +136,7 @@ export default function FocusPage() {
         if (isRunning) {
             document.title = `⏱️ ${timeStr} - Focus`;
         } else {
-            document.title = "Stitch Focus";
+            document.title = "ChamLam Focus";
         }
     }, [timeLeft, isRunning]);
 
