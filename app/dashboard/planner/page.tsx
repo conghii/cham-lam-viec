@@ -38,6 +38,7 @@ type Message = {
 }
 
 export default function PlannerPage() {
+    const { language } = useLanguage()
     const [isGenerating, setIsGenerating] = useState(false)
     const [plan, setPlan] = useState<Phase[] | null>(null)
     const [savedPlans, setSavedPlans] = useState<SavedPlan[]>([])
