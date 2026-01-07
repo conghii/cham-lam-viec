@@ -43,6 +43,7 @@ export type Task = {
     userId: string;
     orgId: string | null;
     createdAt: Timestamp;
+    completedAt?: Timestamp | null;
     tag?: string;
     dueDate?: string | null;
     priority?: 'low' | 'medium' | 'high';
@@ -215,7 +216,8 @@ export const getUser = async (userId: string) => {
 export const toggleTaskCompletion = async (taskId: string, currentStatus: boolean) => {
     const taskRef = doc(db, "tasks", taskId);
     await updateDoc(taskRef, {
-        completed: !currentStatus
+        completed: !currentStatus,
+        completedAt: !currentStatus ? serverTimestamp() : null
     });
 };
 

@@ -319,6 +319,15 @@ function TaskCard({
         }
     };
 
+    const handleToggleTask = async () => {
+        try {
+            await updateTask(task.id, { completed: !task.completed });
+        } catch (error: any) {
+            console.error("Failed to toggle task", error);
+            toast.error("Failed to toggle task: " + error.message);
+        }
+    };
+
     const handleAddComment = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!newComment.trim()) return;
@@ -341,259 +350,209 @@ function TaskCard({
             <div
                 {...(dragHandleProps || {})}
                 className={cn(
-                    "group flex flex-col gap-2 p-4 rounded-xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 transition-all duration-300",
+                    "group flex flex-col gap-1.5 p-3 rounded-xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 transition-all duration-300",
                     "hover:shadow-md hover:scale-[1.01] hover:border-primary/20 dark:hover:border-primary/20",
                     isDragging ? "transition-none shadow-xl border-primary/50 z-50 scale-105" : "",
                     "border-l-[4px]",
-                    priorityStyle.borderColor,
+                    priorityConfig[task.priority as keyof typeof priorityConfig]?.borderColor || "border-l-indigo-500",
                     task.completed &&
                     "opacity-75 bg-gray-50/50 dark:bg-slate-900/50 border-gray-100 dark:border-slate-800 hover:border-gray-200 dark:hover:border-slate-700 hover:shadow-none hover:scale-100 border-l-gray-300 dark:border-l-slate-700 contrast-75 saturate-50",
                     dragHandleProps && "cursor-grab active:cursor-grabbing",
                 )}
             >
-                <div className="flex items-start gap-3">
-                    <Checkbox
-                        checked={task.completed}
-                        onCheckedChange={(checked) => {
-                            if (checked) {
-                                // Trigger confetti
-                                const element = document.activeElement as HTMLElement;
-                                const rect = element?.getBoundingClientRect();
-                                if (rect) {
-                                    const x = (rect.left + rect.width / 2) / window.innerWidth;
-                                    const y = (rect.top + rect.height / 2) / window.innerHeight;
-                                    confetti({
-                                        particleCount: 60,
-                                        spread: 60,
-                                        origin: { x, y },
-                                        colors: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'],
-                                        disableForReducedMotion: true,
-                                        zIndex: 9999,
-                                    });
-                                }
-                            }
-                            toggleTaskCompletion(task.id, task.completed);
-                            if (checked && columns) {
-                                const doneCol = columns.find((c) => c.title === "Done");
-                                if (doneCol) onMove?.(task.id, doneCol.id);
-                            }
-                        }}
-                        disabled={isReadOnly}
-                        className={cn(
-                            "mt-1 h-5 w-5 rounded-full border-2 transition-all duration-300",
-                            "data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500 data-[state=checked]:scale-110",
-                            !task.completed && "border-slate-300 dark:border-slate-600 hover:border-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20",
-                            isReadOnly && "opacity-50 cursor-not-allowed",
+                <div className="flex items-center justify-between mb-0.5 pl-0.5 min-h-[20px]">
+                    <div className="flex items-center gap-2">
+                        {/* Tags */}
+                        {(() => {
+                            const availableTags = tags.length > 0 ? tags : defaultTags;
+                            const currentTag =
+                                availableTags.find((t) => t.id === (task.tag || "")) ||
+                                availableTags.find(
+                                    (t) =>
+                                        t.label.toLowerCase() ===
+                                        (task.tag || "").toLowerCase(),
+                                ) ||
+                                (availableTags.length > 0 ? availableTags[0] : null);
+
+                            if (!currentTag) return null;
+
+                            return (
+                                <Badge
+                                    variant="outline"
+                                    className={cn(
+                                        "rounded-md border-0 px-1.5 py-0 font-medium capitalize h-5 text-[10px]",
+                                        currentTag.color || "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400",
+                                    )}
+                                >
+                                    <TagIcon className="h-2.5 w-2.5 mr-1 opacity-70" />
+                                    {currentTag.label}
+                                </Badge>
+                            );
+                        })()}
+
+                        {/* Due Date */}
+                        {task.dueDate && (
+                            <span
+                                className={cn(
+                                    "px-1.5 py-0 rounded-full font-medium flex items-center gap-1 transition-colors h-5 text-[10px]",
+                                    new Date(task.dueDate) < new Date() && !task.completed
+                                        ? "text-rose-600 bg-rose-50 border border-rose-100 dark:bg-rose-950/30 dark:border-rose-900"
+                                        : "text-slate-500 bg-slate-50 border border-slate-100 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400",
+                                )}
+                            >
+                                <CalendarIcon className="h-2.5 w-2.5" />
+                                {new Date(task.dueDate) < new Date() && !task.completed && "!"}
+                                {format(
+                                    new Date(task.dueDate),
+                                    "MMM d"
+                                )}
+                            </span>
                         )}
-                    />
 
-                    <div
-                        className="flex-1 min-w-0 flex flex-col gap-1.5 cursor-pointer"
-                        onClick={() => openDetails(false)}
-                    >
-                        {/* Tags and Date Row (Moved above title for hierarchy) */}
-                        <div className="flex items-start justify-between gap-2">
-                            {/* Tags and Dates */}
-                            <div className="flex flex-wrap items-center gap-2 text-xs">
-                                {(() => {
-                                    const availableTags = tags.length > 0 ? tags : defaultTags;
-                                    const currentTag =
-                                        availableTags.find((t) => t.id === (task.tag || "")) ||
-                                        availableTags.find(
-                                            (t) =>
-                                                t.label.toLowerCase() ===
-                                                (task.tag || "").toLowerCase(),
-                                        ) ||
-                                        (availableTags.length > 0 ? availableTags[0] : null);
+                        {/* Assignees (Moved Here) */}
+                        <AssigneeDisplay
+                            assigneeIds={
+                                task.assigneeIds || (task.assigneeId ? [task.assigneeId] : [])
+                            }
+                            groupIds={task.groupIds}
+                            members={members}
+                            groups={groups}
+                            className="scale-90 origin-left ml-1"
+                        />
+                    </div>
 
-                                    if (!currentTag) return null;
+                    {/* Quick Actions (Moved Here) */}
+                    <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-muted-foreground hover:text-primary hover:bg-primary/10 h-6 w-6"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                openDetails(true);
+                            }}
+                            title="Edit Task"
+                        >
+                            <Pencil className="h-3 w-3" />
+                        </Button>
 
-                                    return (
-                                        <Badge
-                                            variant="outline"
-                                            className={cn(
-                                                "rounded-md border-0 px-2 py-0.5 font-medium capitalize",
-                                                currentTag.color || "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400",
-                                            )}
-                                        >
-                                            <TagIcon className="h-3 w-3 mr-1 opacity-70" />
-                                            {currentTag.label}
-                                        </Badge>
-                                    );
-                                })()}
-
-                                {task.dueDate && (
-                                    <span
-                                        className={cn(
-                                            "px-2 py-0.5 rounded-full font-medium flex items-center gap-1 transition-colors",
-                                            new Date(task.dueDate) < new Date() && !task.completed
-                                                ? "text-rose-600 bg-rose-50 border border-rose-100 dark:bg-rose-950/30 dark:border-rose-900"
-                                                : "text-slate-500 bg-slate-50 border border-slate-100 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400",
-                                        )}
-                                    >
-                                        <CalendarIcon className="h-3 w-3" />
-                                        {new Date(task.dueDate) < new Date() && !task.completed && "!"}
-                                        {format(
-                                            new Date(task.dueDate),
-                                            compact ? "MMM d" : "MMM d",
-                                        )}
-                                    </span>
-                                )}
-
-                                {!compact && task.priority && task.priority !== "medium" && (
-                                    <Badge
-                                        variant="outline"
-                                        className={cn(
-                                            "rounded-md border-0 px-1.5 font-normal capitalize h-5",
-                                            priorityConfig[task.priority as keyof typeof priorityConfig]
-                                                ?.color,
-                                        )}
-                                    >
-                                        {task.priority}
-                                    </Badge>
-                                )}
-                            </div>
-
-                            {/* Quick Actions (Moved here) */}
-                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="text-muted-foreground hover:text-primary hover:bg-primary/10 h-6 w-6"
+                                    className="text-muted-foreground h-6 w-6"
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    <MoreVertical className="h-3 w-3" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         openDetails(true);
                                     }}
-                                    title="Edit Task"
                                 >
-                                    <Pencil className="h-3 w-3" />
-                                </Button>
-
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="text-muted-foreground h-6 w-6"
-                                            onClick={(e) => e.stopPropagation()}
-                                        >
-                                            <MoreVertical className="h-3 w-3" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                        <DropdownMenuItem
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                openDetails(true);
-                                            }}
-                                        >
-                                            <Edit2 className="h-4 w-4 mr-2" /> {t("edit_task")}
-                                        </DropdownMenuItem>
-                                        {columns && onMove && !dragHandleProps && (
-                                            <>
-                                                <DropdownMenuSeparator />
-                                                {columns.map((col) => (
-                                                    <DropdownMenuItem
-                                                        key={col.id}
-                                                        onClick={() => onMove(task.id, col.id)}
-                                                    >
-                                                        {t("move_to")} {col.title}
-                                                    </DropdownMenuItem>
-                                                ))}
-                                                <DropdownMenuSeparator />
-                                            </>
-                                        )}
-                                        <DropdownMenuItem
-                                            className="text-destructive focus:text-destructive"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                deleteTask(task.id);
-                                            }}
-                                        >
-                                            <Trash2 className="h-4 w-4 mr-2" /> {t("delete_task")}
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </div>
-                        </div>
-
-                        <span
-                            className={cn(
-                                "font-semibold text-foreground leading-tight transition-all",
-                                compact ? "text-sm" : "text-[15px]",
-                                task.completed && "line-through text-muted-foreground",
-                            )}
-                        >
-                            {task.title}
-                        </span>
-
-                        {/* Interactive Subtasks List */}
-                        {task.subtasks && task.subtasks.length > 0 && (
-                            <div className="w-full mt-2 space-y-1">
-                                <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-1 px-1">
-                                    <span className="font-medium text-xs">{t("subtasks")}</span>
-                                    <span>{subtasksCompleted}/{subtasksTotal}</span>
-                                </div>
-                                <div className="space-y-0.5">
-                                    {task.subtasks.map((subtask) => (
-                                        <div
-                                            key={subtask.id}
-                                            className="flex items-center gap-2 group/subtask p-1 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-md -mx-1 transition-colors cursor-pointer"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                toggleSubtask(subtask.id);
-                                            }}
-                                        >
-                                            <div className={cn(
-                                                "h-3.5 w-3.5 rounded-sm border flex items-center justify-center transition-all shrink-0",
-                                                subtask.completed
-                                                    ? "bg-emerald-500 border-emerald-500 text-white"
-                                                    : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 group-hover/subtask:border-indigo-400"
-                                            )}>
-                                                {subtask.completed && <Check className="h-2.5 w-2.5 stroke-[3]" />}
-                                            </div>
-                                            <span className={cn(
-                                                "text-xs text-slate-600 dark:text-slate-300 line-clamp-1 flex-1 select-none",
-                                                subtask.completed && "line-through text-slate-400"
-                                            )}>
-                                                {subtask.title}
-                                            </span>
-                                        </div>
-                                    ))}
-                                </div>
-                                {/* Minimal Progress line */}
-                                <div className="h-0.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mt-1.5 opacity-50">
-                                    <div
-                                        className={cn(
-                                            "h-full transition-all duration-500",
-                                            progress === 100 ? "bg-emerald-500" : "bg-indigo-500/50"
-                                        )}
-                                        style={{ width: `${progress}%` }}
-                                    />
-                                </div>
-                            </div>
-                        )}
+                                    <Edit2 className="h-4 w-4 mr-2" /> {t("edit_task")}
+                                </DropdownMenuItem>
+                                {columns && onMove && !dragHandleProps && (
+                                    <>
+                                        <DropdownMenuSeparator />
+                                        {columns.map((col) => (
+                                            <DropdownMenuItem
+                                                key={col.id}
+                                                onClick={() => onMove(task.id, col.id)}
+                                            >
+                                                {t("move_to")} {col.title}
+                                            </DropdownMenuItem>
+                                        ))}
+                                        <DropdownMenuSeparator />
+                                    </>
+                                )}
+                                <DropdownMenuItem
+                                    className="text-destructive focus:text-destructive"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        deleteTask(task.id);
+                                    }}
+                                >
+                                    <Trash2 className="h-4 w-4 mr-2" /> {t("delete_task")}
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
                 </div>
-                {/* Assignees & Actions */}
-                <div className="flex items-center justify-between mt-1">
-                    <AssigneeDisplay
-                        assigneeIds={
-                            task.assigneeIds || (task.assigneeId ? [task.assigneeId] : [])
-                        }
-                        groupIds={task.groupIds}
-                        members={members}
-                        groups={groups}
-                        className="scale-90 origin-left"
+                <div className="flex items-start gap-3">
+                    <Checkbox
+                        checked={task.completed}
+                        onCheckedChange={handleToggleTask}
+                        className={cn(
+                            "mt-1 rounded-full border-2 h-5 w-5 transition-all data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500",
+                            priorityConfig[task.priority as keyof typeof priorityConfig]?.color.split(" ")[0].replace("text-", "border-") || "border-indigo-500"
+                        )}
+                        onClick={(e) => e.stopPropagation()}
                     />
 
+                    <div className="flex-1 min-w-0 pt-0.5 cursor-pointer" onClick={() => openDetails(false)}>
+                        <div className="flex items-start justify-between gap-2">
+                            <span className={cn(
+                                "font-medium text-sm leading-snug break-words line-clamp-2",
+                                task.completed && "line-through text-muted-foreground"
+                            )}>
+                                {task.title}
+                            </span>
+                        </div>
+                    </div>
+                </div >
 
-                </div>
-
+                {/* Interactive Subtasks List */}
+                {
+                    task.subtasks && task.subtasks.length > 0 && (
+                        <div className="w-full mt-1 space-y-0.5 px-0.5 pl-8">
+                            <div className="space-y-0">
+                                {task.subtasks.map((subtask) => (
+                                    <div
+                                        key={subtask.id}
+                                        className="flex items-center gap-2 group/subtask px-1 py-0.5 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-md -mx-1 transition-colors cursor-pointer"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            toggleSubtask(subtask.id);
+                                        }}
+                                    >
+                                        <div className={cn(
+                                            "h-4 w-4 rounded-sm border flex items-center justify-center transition-all shrink-0",
+                                            subtask.completed
+                                                ? "bg-emerald-500 border-emerald-500 text-white"
+                                                : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 group-hover/subtask:border-indigo-400"
+                                        )}>
+                                            {subtask.completed && <Check className="h-3 w-3 stroke-[3]" />}
+                                        </div>
+                                        <span className={cn(
+                                            "text-xs text-slate-600 dark:text-slate-300 line-clamp-1 flex-1 select-none leading-none",
+                                            subtask.completed && "line-through text-slate-400"
+                                        )}>
+                                            {subtask.title}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                            {/* Minimal Progress line */}
+                            <div className="h-0.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mt-1 opacity-50">
+                                <div
+                                    className={cn(
+                                        "h-full transition-all duration-500",
+                                        progress === 100 ? "bg-emerald-500" : "bg-indigo-500/50"
+                                    )}
+                                    style={{ width: `${progress}%` }}
+                                />
+                            </div>
+                        </div>
+                    )}
             </div>
 
             {/* Task Details Dialog */}
-            <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+            < Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen} >
                 <DialogContent
                     showCloseButton={false}
                     className="!w-[60vw] !max-w-[60vw] h-[80vh] overflow-hidden flex flex-col p-0 gap-0"
@@ -2088,125 +2047,95 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
                                                                 />
 
                                                                 <Droppable droppableId={col.id} type="TASK">
-                                                                    {(provided, snapshot) => (
-                                                                        <div
-                                                                            ref={provided.innerRef}
-                                                                            {...provided.droppableProps}
-                                                                            className={cn(
-                                                                                "flex-1 overflow-y-auto min-h-[50px] space-y-3 px-1 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-transparent scrollbar-thumb-muted/20 hover:scrollbar-thumb-muted/50",
-                                                                                snapshot.isDraggingOver && "bg-secondary/20 rounded-xl ring-2 ring-primary/10"
-                                                                            )}
-                                                                        >
-                                                                            {getTasksByColumn(col.id, col.title)
-                                                                                .length === 0 ? (
-                                                                                <div className="flex flex-col items-center justify-center py-10 px-4 text-center border border-dashed border-muted/30 rounded-xl mx-1 bg-gray-50/50 dark:bg-slate-950/30">
-                                                                                    <p className="text-sm font-medium text-muted-foreground">
-                                                                                        No tasks here
-                                                                                    </p>
-                                                                                </div>
-                                                                            ) : (
-                                                                                getTasksByColumn(
-                                                                                    col.id,
-                                                                                    col.title,
-                                                                                ).map((task, index) => (
-                                                                                    <Draggable
-                                                                                        key={task.id}
-                                                                                        draggableId={task.id}
-                                                                                        index={index}
-                                                                                    >
-                                                                                        {(provided, snapshot) => {
-                                                                                            const child = (
-                                                                                                <div
-                                                                                                    ref={provided.innerRef}
-                                                                                                    {...provided.draggableProps}
-                                                                                                    style={{
-                                                                                                        ...provided.draggableProps
-                                                                                                            .style,
-                                                                                                        width: snapshot.isDragging
-                                                                                                            ? ((columnWidths[col.id] || col.width || 0) <= 1
-                                                                                                                ? `${(columnWidths[col.id] || col.width || 0) * 100}%`
-                                                                                                                : (columnWidths[col.id] || col.width || 300))
-                                                                                                            : "auto",
-                                                                                                        zIndex: 9999,
-                                                                                                        pointerEvents:
-                                                                                                            snapshot.isDragging
-                                                                                                                ? "none"
-                                                                                                                : "auto",
-                                                                                                    }}
-                                                                                                >
-                                                                                                    <TaskCard
-                                                                                                        task={task}
-                                                                                                        compact
-                                                                                                        columns={columns}
-                                                                                                        dragHandleProps={
-                                                                                                            role !== "viewer"
-                                                                                                                ? provided.dragHandleProps
-                                                                                                                : undefined
-                                                                                                        }
-                                                                                                        members={members}
-                                                                                                        role={role}
-                                                                                                        orgId={orgId}
-                                                                                                        tags={availableTags}
-                                                                                                        onEditTag={(tag) => {
-                                                                                                            setEditingTag(tag);
-                                                                                                            setNewTagName(
-                                                                                                                tag.label,
-                                                                                                            );
-                                                                                                            setNewTagColor(
-                                                                                                                tag.color ||
-                                                                                                                presetColors[0]
-                                                                                                                    .value,
-                                                                                                            );
-                                                                                                            setIsTagManagerOpen(
-                                                                                                                true,
-                                                                                                            );
+                                                                    {(provided, snapshot) => {
+                                                                        const columnTasks = getTasksByColumn(col.id, col.title);
+                                                                        return (
+                                                                            <div
+                                                                                ref={provided.innerRef}
+                                                                                {...provided.droppableProps}
+                                                                                className={cn(
+                                                                                    "flex-1 overflow-y-auto min-h-[150px] space-y-3 px-1 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-transparent scrollbar-thumb-muted/20 hover:scrollbar-thumb-muted/50 flex flex-col",
+                                                                                    snapshot.isDraggingOver && "bg-secondary/20 rounded-xl ring-2 ring-primary/10",
+                                                                                    columnTasks.length === 0 && "justify-center"
+                                                                                )}
+                                                                            >
+                                                                                {columnTasks.length === 0 && !snapshot.isDraggingOver ? (
+                                                                                    <div className="text-center py-10 px-4 border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-xl mx-2">
+                                                                                        <p className="text-sm text-muted-foreground font-medium">No tasks</p>
+                                                                                    </div>
+                                                                                ) : (
+                                                                                    columnTasks.map((task, index) => (
+                                                                                        <Draggable
+                                                                                            key={task.id}
+                                                                                            draggableId={task.id}
+                                                                                            index={index}
+                                                                                        >
+                                                                                            {(provided, snapshot) => {
+                                                                                                const child = (
+                                                                                                    <div
+                                                                                                        ref={provided.innerRef}
+                                                                                                        {...provided.draggableProps}
+                                                                                                        {...provided.dragHandleProps}
+                                                                                                        style={{
+                                                                                                            ...provided.draggableProps.style,
                                                                                                         }}
-                                                                                                        onDeleteTag={(tagId) => {
-                                                                                                            if (orgId)
-                                                                                                                deleteTagFromOrganization(
-                                                                                                                    orgId,
-                                                                                                                    tagId,
-                                                                                                                );
-                                                                                                        }}
-                                                                                                        onCreateTag={() => {
-                                                                                                            setEditingTag(null);
-                                                                                                            setNewTagName("");
-                                                                                                            setNewTagColor(
-                                                                                                                presetColors[0].value,
-                                                                                                            );
-                                                                                                            setIsTagManagerOpen(
-                                                                                                                true,
-                                                                                                            );
-                                                                                                        }}
-                                                                                                        isDragging={
-                                                                                                            snapshot.isDragging
-                                                                                                        }
-                                                                                                    />
-                                                                                                </div>
-                                                                                            );
-                                                                                            return child;
-                                                                                        }}
-                                                                                    </Draggable>
-                                                                                ))
-                                                                            )}
-                                                                            {provided.placeholder}
-                                                                        </div>
-                                                                    )}
+                                                                                                    >
+                                                                                                        <TaskCard
+                                                                                                            task={task}
+                                                                                                            columns={columns}
+                                                                                                            onMove={updateTaskStatus}
+                                                                                                            members={members}
+                                                                                                            groups={groups}
+                                                                                                            role={role}
+                                                                                                            orgId={orgId}
+                                                                                                            tags={availableTags}
+                                                                                                            onEditTag={(tag) => {
+                                                                                                                setEditingTag(tag);
+                                                                                                                setNewTagName(tag.label);
+                                                                                                                setNewTagColor(tag.color || presetColors[0].value);
+                                                                                                                setIsTagManagerOpen(true);
+                                                                                                            }}
+                                                                                                            onDeleteTag={(tagId) => {
+                                                                                                                if (orgId) deleteTagFromOrganization(orgId, tagId);
+                                                                                                            }}
+                                                                                                            onCreateTag={() => {
+                                                                                                                setEditingTag(null);
+                                                                                                                setNewTagName("");
+                                                                                                                setNewTagColor(presetColors[0].value);
+                                                                                                                setIsTagManagerOpen(true);
+                                                                                                            }}
+                                                                                                            compact={true}
+                                                                                                        />
+                                                                                                    </div>
+                                                                                                );
+                                                                                                return child;
+                                                                                            }}
+                                                                                        </Draggable>
+                                                                                    ))
+                                                                                )}
+                                                                                {provided.placeholder}
+                                                                            </div>
+                                                                        );
+                                                                    }}
                                                                 </Droppable>
 
-                                                                {/* Add Task Button - Stick to Bottom */}
-                                                                <div className="pt-2">
+                                                                <div className="mt-2 pt-2">
                                                                     <Button
                                                                         variant="ghost"
-                                                                        className="w-full justify-start text-muted-foreground hover:text-primary hover:bg-secondary/50 h-9"
+                                                                        className="w-full justify-center text-muted-foreground hover:text-primary hover:bg-secondary/50 h-9"
                                                                         onClick={() => {
-                                                                            document.querySelector<HTMLInputElement>('input[placeholder="What needs to be done?"]')?.focus()
+                                                                            setNewTaskStatus(col.id);
+                                                                            document.getElementById("main-task-input")?.focus();
                                                                         }}
                                                                     >
                                                                         <Plus className="h-4 w-4 mr-2" />
                                                                         Add Task
                                                                     </Button>
                                                                 </div>
+
+
+                                                                {/* Add Task Button - Stick to Bottom */}
+
                                                             </div>
                                                         )}
                                                     </Draggable>
@@ -2259,8 +2188,9 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
                                             </div>
                                         )}
                                     </Droppable>
-                                )}
-                            </div>
+                                )
+                                }
+                            </div >
                         )}
 
                         {/* Matrix View */}
