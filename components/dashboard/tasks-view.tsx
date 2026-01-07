@@ -483,21 +483,46 @@ function TaskCard({
                             {task.title}
                         </span>
 
-                        {/* Progress Bar for Subtasks */}
+                        {/* Interactive Subtasks List */}
                         {task.subtasks && task.subtasks.length > 0 && (
-                            <div className="w-full mt-1">
-                                <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-1">
-                                    <span className="flex items-center gap-1">
-                                        <div className="h-1.5 w-1.5 rounded-full bg-primary/40"></div>
-                                        {t("subtasks")}
-                                    </span>
+                            <div className="w-full mt-2 space-y-1">
+                                <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-1 px-1">
+                                    <span className="font-medium text-xs">{t("subtasks")}</span>
                                     <span>{subtasksCompleted}/{subtasksTotal}</span>
                                 </div>
-                                <div className="h-1 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden w-full">
+                                <div className="space-y-0.5">
+                                    {task.subtasks.map((subtask) => (
+                                        <div
+                                            key={subtask.id}
+                                            className="flex items-center gap-2 group/subtask p-1 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-md -mx-1 transition-colors cursor-pointer"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                toggleSubtask(subtask.id);
+                                            }}
+                                        >
+                                            <div className={cn(
+                                                "h-3.5 w-3.5 rounded-sm border flex items-center justify-center transition-all shrink-0",
+                                                subtask.completed
+                                                    ? "bg-emerald-500 border-emerald-500 text-white"
+                                                    : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 group-hover/subtask:border-indigo-400"
+                                            )}>
+                                                {subtask.completed && <Check className="h-2.5 w-2.5 stroke-[3]" />}
+                                            </div>
+                                            <span className={cn(
+                                                "text-xs text-slate-600 dark:text-slate-300 line-clamp-1 flex-1 select-none",
+                                                subtask.completed && "line-through text-slate-400"
+                                            )}>
+                                                {subtask.title}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                                {/* Minimal Progress line */}
+                                <div className="h-0.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mt-1.5 opacity-50">
                                     <div
                                         className={cn(
-                                            "h-full rounded-full transition-all duration-500 ease-out",
-                                            progress === 100 ? "bg-emerald-500" : "bg-primary/80"
+                                            "h-full transition-all duration-500",
+                                            progress === 100 ? "bg-emerald-500" : "bg-indigo-500/50"
                                         )}
                                         style={{ width: `${progress}%` }}
                                     />

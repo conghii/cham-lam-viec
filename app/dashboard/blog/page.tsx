@@ -1,5 +1,7 @@
 "use client"
 
+import { useLanguage } from "@/components/shared/language-context"
+
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -29,6 +31,7 @@ export default function BlogListPage() {
     const [loading, setLoading] = useState(true)
     const [userRole, setUserRole] = useState<'owner' | 'member' | 'viewer' | 'restricted' | null>(null);
     const [members, setMembers] = useState<OrganizationMember[]>([])
+    const { t } = useLanguage()
 
     // Filters
     const [searchQuery, setSearchQuery] = useState("")
@@ -123,7 +126,7 @@ export default function BlogListPage() {
             <div className="flex h-[80vh] items-center justify-center">
                 <div className="text-center space-y-4 max-w-md">
                     <Shield className="h-12 w-12 text-destructive mx-auto" />
-                    <h2 className="text-2xl font-bold">Access Restricted</h2>
+                    <h2 className="text-2xl font-bold">{t("access_restricted")}</h2>
                 </div>
             </div>
         );
@@ -140,17 +143,16 @@ export default function BlogListPage() {
                         <BookOpen className="h-5 w-5" />
                     </div>
                     <div>
-                        <h2 className="font-bold text-slate-800 dark:text-slate-200 leading-none">Knowledge</h2>
-                        <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium tracking-wide uppercase">Garden</span>
+                        <h2 className="font-bold text-slate-800 dark:text-slate-200 leading-none">{t("blog_title")}</h2>
                     </div>
                 </div>
 
                 <div className="space-y-1">
                     {[
-                        { id: "all", label: "All Entries", icon: LayoutGrid },
-                        { id: "favorites", label: "Favorites", icon: Star },
-                        { id: "journal", label: "Journal", icon: Book },
-                        { id: "docs", label: "Tech Docs", icon: FileText },
+                        { id: "all", label: t("all_entries"), icon: LayoutGrid },
+                        { id: "favorites", label: t("favorites"), icon: Star },
+                        { id: "journal", label: t("journal"), icon: Book },
+                        { id: "docs", label: t("tech_docs"), icon: FileText },
                     ].map(item => (
                         <button
                             key={item.id}
@@ -171,7 +173,7 @@ export default function BlogListPage() {
 
                 <div className="mt-auto">
                     <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-slate-900 dark:to-slate-900 rounded-2xl p-4 border border-indigo-100/50 dark:border-slate-800">
-                        <p className="text-xs font-semibold text-indigo-900 dark:text-indigo-300 mb-1">Weekly Insight</p>
+                        <p className="text-xs font-semibold text-indigo-900 dark:text-indigo-300 mb-1">{t("weekly_insight")}</p>
                         <p className="text-xs text-indigo-700/80 dark:text-slate-400 leading-relaxed">
                             "Writing is the painting of the voice." – Voltaire
                         </p>
@@ -189,7 +191,7 @@ export default function BlogListPage() {
                             <div className="relative flex-1 max-w-2xl">
                                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
                                 <Input
-                                    placeholder="Search your mind..."
+                                    placeholder={t("search_placeholder")}
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     className="pl-12 h-14 rounded-2xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm text-base focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500 transition-all font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500 dark:text-slate-200"
@@ -201,19 +203,19 @@ export default function BlogListPage() {
                                         onClick={() => setSortOption("date")}
                                         className={cn("px-3 py-1.5 rounded-lg text-xs font-medium transition-all", sortOption === "date" ? "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-200" : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300")}
                                     >
-                                        Date
+                                        {t("sort_date")}
                                     </button>
                                     <button
                                         onClick={() => setSortOption("title")}
                                         className={cn("px-3 py-1.5 rounded-lg text-xs font-medium transition-all", sortOption === "title" ? "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-200" : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300")}
                                     >
-                                        A-Z
+                                        {t("sort_az")}
                                     </button>
                                 </div>
                                 {canEdit && (
                                     <Link href="/dashboard/blog/new">
                                         <Button size="lg" className="h-14 rounded-2xl px-6 shadow-lg shadow-indigo-200 dark:shadow-indigo-900/20 hover:shadow-indigo-300 transition-all bg-indigo-600 hover:bg-indigo-700 text-white font-semibold">
-                                            <Plus className="h-5 w-5 mr-2" /> New Entry
+                                            <Plus className="h-5 w-5 mr-2" /> {t("new_entry")}
                                         </Button>
                                     </Link>
                                 )}
@@ -221,9 +223,9 @@ export default function BlogListPage() {
                         </div>
 
                         <div className="flex items-center gap-2 text-xs text-slate-400 font-medium px-1">
-                            <span>Total {posts.length} entries</span>
+                            <span>{t("total_entries")} {posts.length}</span>
                             <span>•</span>
-                            <span>Last updated today</span>
+                            <span>{t("last_updated")}</span>
                         </div>
                     </div>
 
@@ -231,7 +233,7 @@ export default function BlogListPage() {
                     {pinnedPosts.length > 0 && (
                         <div className="mb-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
                             <div className="flex items-center gap-2 mb-4 text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                                <Pin className="h-4 w-4 text-indigo-500 fill-indigo-500" /> Pinned
+                                <Pin className="h-4 w-4 text-indigo-500 fill-indigo-500" /> {t("pinned")}
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {pinnedPosts.map(post => (
@@ -244,7 +246,7 @@ export default function BlogListPage() {
                     {/* Masonry Grid */}
                     <div className="mt-8">
                         <div className="flex items-center gap-2 mb-4 text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                            <LayoutGrid className="h-4 w-4 text-slate-400" /> Recent Entries
+                            <LayoutGrid className="h-4 w-4 text-slate-400" /> {t("recent_entries")}
                         </div>
                         {loading ? (
                             <div className="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6 space-y-6">
@@ -255,8 +257,8 @@ export default function BlogListPage() {
                                 <div className="w-20 h-20 bg-indigo-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
                                     <BookOpen className="h-10 w-10 text-indigo-400 dark:text-slate-600" />
                                 </div>
-                                <h3 className="text-xl font-bold text-slate-900 dark:text-slate-200">Your garden is empty</h3>
-                                <p className="text-slate-500 dark:text-slate-400 mt-2">Plant your first seed of knowledge today.</p>
+                                <h3 className="text-xl font-bold text-slate-900 dark:text-slate-200">{t("empty_garden")}</h3>
+                                <p className="text-slate-500 dark:text-slate-400 mt-2">{t("empty_garden_desc")}</p>
                             </div>
                         ) : (
                             <div className="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6 space-y-6 pb-20">
@@ -318,7 +320,7 @@ function BlogCard({ post, canEdit, onTogglePin, onDelete, isPinned }: { post: Bl
                                 <DropdownMenuContent align="end" className="w-40 rounded-xl p-2 gap-1 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
                                     <Link href={`/dashboard/blog/edit/${post.id}`} onClick={e => e.stopPropagation()}>
                                         <DropdownMenuItem className="rounded-lg cursor-pointer">
-                                            <Pencil className="h-4 w-4 mr-2 text-slate-400" /> Edit
+                                            <Pencil className="h-4 w-4 mr-2 text-slate-400" /> {canEdit ? "Edit" : ""}
                                         </DropdownMenuItem>
                                     </Link>
                                     <DropdownMenuItem

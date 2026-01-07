@@ -11,14 +11,14 @@ import {
     type Message
 } from "@/lib/firebase/firestore";
 import { auth } from "@/lib/firebase/auth";
+import { ChatWindow } from "@/components/dashboard/chat/chat-window";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
-import { Send, MoreVertical, Phone, Video, Search, ArrowLeft } from "lucide-react";
+import { Search, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { formatDistanceToNow, format } from "date-fns";
+import { formatDistanceToNow } from "date-fns";
 
 export default function ChatPage() {
     const searchParams = useSearchParams();
@@ -36,20 +36,26 @@ export default function ChatPage() {
 
     // Initial Auth Check
     useEffect(() => {
-        const checkAuth = async () => {
-            const user = auth.currentUser;
-            if (user) setCurrentUser(user);
-        };
-        checkAuth();
+        const unsub = auth.onAuthStateChanged((user) => {
+            if (user) {
+                setCurrentUser(user);
+            } else {
+                setCurrentUser(null);
+                setChats([]); // Clear chats on logout
+            }
+        });
+        return () => unsub();
     }, []);
 
     // Subscribe to List of Chats
+    // Subscribe to List of Chats
     useEffect(() => {
+        if (!currentUser) return;
         const unsub = subscribeToChats((data) => {
             setChats(data);
         });
         return () => unsub();
-    }, []);
+    }, [currentUser]);
 
     // Subscribe to Messages when Chat Selected
     useEffect(() => {
@@ -183,90 +189,15 @@ export default function ChatPage() {
                 !isMobileListOpen ? "flex" : "hidden md:flex"
             )}>
                 {selectedChatId ? (
-                    <>
-                        {/* Header */}
-                        <div className="h-16 border-b flex items-center justify-between px-4 md:px-6 bg-background/80 backdrop-blur z-10">
-                            <div className="flex items-center gap-3">
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="md:hidden -ml-2"
-                                    onClick={() => {
-                                        setIsMobileListOpen(true);
-                                        setSelectedChatId(null);
-                                        window.history.pushState({}, '', '/dashboard/chat');
-                                    }}
-                                >
-                                    <ArrowLeft className="h-5 w-5" />
-                                </Button>
-                                <Avatar className="h-9 w-9">
-                                    <AvatarImage src={currentChat?.otherUser?.photoURL} />
-                                    <AvatarFallback>{currentChat?.otherUser?.displayName?.[0]}</AvatarFallback>
-                                </Avatar>
-                                <div>
-                                    <h3 className="font-semibold text-sm">{currentChat?.otherUser?.displayName}</h3>
-                                    <p className="text-[10px] text-green-500 font-medium flex items-center gap-1">
-                                        <span className="h-1.5 w-1.5 rounded-full bg-green-500" /> Online
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-1">
-                                <Button variant="ghost" size="icon" className="text-muted-foreground"><Phone className="h-4 w-4" /></Button>
-                                <Button variant="ghost" size="icon" className="text-muted-foreground"><Video className="h-4 w-4" /></Button>
-                                <Separator orientation="vertical" className="h-6 mx-1" />
-                                <Button variant="ghost" size="icon" className="text-muted-foreground"><MoreVertical className="h-4 w-4" /></Button>
-                            </div>
-                        </div>
-
-                        {/* Messages Area */}
-                        <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 bg-muted/5" ref={scrollRef}>
-                            {messages.map((msg, index) => {
-                                const isMe = msg.senderId === currentUser?.uid;
-                                const prevMsg = messages[index - 1];
-                                const isSequence = prevMsg && prevMsg.senderId === msg.senderId && (msg.createdAt?.toMillis() - prevMsg.createdAt?.toMillis() < 60000);
-
-                                return (
-                                    <div
-                                        key={msg.id}
-                                        className={cn(
-                                            "flex flex-col max-w-[70%]",
-                                            isMe ? "ml-auto items-end" : "mr-auto items-start",
-                                            isSequence ? "mt-1" : "mt-4"
-                                        )}
-                                    >
-                                        <div className={cn(
-                                            "px-4 py-2 rounded-2xl text-sm shadow-sm relative group",
-                                            isMe
-                                                ? "bg-primary text-primary-foreground rounded-br-none"
-                                                : "bg-white dark:bg-muted border rounded-bl-none"
-                                        )}>
-                                            {msg.content}
-                                            <span className="text-[9px] opacity-0 group-hover:opacity-70 transition-opacity absolute -bottom-5 right-0 text-muted-foreground whitespace-nowrap">
-                                                {msg.createdAt ? format(msg.createdAt.toDate(), "h:mm a") : "Sending..."}
-                                            </span>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-
-                        {/* Input Area */}
-                        <div className="p-4 bg-background border-t">
-                            <form onSubmit={handleSendMessage} className="flex gap-2 max-w-4xl mx-auto">
-                                <Input
-                                    placeholder="Type a message..."
-                                    value={newMessage}
-                                    onChange={(e) => setNewMessage(e.target.value)}
-                                    className="flex-1 rounded-full bg-muted/30 border-muted placeholder:text-muted-foreground/70 focus-visible:ring-1"
-                                    autoFocus
-                                />
-                                <Button type="submit" size="icon" className="rounded-full h-10 w-10 shrink-0" disabled={!newMessage.trim()}>
-                                    <Send className="h-4 w-4" />
-                                    <span className="sr-only">Send</span>
-                                </Button>
-                            </form>
-                        </div>
-                    </>
+                    <ChatWindow
+                        chatId={selectedChatId}
+                        currentUser={currentUser}
+                        onBack={() => {
+                            setIsMobileListOpen(true);
+                            setSelectedChatId(null);
+                            window.history.pushState({}, '', '/dashboard/chat');
+                        }}
+                    />
                 ) : (
                     <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground bg-muted/5">
                         <div className="h-24 w-24 bg-muted/20 rounded-full flex items-center justify-center mb-6">

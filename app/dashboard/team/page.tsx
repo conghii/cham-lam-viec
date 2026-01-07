@@ -76,8 +76,10 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/components/shared/language-context";
 
 export default function TeamPage() {
+    const { t } = useLanguage();
     const [loading, setLoading] = useState(true);
     const [org, setOrg] = useState<Organization | null>(null);
     const [members, setMembers] = useState<OrganizationMember[]>([]);
@@ -297,6 +299,8 @@ export default function TeamPage() {
         );
     }
 
+
+
     if (!org) {
         return (
             <div className="flex flex-col items-center justify-center h-[calc(100vh-4rem)] bg-slate-50 dark:bg-slate-900/50 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
@@ -304,24 +308,24 @@ export default function TeamPage() {
                     <div className="w-16 h-16 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
                         <Building className="h-8 w-8" />
                     </div>
-                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Create a Team</h2>
+                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">{t("create_team_title")}</h2>
                     <p className="text-slate-500 mb-8">
-                        You are not part of any organization yet. Create a team to collaborate, share tasks, and manage projects together.
+                        {t("create_team_desc")}
                     </p>
 
                     <Dialog open={isCreateOrgOpen} onOpenChange={setIsCreateOrgOpen}>
                         <DialogTrigger asChild>
                             <Button size="lg" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200 dark:shadow-indigo-900/20">
-                                <Plus className="h-4 w-4 mr-2" /> Create Organization
+                                <Plus className="h-4 w-4 mr-2" /> {t("create_org_btn")}
                             </Button>
                         </DialogTrigger>
                         <DialogContent>
                             <DialogHeader>
-                                <DialogTitle>Create New Organization</DialogTitle>
-                                <DialogDescription>Enter a name for your team workspace.</DialogDescription>
+                                <DialogTitle>{t("create_org_dialog")}</DialogTitle>
+                                <DialogDescription>{t("create_org_desc")}</DialogDescription>
                             </DialogHeader>
                             <div className="space-y-2 py-4">
-                                <Label>Organization Name</Label>
+                                <Label>{t("org_name")}</Label>
                                 <Input
                                     value={newOrgName}
                                     onChange={e => setNewOrgName(e.target.value)}
@@ -329,7 +333,7 @@ export default function TeamPage() {
                                 />
                             </div>
                             <DialogFooter>
-                                <Button onClick={handleCreateOrg}>Create Organization</Button>
+                                <Button onClick={handleCreateOrg}>{t("create_org_btn")}</Button>
                             </DialogFooter>
                         </DialogContent>
                     </Dialog>
@@ -342,6 +346,7 @@ export default function TeamPage() {
 
     // Helper to get slug
     const orgSlug = org.name.toLowerCase().replace(/\s+/g, '-');
+
 
     return (
         <div className="min-h-screen bg-white dark:bg-slate-950 pb-12">
@@ -369,7 +374,7 @@ export default function TeamPage() {
                                     </h1>
                                     <div className="flex items-center gap-2 mt-1">
                                         <Badge className="bg-indigo-600 hover:bg-indigo-600 text-white shadow-lg shadow-indigo-500/20 border-0 animate-pulse-slow">
-                                            PRO PLAN
+                                            {t("teams_pro_plan")}
                                         </Badge>
                                         {org.isPersonal && (
                                             <Badge variant="outline" className="font-normal text-xs text-slate-500 border-slate-200">
@@ -400,23 +405,23 @@ export default function TeamPage() {
                         <div>
                             <div className="flex items-center gap-2 text-slate-500 text-sm font-medium mb-1">
                                 <Users className="h-4 w-4 text-indigo-500" />
-                                Total Members
+                                {t("total_members")}
                             </div>
                             <div className="flex items-end gap-3">
                                 <span className="text-4xl font-bold text-slate-900 dark:text-white tracking-tight">{members.length}</span>
                                 <span className="text-sm font-medium text-slate-400 mb-1.5 flex items-center">
-                                    Active
+                                    {t("active_label")}
                                 </span>
                             </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4 mt-6">
                             <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3">
-                                <div className="text-slate-500 text-xs font-medium uppercase tracking-wider">Active Projects</div>
+                                <div className="text-slate-500 text-xs font-medium uppercase tracking-wider">{t("active_proj")}</div>
                                 <div className="text-xl font-bold text-slate-900 dark:text-white mt-1">{groups.length}</div>
                             </div>
                             <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3">
-                                <div className="text-slate-500 text-xs font-medium uppercase tracking-wider">Pending Invites</div>
+                                <div className="text-slate-500 text-xs font-medium uppercase tracking-wider">{t("pending_inv")}</div>
                                 <div className="text-xl font-bold text-slate-900 dark:text-white mt-1">{pendingInvites.length}</div>
                             </div>
                         </div>
@@ -426,7 +431,7 @@ export default function TeamPage() {
                     <div className="md:col-span-3 bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
                         <div>
                             <div className="flex items-center justify-between mb-4">
-                                <div className="text-sm font-medium text-slate-500">Team Status</div>
+                                <div className="text-sm font-medium text-slate-500">{t("team_status")}</div>
                                 <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-900 text-xs text-emerald-600 font-medium">
                                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
                                     {members.length} Total
@@ -454,23 +459,23 @@ export default function TeamPage() {
                         <div className="mt-4">
                             {org.isPersonal ? (
                                 <Button onClick={() => setIsCreateOrgOpen(true)} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-lg shadow-indigo-200 dark:shadow-indigo-900/20">
-                                    <Rocket className="h-4 w-4 mr-2" /> Upgrade to Pro
+                                    <Rocket className="h-4 w-4 mr-2" /> {t("upgrade_pro")}
                                 </Button>
                             ) : (
                                 <Dialog open={isInviteMemberOpen} onOpenChange={setIsInviteMemberOpen}>
                                     <DialogTrigger asChild>
                                         <Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-lg shadow-indigo-500/25">
-                                            <UserPlus className="h-4 w-4 mr-2" /> Invite Member
+                                            <UserPlus className="h-4 w-4 mr-2" /> {t("invite_member")}
                                         </Button>
                                     </DialogTrigger>
                                     <DialogContent>
                                         <DialogHeader>
-                                            <DialogTitle>Invite to {org.name}</DialogTitle>
+                                            <DialogTitle>{t("invite_dialog_title")} {org.name}</DialogTitle>
                                             <DialogDescription>Enter the email address of the person you want to invite.</DialogDescription>
                                         </DialogHeader>
                                         <div className="space-y-4 py-4">
                                             <div className="space-y-2">
-                                                <Label>Email Address</Label>
+                                                <Label>{t("email_address")}</Label>
                                                 <Input
                                                     type="email"
                                                     value={inviteEmail}
@@ -480,7 +485,7 @@ export default function TeamPage() {
                                             </div>
                                         </div>
                                         <DialogFooter>
-                                            <Button onClick={handleInviteMember}>Send Invitation</Button>
+                                            <Button onClick={handleInviteMember}>{t("send_invite")}</Button>
                                         </DialogFooter>
                                     </DialogContent>
                                 </Dialog>
@@ -496,19 +501,19 @@ export default function TeamPage() {
                             value="members"
                             className="bg-transparent shadow-none border-b-2 border-transparent data-[state=active]:border-indigo-600 data-[state=active]:text-indigo-600 rounded-none px-0 pb-2 text-slate-500 font-medium hover:text-slate-800 transition-colors"
                         >
-                            Members
+                            {t("members_tab")}
                         </TabsTrigger>
                         <TabsTrigger
                             value="groups"
                             className="bg-transparent shadow-none border-b-2 border-transparent data-[state=active]:border-indigo-600 data-[state=active]:text-indigo-600 rounded-none px-0 pb-2 text-slate-500 font-medium hover:text-slate-800 transition-colors"
                         >
-                            Groups
+                            {t("groups_tab")}
                         </TabsTrigger>
                         <TabsTrigger
                             value="settings"
                             className="bg-transparent shadow-none border-b-2 border-transparent data-[state=active]:border-indigo-600 data-[state=active]:text-indigo-600 rounded-none px-0 pb-2 text-slate-500 font-medium hover:text-slate-800 transition-colors"
                         >
-                            Settings
+                            {t("settings_tab")}
                         </TabsTrigger>
                     </TabsList>
 
@@ -524,13 +529,13 @@ export default function TeamPage() {
                                                 <AvatarFallback className="bg-indigo-50 text-indigo-600 text-xl">{member.displayName?.[0]}</AvatarFallback>
                                             </Avatar>
                                             {/* Online Indicator (Mock for now, or check current user) */}
-                                            <div className="absolute bottom-1 right-1 h-5 w-5 bg-emerald-500 border-4 border-white dark:border-slate-900 rounded-full" title="Online"></div>
+                                            <div className="absolute bottom-1 right-1 h-5 w-5 bg-emerald-500 border-4 border-white dark:border-slate-900 rounded-full" title={t("online")}></div>
                                         </div>
 
                                         <div className="mt-4">
                                             <CardTitle className="text-lg font-bold text-slate-900 dark:text-white flex items-center justify-center gap-1.5">
                                                 {member.displayName || "Unknown User"}
-                                                {member.id === currentUser.uid && <span className="text-xs text-slate-400 font-normal">(You)</span>}
+                                                {member.id === currentUser.uid && <span className="text-xs text-slate-400 font-normal">{t("you_label")}</span>}
                                             </CardTitle>
                                             <div className="flex items-center justify-center gap-2 mt-1">
                                                 {member.role === 'owner' ? (
@@ -586,18 +591,18 @@ export default function TeamPage() {
                                                     {member.role === 'member' ? (
                                                         <DropdownMenuItem onClick={() => handleChangeRole(member.id, 'owner')}>
                                                             <UserCog className="h-4 w-4 mr-2" />
-                                                            Promote to Owner
+                                                            {t("promote_owner")}
                                                         </DropdownMenuItem>
                                                     ) : (
                                                         <DropdownMenuItem onClick={() => handleChangeRole(member.id, 'member')}>
                                                             <UserCog className="h-4 w-4 mr-2" />
-                                                            Demote to Member
+                                                            {t("demote_member")}
                                                         </DropdownMenuItem>
                                                     )}
                                                     <DropdownMenuSeparator />
                                                     <DropdownMenuItem className="text-red-600" onClick={() => handleRemoveMember(member.id)}>
                                                         <Trash2 className="h-4 w-4 mr-2" />
-                                                        Remove Member
+                                                        {t("remove_member_action")}
                                                     </DropdownMenuItem>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
@@ -619,14 +624,14 @@ export default function TeamPage() {
                                         <div className="h-14 w-14 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4 group-hover:bg-indigo-100 transition-colors">
                                             <Plus className="h-7 w-7" />
                                         </div>
-                                        <span className="font-semibold text-lg">Create Group</span>
-                                        <span className="text-sm text-slate-400 mt-1">Organize your team</span>
+                                        <span className="font-semibold text-lg">{t("create_group")}</span>
+                                        <span className="text-sm text-slate-400 mt-1">{t("organize_team")}</span>
                                     </button>
                                 </DialogTrigger>
                                 <DialogContent>
                                     <DialogHeader>
-                                        <DialogTitle>Create Group</DialogTitle>
-                                        <DialogDescription>Groups help organize members into smaller teams.</DialogDescription>
+                                        <DialogTitle>{t("create_group")}</DialogTitle>
+                                        <DialogDescription>{t("organize_team_desc")}</DialogDescription>
                                     </DialogHeader>
                                     <div className="space-y-4 py-4">
                                         <div className="space-y-2">
@@ -639,7 +644,7 @@ export default function TeamPage() {
                                         </div>
                                     </div>
                                     <DialogFooter>
-                                        <Button onClick={handleCreateGroup}>Create Group</Button>
+                                        <Button onClick={handleCreateGroup}>{t("create_group_btn")}</Button>
                                     </DialogFooter>
                                 </DialogContent>
                             </Dialog>
@@ -671,7 +676,7 @@ export default function TeamPage() {
                                                 <DropdownMenuContent align="end">
                                                     <DropdownMenuItem className="text-red-600" onClick={() => handleDeleteGroup(group.id)}>
                                                         <Trash2 className="h-4 w-4 mr-2" />
-                                                        Delete Group
+                                                        {t("delete_group")}
                                                     </DropdownMenuItem>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
@@ -697,7 +702,7 @@ export default function TeamPage() {
                                             {group.memberIds?.length || 0} Members
                                         </span>
                                         <Badge variant="outline" className="text-xs font-normal border-indigo-200 text-indigo-700 bg-indigo-50">
-                                            Active
+                                            {t("active_label")}
                                         </Badge>
                                     </CardFooter>
                                 </Card>
@@ -709,8 +714,8 @@ export default function TeamPage() {
                     <TabsContent value="settings" className="mt-6">
                         <div className="max-w-4xl space-y-8">
                             <div className="space-y-1">
-                                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Organization Settings</h3>
-                                <p className="text-sm text-slate-500">Manage your organization profile, appearence, and preferences.</p>
+                                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{t("org_settings")}</h3>
+                                <p className="text-sm text-slate-500">{t("org_settings_desc")}</p>
                             </div>
 
                             <Card className="border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl">
@@ -719,7 +724,7 @@ export default function TeamPage() {
 
                                         {/* Row 1: Name */}
                                         <div className="col-span-2 space-y-2">
-                                            <Label className="text-slate-700">Organization Name</Label>
+                                            <Label className="text-slate-700">{t("org_name")}</Label>
                                             <Input
                                                 value={orgName}
                                                 onChange={(e) => setOrgName(e.target.value)}
@@ -730,7 +735,7 @@ export default function TeamPage() {
 
                                         {/* Row 2: Tagline */}
                                         <div className="col-span-2 space-y-2">
-                                            <Label className="text-slate-700">Tagline (Quote)</Label>
+                                            <Label className="text-slate-700">{t("tagline")}</Label>
                                             <Input
                                                 value={orgTagline}
                                                 onChange={(e) => setOrgTagline(e.target.value)}
@@ -742,7 +747,7 @@ export default function TeamPage() {
 
                                         {/* Row 3: Avatar & ID */}
                                         <div className="col-span-1 space-y-2">
-                                            <Label className="text-slate-700">Avatar URL</Label>
+                                            <Label className="text-slate-700">{t("avatar_url")}</Label>
                                             <div className="flex gap-2">
                                                 <Input
                                                     type="file"
@@ -777,13 +782,13 @@ export default function TeamPage() {
                                                     disabled={!isOwner}
                                                     className="w-full border-slate-200 text-slate-600 hover:bg-slate-50 justify-start"
                                                 >
-                                                    <Upload className="h-4 w-4 mr-2" /> Upload Image
+                                                    <Upload className="h-4 w-4 mr-2" /> {t("upload_image")}
                                                 </Button>
                                             </div>
                                         </div>
 
                                         <div className="col-span-1 space-y-2">
-                                            <Label className="text-slate-700">Organization ID</Label>
+                                            <Label className="text-slate-700">{t("org_id")}</Label>
                                             <div className="relative">
                                                 <Input
                                                     value={org.id}
@@ -807,15 +812,15 @@ export default function TeamPage() {
                                 </CardContent>
                                 <CardFooter className="border-t border-slate-100 p-4 bg-slate-50/50 flex justify-between rounded-b-xl">
                                     <Button onClick={handleUpdateOrg} disabled={!isOwner || !orgName.trim()} className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm font-medium">
-                                        Save Changes
+                                        {t("save_changes")}
                                     </Button>
                                     {isOwner ? (
                                         <Button variant="ghost" className="text-slate-400 hover:text-red-600 hover:bg-red-50" onClick={() => handleDeleteOrg(org.id)}>
-                                            Delete Organization
+                                            {t("delete_org")}
                                         </Button>
                                     ) : (
                                         <Button variant="ghost" className="text-slate-400 hover:text-red-600 hover:bg-red-50" onClick={handleLeaveOrg}>
-                                            Leave Organization
+                                            {t("leave_org")}
                                         </Button>
                                     )}
                                 </CardFooter>

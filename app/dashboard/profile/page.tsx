@@ -237,12 +237,9 @@ export default function ProfilePage() {
                 <TabsList className="grid w-full grid-cols-2 mb-8 items-center bg-transparent border-b rounded-none h-auto p-0">
                     <TabsTrigger value="overview" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-8 py-3 text-base">{t("overview")}</TabsTrigger>
                     <TabsTrigger value="posts" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-8 py-3 text-base">{t("posts")}</TabsTrigger>
-                    <TabsTrigger value="settings" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-8 py-3 text-base">{t("settings")}</TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="settings">
-                    <SettingsTab />
-                </TabsContent>
+
 
                 <TabsContent value="overview">
                     {/* Stats / 3 Wins History */}
@@ -331,44 +328,4 @@ export default function ProfilePage() {
     )
 }
 
-function SettingsTab() {
-    const { language, setLanguage, t } = useLanguage()
 
-    return (
-        <div className="max-w-2xl mx-auto space-y-6">
-            <Card>
-                <CardHeader>
-                    <CardTitle>{t("preferences")}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                    <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
-                            <Label className="text-base">{t("system_language")}</Label>
-                            <p className="text-sm text-muted-foreground">{t("select_language_desc")}</p>
-                        </div>
-                        <div className="flex items-center bg-secondary p-1 rounded-lg">
-                            <button
-                                onClick={() => setLanguage("en")}
-                                className={cn(
-                                    "px-4 py-2 text-sm font-medium rounded-md transition-all",
-                                    language === "en" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
-                                )}
-                            >
-                                {t("english")}
-                            </button>
-                            <button
-                                onClick={() => setLanguage("vi")}
-                                className={cn(
-                                    "px-4 py-2 text-sm font-medium rounded-md transition-all",
-                                    language === "vi" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
-                                )}
-                            >
-                                {t("vietnamese")}
-                            </button>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
-    )
-}

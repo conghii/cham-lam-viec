@@ -11,7 +11,11 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Sidebar } from "@/components/shared/sidebar"
 
 import { auth, logOut } from "@/lib/firebase/auth"
-import { subscribeToUserProfile, subscribeToChats, type Chat } from "@/lib/firebase/firestore"
+import { subscribeToUserProfile, subscribeToChats, subscribeToFriendships, acceptFriendRequest, rejectFriendRequest, type Chat, type Friendship } from "@/lib/firebase/firestore"
+import { useLanguage } from "@/components/shared/language-context"
+import { Label } from "@/components/ui/label"
+import { cn } from "@/lib/utils"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 import { getDailyQuote } from "@/lib/quotes"
 import { toast } from "sonner"
@@ -23,6 +27,9 @@ export function Header() {
     const [quote, setQuote] = useState(getDailyQuote())
     const [unreadCount, setUnreadCount] = useState(0)
     const [invitations, setInvitations] = useState<any[]>([])
+    const [friendRequests, setFriendRequests] = useState<Friendship[]>([])
+    const [showSettings, setShowSettings] = useState(false)
+    const { language, setLanguage, t } = useLanguage()
 
     useEffect(() => {
         const hour = new Date().getHours()
@@ -76,9 +83,18 @@ export function Header() {
             });
         }
 
+        // Subscribe to friend requests
+        const unsubFriends = subscribeToFriendships((friendships) => {
+            const requests = friendships.filter(f =>
+                f.status === 'pending' && f.recipientId === user.uid
+            );
+            setFriendRequests(requests);
+        });
+
         return () => {
             unsubChats();
             unsubInvites();
+            unsubFriends();
         };
     }, [user])
 
@@ -113,6 +129,24 @@ export function Header() {
             toast.error("Failed to reject invitation.");
         }
     }
+
+    const handleAcceptFriend = async (id: string) => {
+        try {
+            await acceptFriendRequest(id);
+            toast.success("Friend request accepted");
+        } catch (err) {
+            toast.error("Failed to accept request");
+        }
+    };
+
+    const handleRejectFriend = async (id: string) => {
+        try {
+            await rejectFriendRequest(id);
+            toast.success("Friend request rejected");
+        } catch (err) {
+            toast.error("Failed to reject request");
+        }
+    };
 
     const displayName = userData?.displayName || user?.displayName || "User"
     const displayEmail = user?.email || ""
@@ -163,7 +197,7 @@ export function Header() {
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="relative">
                             <Bell className="h-5 w-5" />
-                            {invitations.length > 0 && (
+                            {(invitations.length > 0 || friendRequests.length > 0) && (
                                 <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-rose-500 border border-white dark:border-slate-950"></span>
                             )}
                         </Button>
@@ -173,12 +207,13 @@ export function Header() {
                             Notifications
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        {invitations.length === 0 ? (
+                        {invitations.length === 0 && friendRequests.length === 0 ? (
                             <div className="py-8 text-center text-sm text-muted-foreground">
                                 No new notifications
                             </div>
                         ) : (
                             <div className="max-h-[300px] overflow-y-auto">
+                                {/* Team Invitations */}
                                 {invitations.map(invite => (
                                     <div key={invite.id} className="p-4 border-b last:border-0 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors">
                                         <div className="flex items-start gap-3">
@@ -214,6 +249,43 @@ export function Header() {
                                         </div>
                                     </div>
                                 ))}
+
+                                {/* Friend Requests */}
+                                {friendRequests.map(freq => (
+                                    <div key={freq.id} className="p-4 border-b last:border-0 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors">
+                                        <div className="flex items-start gap-3">
+                                            <div className="h-8 w-8 rounded-full bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center text-rose-600 dark:text-rose-400 shrink-0">
+                                                <Users className="h-4 w-4" />
+                                            </div>
+                                            <div className="flex-1 space-y-1">
+                                                <p className="text-sm text-foreground">
+                                                    <span className="font-semibold">{freq.friend?.displayName || "Someone"}</span> sent you a friend request
+                                                </p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    View profile
+                                                </p>
+                                                <div className="flex items-center gap-2 mt-2">
+                                                    <Button
+                                                        size="sm"
+                                                        variant="default"
+                                                        className="h-7 text-xs bg-rose-600 hover:bg-rose-700"
+                                                        onClick={() => handleAcceptFriend(freq.id)}
+                                                    >
+                                                        Accept
+                                                    </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="outline"
+                                                        className="h-7 text-xs"
+                                                        onClick={() => handleRejectFriend(freq.id)}
+                                                    >
+                                                        Decline
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         )}
                     </DropdownMenuContent>
@@ -239,7 +311,9 @@ export function Header() {
                         <Link href="/dashboard/profile">
                             <DropdownMenuItem className="cursor-pointer">Profile</DropdownMenuItem>
                         </Link>
-                        <DropdownMenuItem>Settings</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => setShowSettings(true)} className="cursor-pointer">
+                            Settings
+                        </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={handleLogout} className="text-rose-600 focus:text-rose-600 cursor-pointer">
                             Log out
@@ -247,6 +321,42 @@ export function Header() {
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
+
+            <Dialog open={showSettings} onOpenChange={setShowSettings}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>{t("preferences") || "Preferences"}</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-6 py-4">
+                        <div className="flex items-center justify-between">
+                            <div className="space-y-0.5">
+                                <Label className="text-base">{t("system_language") || "System Language"}</Label>
+                                <p className="text-sm text-muted-foreground">{t("select_language_desc") || "Select your preferred language."}</p>
+                            </div>
+                            <div className="flex items-center bg-secondary p-1 rounded-lg">
+                                <button
+                                    onClick={() => setLanguage("en")}
+                                    className={cn(
+                                        "px-4 py-2 text-sm font-medium rounded-md transition-all",
+                                        language === "en" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                                    )}
+                                >
+                                    {t("english") || "English"}
+                                </button>
+                                <button
+                                    onClick={() => setLanguage("vi")}
+                                    className={cn(
+                                        "px-4 py-2 text-sm font-medium rounded-md transition-all",
+                                        language === "vi" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                                    )}
+                                >
+                                    {t("vietnamese") || "Vietnamese"}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </header>
     )
 }

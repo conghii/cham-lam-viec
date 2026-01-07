@@ -31,6 +31,7 @@ import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useLanguage } from "@/components/shared/language-context";
 
 import { format } from "date-fns";
 
@@ -461,6 +462,7 @@ export default function GoalsPage() {
     }
 
     const canEdit = userRole === 'owner' || userRole === 'member';
+    const { t } = useLanguage();
 
     return (
         <div className="min-h-screen bg-slate-50/50 dark:bg-transparent">
@@ -469,43 +471,43 @@ export default function GoalsPage() {
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                     <div>
                         <h2 className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                            Goals & OKRs
+                            {t("goals_title")}
                         </h2>
                         <p className="text-muted-foreground mt-2 text-lg">
-                            Execute your vision. Track what matters.
+                            {t("goals_description")}
                         </p>
                     </div>
                     {canEdit && (
                         <Dialog open={isAddGoalOpen} onOpenChange={setIsAddGoalOpen}>
                             <DialogTrigger asChild>
                                 <Button size="lg" className="shadow-lg hover:shadow-primary/20 transition-all">
-                                    <Plus className="h-5 w-5 mr-2" /> New Objective
+                                    <Plus className="h-5 w-5 mr-2" /> {t("create_objective")}
                                 </Button>
                             </DialogTrigger>
                             <DialogContent>
                                 <DialogHeader>
-                                    <DialogTitle>Create New Objective</DialogTitle>
+                                    <DialogTitle>{t("create_objective")}</DialogTitle>
                                 </DialogHeader>
                                 <form onSubmit={handleAddGoal} className="space-y-4 mt-4">
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium">Objective Title</label>
+                                        <label className="text-sm font-medium">{t("objective_title")}</label>
                                         <Input
-                                            placeholder="e.g. Become Market Leader"
+                                            placeholder={t("objective_placeholder")}
                                             value={newGoalTitle}
                                             onChange={(e) => setNewGoalTitle(e.target.value)}
                                             autoFocus
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium">Description</label>
+                                        <label className="text-sm font-medium">{t("overview")}</label>
                                         <Input
-                                            placeholder="Why is this important?"
+                                            placeholder={t("description_placeholder")}
                                             value={newGoalDesc}
                                             onChange={(e) => setNewGoalDesc(e.target.value)}
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium">Target Date</label>
+                                        <label className="text-sm font-medium">{t("target_date")}</label>
                                         <Input
                                             type="date"
                                             value={newGoalDate}
@@ -514,7 +516,7 @@ export default function GoalsPage() {
                                     </div>
                                     {orgId && (
                                         <div className="space-y-2">
-                                            <label className="text-sm font-medium">Assignees & Teams</label>
+                                            <label className="text-sm font-medium">{t("assignees_teams")}</label>
                                             <UserGroupSelect
                                                 orgId={orgId}
                                                 assigneeIds={newGoalAssigneeIds}
@@ -526,7 +528,7 @@ export default function GoalsPage() {
                                         </div>
                                     )}
                                     <DialogFooter>
-                                        <Button type="submit">Create Objective</Button>
+                                        <Button type="submit">{t("create_goal_button")}</Button>
                                     </DialogFooter>
                                 </form>
                             </DialogContent>
@@ -543,7 +545,7 @@ export default function GoalsPage() {
                                     <TrendingUp className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
                                 </div>
                                 <div>
-                                    <CardDescription className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Progress</CardDescription>
+                                    <CardDescription className="text-sm font-medium text-slate-500 dark:text-slate-400">{t("total_progress")}</CardDescription>
                                     <CardTitle className="text-4xl font-black text-slate-900 dark:text-white mt-1">
                                         {overallProgress}%
                                     </CardTitle>
@@ -553,7 +555,7 @@ export default function GoalsPage() {
                         <CardContent>
                             <div className="flex items-center gap-2 text-sm font-medium text-emerald-600">
                                 <span>↑ 12%</span>
-                                <span className="text-slate-400 font-normal">vs last month</span>
+                                <span className="text-slate-400 font-normal">{t("vs_last_month")}</span>
                             </div>
                         </CardContent>
                     </Card>
@@ -565,7 +567,7 @@ export default function GoalsPage() {
                                     <Target className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                                 </div>
                                 <div>
-                                    <CardDescription className="text-sm font-medium text-slate-500 dark:text-slate-400">Active Goals</CardDescription>
+                                    <CardDescription className="text-sm font-medium text-slate-500 dark:text-slate-400">{t("active_goals")}</CardDescription>
                                     <CardTitle className="text-4xl font-black text-slate-900 dark:text-white mt-1">
                                         {activeGoals}
                                     </CardTitle>
@@ -574,7 +576,7 @@ export default function GoalsPage() {
                         </CardHeader>
                         <CardContent>
                             <div className="text-sm text-slate-500 font-medium">
-                                Keep pushing!
+                                {t("keep_it_up")}
                             </div>
                         </CardContent>
                     </Card>
@@ -586,7 +588,7 @@ export default function GoalsPage() {
                                     <Trophy className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
                                 </div>
                                 <div>
-                                    <CardDescription className="text-sm font-medium text-slate-500 dark:text-slate-400">Completed</CardDescription>
+                                    <CardDescription className="text-sm font-medium text-slate-500 dark:text-slate-400">{t("completed_goals")}</CardDescription>
                                     <CardTitle className="text-4xl font-black text-slate-900 dark:text-white mt-1">
                                         {completedGoals}
                                     </CardTitle>
@@ -595,7 +597,7 @@ export default function GoalsPage() {
                         </CardHeader>
                         <CardContent>
                             <div className="text-sm text-slate-500 font-medium">
-                                Objectives crushed.
+                                {t("keep_it_up")}
                             </div>
                         </CardContent>
                     </Card>
@@ -608,9 +610,9 @@ export default function GoalsPage() {
                     ) : filteredGoals.length === 0 ? (
                         <div className="col-span-full text-center py-20 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl bg-white/50 dark:bg-slate-900/50">
                             <Target className="h-12 w-12 mx-auto text-slate-300 dark:text-slate-700 mb-4" />
-                            <h3 className="text-lg font-medium text-slate-900 dark:text-white">No objectives visible to you.</h3>
-                            <p className="text-slate-500 dark:text-slate-400 mb-4">Start by creating your first big objective.</p>
-                            <Button onClick={() => setIsAddGoalOpen(true)} variant="outline">Create Goal</Button>
+                            <h3 className="text-lg font-medium text-slate-900 dark:text-white">{t("no_goals_visible")}</h3>
+                            <p className="text-slate-500 dark:text-slate-400 mb-4">{t("create_first_goal")}</p>
+                            <Button onClick={() => setIsAddGoalOpen(true)} variant="outline">{t("create_goal_action")}</Button>
                         </div>
                     ) : (
                         filteredGoals.map((goal) => (
@@ -646,10 +648,10 @@ export default function GoalsPage() {
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
                                                     <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openGoalDetails(goal, true); }}>
-                                                        <Pencil className="h-4 w-4 mr-2" /> Edit Objective
+                                                        <Pencil className="h-4 w-4 mr-2" /> {t("edit_objective")}
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={(e) => { e.stopPropagation(); deleteGoal(goal.id); }}>
-                                                        <Trash2 className="h-4 w-4 mr-2" /> Delete
+                                                        <Trash2 className="h-4 w-4 mr-2" /> {t("delete_objective")}
                                                     </DropdownMenuItem>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
@@ -658,7 +660,7 @@ export default function GoalsPage() {
 
                                     <div className="mt-5 space-y-2">
                                         <div className="flex justify-between items-center text-sm font-medium">
-                                            <span className="text-slate-500 dark:text-slate-400">Progress</span>
+                                            <span className="text-slate-500 dark:text-slate-400">{t("total_progress")}</span>
                                             <span className={cn("font-bold", goal.progress >= 100 ? "text-emerald-600 dark:text-emerald-400" : "text-blue-600 dark:text-blue-400")}>
                                                 {goal.progress}%
                                             </span>
@@ -675,10 +677,10 @@ export default function GoalsPage() {
                                 <CardContent className="pt-2 relative z-10">
                                     <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
                                         <div className="flex items-center justify-between mb-3">
-                                            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Key Results</h4>
+                                            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">{t("key_results")}</h4>
                                             {canEdit && (
                                                 <Button variant="ghost" size="sm" className="h-6 text-xs hover:bg-blue-50 hover:text-blue-600 -mr-2" onClick={(e) => { e.stopPropagation(); openAddKR(goal.id); }}>
-                                                    <Plus className="h-3 w-3 mr-1" /> Add
+                                                    <Plus className="h-3 w-3 mr-1" /> {t("add_task")}
                                                 </Button>
                                             )}
                                         </div>
@@ -697,11 +699,11 @@ export default function GoalsPage() {
                                             ) : (
                                                 canEdit ? (
                                                     <div className="border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-lg p-6 text-center cursor-pointer hover:border-blue-200 dark:hover:border-blue-900 hover:bg-blue-50/30 dark:hover:bg-blue-900/10 transition-all group/empty" onClick={(e) => { e.stopPropagation(); openAddKR(goal.id); }}>
-                                                        <p className="text-sm text-slate-500 dark:text-slate-400 group-hover/empty:text-blue-600 dark:group-hover/empty:text-blue-400 font-medium">No key results yet.</p>
-                                                        <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Click to add your first metric.</p>
+                                                        <p className="text-sm text-slate-500 dark:text-slate-400 group-hover/empty:text-blue-600 dark:group-hover/empty:text-blue-400 font-medium">{t("no_key_results")}</p>
+                                                        <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">{t("click_to_add_kr")}</p>
                                                     </div>
                                                 ) : (
-                                                    <div className="text-sm text-slate-400 italic text-center py-4">No key results set.</div>
+                                                    <div className="text-sm text-slate-400 italic text-center py-4">{t("no_key_results")}</div>
                                                 )
                                             )}
                                         </div>
@@ -719,13 +721,13 @@ export default function GoalsPage() {
                 <Dialog open={isKRModalOpen} onOpenChange={(open) => { if (!open) closeKRModal(); }}>
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle>{editingKR ? "Edit Key Result" : "Add Key Result"}</DialogTitle>
+                            <DialogTitle>{editingKR ? t("edit_key_result") : t("add_key_result")}</DialogTitle>
                         </DialogHeader>
                         <form onSubmit={handleSaveKeyResult} className="space-y-4 mt-2">
                             <div className="space-y-2">
-                                <label className="text-sm font-medium">Result Title</label>
+                                <label className="text-sm font-medium">{t("result_title")}</label>
                                 <Input
-                                    placeholder="e.g. Read 5 books"
+                                    placeholder={t("result_placeholder")}
                                     value={newKRTitle}
                                     onChange={(e) => setNewKRTitle(e.target.value)}
                                     autoFocus
@@ -733,7 +735,7 @@ export default function GoalsPage() {
                             </div>
                             <div className="flex gap-4">
                                 <div className="space-y-2 flex-1">
-                                    <label className="text-sm font-medium">Target Value</label>
+                                    <label className="text-sm font-medium">{t("target_value")}</label>
                                     <Input
                                         type="number"
                                         placeholder="5"
@@ -742,7 +744,7 @@ export default function GoalsPage() {
                                     />
                                 </div>
                                 <div className="space-y-2 flex-1">
-                                    <label className="text-sm font-medium">Unit</label>
+                                    <label className="text-sm font-medium">{t("unit")}</label>
                                     <Input
                                         placeholder="books"
                                         value={newKRUnit}
@@ -751,7 +753,7 @@ export default function GoalsPage() {
                                 </div>
                             </div>
                             <DialogFooter>
-                                <Button type="submit">{editingKR ? "Save Changes" : "Save Result"}</Button>
+                                <Button type="submit">{editingKR ? t("save_changes_kr") : t("save_result")}</Button>
                             </DialogFooter>
                         </form>
                     </DialogContent>
@@ -765,7 +767,7 @@ export default function GoalsPage() {
                             <DialogTitle className="sr-only">Goal Details</DialogTitle>
                             <div className="flex items-start justify-between gap-6">
                                 <div className="space-y-2 flex-1 relative">
-                                    <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Objective</label>
+                                    <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">{t("objective_title")}</label>
                                     {isEditMode ? (
                                         <Input
                                             value={title}
@@ -779,7 +781,7 @@ export default function GoalsPage() {
                                     <div className="flex items-center gap-3 pt-1">
                                         <Badge variant={(selectedGoal?.progress || 0) >= 100 ? "default" : "secondary"} className="rounded-full px-3 py-0.5 font-medium transition-all">
                                             {(selectedGoal?.progress || 0) >= 100 ? <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> : <Target className="h-3.5 w-3.5 mr-1" />}
-                                            {selectedGoal?.progress}% Achieved
+                                            {selectedGoal?.progress}% {t("achieved")}
                                         </Badge>
                                         <span className="text-sm text-muted-foreground flex items-center gap-1">
                                             <CalendarIcon className="h-3.5 w-3.5" />

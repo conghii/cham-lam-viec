@@ -1675,6 +1675,7 @@ export type Chat = {
     participants: string[];
     lastMessage?: string;
     lastMessageTime?: Timestamp;
+    updatedAt?: Timestamp; // Added for sorting
     unreadCount?: Record<string, number>;
     otherUser?: any; // Hydrated user data
 }
@@ -1698,7 +1699,25 @@ export const sendFriendRequest = async (recipientId: string) => {
     );
 
     const [snap1, snap2] = await Promise.all([getDocs(q1), getDocs(q2)]);
-    if (!snap1.empty || !snap2.empty) return; // Already exists
+
+    // Check if friendship already exists
+    const existingDoc = !snap1.empty ? snap1.docs[0] : (!snap2.empty ? snap2.docs[0] : null);
+
+    if (existingDoc) {
+        const data = existingDoc.data();
+        if (data.status === 'rejected') {
+            // Re-open friendship if previously rejected
+            await updateDoc(doc(db, "friendships", existingDoc.id), {
+                status: 'pending',
+                requesterId: user.uid, // Ensure requester is current user
+                recipientId: recipientId,
+                updatedAt: serverTimestamp()
+            });
+            return;
+        }
+        // If pending or accepted, do nothing
+        return;
+    }
 
     await addDoc(collection(db, "friendships"), {
         requesterId: user.uid,
@@ -1768,6 +1787,30 @@ export const searchUsers = async (searchTerm: string) => {
             u.email?.toLowerCase().includes(term) ||
             u.displayName?.toLowerCase().includes(term)
         );
+};
+
+export const removeFriend = async (friendId: string) => {
+    const { getCurrentUser } = await import("./auth");
+    const user = await getCurrentUser();
+    if (!user) throw new Error("User not authenticated");
+
+    const q = query(
+        collection(db, "friendships"),
+        or(
+            where("requesterId", "==", user.uid),
+            where("recipientId", "==", user.uid)
+        )
+    );
+
+    const snapshot = await getDocs(q);
+    const friendship = snapshot.docs.find(doc => {
+        const data = doc.data();
+        return (data.requesterId === friendId || data.recipientId === friendId) && data.status === 'accepted';
+    });
+
+    if (friendship) {
+        await deleteDoc(doc(db, "friendships", friendship.id));
+    }
 };
 
 // Messaging
@@ -1843,8 +1886,8 @@ export const subscribeToChats = (callback: (chats: Chat[]) => void) => {
 
     const q = query(
         collection(db, "chats"),
-        where("participants", "array-contains", user.uid),
-        orderBy("updatedAt", "desc")
+        where("participants", "array-contains", user.uid)
+        // orderBy("updatedAt", "desc") // Removed to avoid composite index requirement
     );
 
     return onSnapshot(q, async (snapshot) => {
@@ -1863,6 +1906,9 @@ export const subscribeToChats = (callback: (chats: Chat[]) => void) => {
                 otherUser: uSnap.exists() ? { id: uSnap.id, ...uSnap.data() } : null
             };
         }));
+
+        // Client-side sort
+        hydrated.sort((a, b) => (b.updatedAt?.toMillis() || 0) - (a.updatedAt?.toMillis() || 0));
 
         callback(hydrated);
     });

@@ -32,6 +32,7 @@ import {
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { useLanguage } from "@/components/shared/language-context";
 
 export default function MVSPage() {
     const [mvs, setMvs] = useState<MVS | null>(null);
@@ -40,6 +41,7 @@ export default function MVSPage() {
     const [isSaving, setIsSaving] = useState(false);
     const [currentOrg, setCurrentOrg] = useState<Organization | null>(null);
     const [userRole, setUserRole] = useState<'owner' | 'member' | 'viewer'>('member');
+    const { t } = useLanguage();
 
     // Edit state
     const [editMission, setEditMission] = useState("");
@@ -108,10 +110,10 @@ export default function MVSPage() {
                 strategies: editStrategies
             });
             setIsEditing(false);
-            toast.success("MVS North Star updated!");
+            toast.success(t("mvs_updated"));
         } catch (error) {
             console.error("Failed to save MVS:", error);
-            toast.error("Failed to save changes. Please try again.");
+            toast.error(t("save_mvs_error"));
         } finally {
             setIsSaving(false);
         }
@@ -138,7 +140,7 @@ export default function MVSPage() {
 
     const removeStrategy = (id: string) => {
         setEditStrategies(editStrategies.filter(s => s.id !== id));
-        toast.info("Strategy removed (Save to apply)");
+        toast.info(t("remove_strategy"));
     };
 
     if (isLoading) {
@@ -156,24 +158,24 @@ export default function MVSPage() {
             {/* Top Toolbar */}
             <div className="sticky top-0 z-50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-gray-100 dark:border-slate-800 px-6 py-4 flex justify-between items-center">
                 <div>
-                    <span className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">Organization DNA</span>
-                    <h1 className="text-xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400 bg-clip-text text-transparent">The North Star</h1>
+                    <span className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">{t("org_dna")}</span>
+                    <h1 className="text-xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400 bg-clip-text text-transparent">{t("mvs_title")}</h1>
                 </div>
                 {canEdit && (
                     <div className="flex gap-3">
                         {isEditing ? (
                             <>
                                 <Button variant="ghost" size="sm" onClick={handleCancel} disabled={isSaving} className="text-slate-500 hover:text-slate-900">
-                                    <X className="h-4 w-4 mr-2" /> Cancel
+                                    <X className="h-4 w-4 mr-2" /> {t("cancel")}
                                 </Button>
                                 <Button size="sm" onClick={handleSave} disabled={isSaving} className="bg-slate-900 text-white hover:bg-slate-800 shadow-md">
                                     {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
-                                    Save Changes
+                                    {t("save_changes")}
                                 </Button>
                             </>
                         ) : (
                             <Button size="sm" variant="outline" onClick={handleEdit} className="hover:bg-slate-100 dark:hover:bg-slate-800 border-dashed border-slate-300 dark:border-slate-700 dark:text-slate-300">
-                                <Pencil className="h-3.5 w-3.5 mr-2" /> Edit MVS
+                                <Pencil className="h-3.5 w-3.5 mr-2" /> {t("edit_mvs")}
                             </Button>
                         )}
                     </div>
@@ -193,14 +195,14 @@ export default function MVSPage() {
                             <div className="h-12 w-12 rounded-2xl bg-indigo-500 text-white flex items-center justify-center shadow-lg shadow-indigo-500/30">
                                 <Rocket className="h-6 w-6" />
                             </div>
-                            <h2 className="text-sm font-bold uppercase tracking-widest text-indigo-600">Our Mission</h2>
+                            <h2 className="text-sm font-bold uppercase tracking-widest text-indigo-600">{t("our_mission")}</h2>
                         </div>
 
                         {isEditing ? (
                             <Textarea
                                 value={editMission}
                                 onChange={(e) => setEditMission(e.target.value)}
-                                placeholder="State your core purpose..."
+                                placeholder={t("mission_placeholder")}
                                 className="text-3xl md:text-5xl font-black tracking-tight leading-tight min-h-[140px] bg-transparent border-none p-0 focus-visible:ring-0 placeholder:text-slate-300 resize-none"
                             />
                         ) : (
@@ -208,12 +210,12 @@ export default function MVSPage() {
                                 "text-3xl md:text-5xl font-black tracking-tight leading-tight text-slate-900 dark:text-white",
                                 !mvs?.mission && "text-slate-300 dark:text-slate-600 italic"
                             )}>
-                                {mvs?.mission || "What is your reason for being?"}
+                                {mvs?.mission || t("mission_fallback")}
                             </h2>
                         )}
 
                         <p className="mt-6 text-slate-500 dark:text-slate-400 max-w-2xl font-medium">
-                            This is our "Why". It guides every decision we make.
+                            {t("mission_why")}
                         </p>
                     </div>
                 </section>
@@ -232,12 +234,12 @@ export default function MVSPage() {
                                 <Telescope className="h-5 w-5" />
                             </div>
                             <div className="flex-1">
-                                <h3 className="text-sm font-bold uppercase tracking-widest text-cyan-600 mb-3">Our Vision</h3>
+                                <h3 className="text-sm font-bold uppercase tracking-widest text-cyan-600 mb-3">{t("our_vision")}</h3>
                                 {isEditing ? (
                                     <Textarea
                                         value={editVision}
                                         onChange={(e) => setEditVision(e.target.value)}
-                                        placeholder="Where are we going?"
+                                        placeholder={t("vision_placeholder")}
                                         className="text-xl md:text-2xl font-medium leading-relaxed min-h-[100px] bg-transparent border-none p-0 focus-visible:ring-0 placeholder:text-slate-300 resize-none"
                                     />
                                 ) : (
@@ -245,7 +247,7 @@ export default function MVSPage() {
                                         "text-xl md:text-2xl font-medium leading-relaxed text-slate-700 dark:text-slate-200",
                                         !mvs?.vision && "text-slate-300 dark:text-slate-600 italic"
                                     )}>
-                                        {mvs?.vision || "Paint a picture of the future we are building."}
+                                        {mvs?.vision || t("vision_fallback")}
                                     </p>
                                 )}
                             </div>
@@ -257,7 +259,7 @@ export default function MVSPage() {
                 <section>
                     <div className="flex items-center gap-4 mb-8">
                         <div className="h-px bg-slate-200 dark:bg-slate-800 flex-1" />
-                        <span className="text-sm font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">Core Strategies</span>
+                        <span className="text-sm font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">{t("core_strategies")}</span>
                         <div className="h-px bg-slate-200 dark:bg-slate-800 flex-1" />
                     </div>
 
@@ -299,23 +301,23 @@ export default function MVSPage() {
                                                 <Input
                                                     value={strategy.title}
                                                     onChange={(e) => updateStrategy(strategy.id, 'title', e.target.value)}
-                                                    placeholder="Strategy Title"
+                                                    placeholder={t("strategy_title_placeholder")}
                                                     className="font-bold text-lg border-none px-0 focus-visible:ring-0 p-0 h-auto"
                                                 />
                                                 <Textarea
                                                     value={strategy.description}
                                                     onChange={(e) => updateStrategy(strategy.id, 'description', e.target.value)}
-                                                    placeholder="Brief description..."
+                                                    placeholder={t("strategy_desc_placeholder")}
                                                     className="mt-2 text-sm text-slate-500 border-none px-0 focus-visible:ring-0 min-h-[80px] resize-none"
                                                 />
                                             </>
                                         ) : (
                                             <>
                                                 <h3 className="font-bold text-lg text-slate-800 dark:text-slate-200 mb-2">
-                                                    {strategy.title || "Untitled"}
+                                                    {strategy.title || t("untitled_strategy")}
                                                 </h3>
                                                 <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
-                                                    {strategy.description || "No description provided."}
+                                                    {strategy.description || t("no_strategy_desc")}
                                                 </p>
                                             </>
                                         )}
@@ -331,7 +333,7 @@ export default function MVSPage() {
                                     className="h-full min-h-[200px] rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col items-center justify-center gap-2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-900 transition-all"
                                 >
                                     <Plus className="h-8 w-8" />
-                                    <span className="font-medium text-sm">Add Strategy</span>
+                                    <span className="font-medium text-sm">{t("add_strategy")}</span>
                                 </motion.button>
                             )}
                         </AnimatePresence>
@@ -344,13 +346,13 @@ export default function MVSPage() {
                         <div className="h-16 w-16 mx-auto bg-slate-100 rounded-full flex items-center justify-center mb-4">
                             <Rocket className="h-8 w-8 text-slate-400" />
                         </div>
-                        <h3 className="text-xl font-bold text-slate-700">Set your North Star</h3>
+                        <h3 className="text-xl font-bold text-slate-700">{t("set_north_star")}</h3>
                         <p className="text-slate-500 max-w-md mx-auto mt-2 mb-6">
-                            Define your mission, vision, and core strategies to align your team and drive execution.
+                            {t("mvs_desc")}
                         </p>
                         {canEdit && (
                             <Button onClick={handleEdit}>
-                                Start Defining MVS
+                                {t("start_defining")}
                             </Button>
                         )}
                     </div>

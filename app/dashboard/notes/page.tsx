@@ -13,6 +13,7 @@ import { UserGroupSelect } from "@/components/dashboard/user-group-select"
 import { AssigneeDisplay } from "@/components/dashboard/assignee-display"
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
+import { useLanguage } from "@/components/shared/language-context"
 import { Shield, CheckCircle2 } from "lucide-react"
 import { toast } from "sonner"
 import {
@@ -37,10 +38,19 @@ const NOTE_COLORS = [
 
 const CATEGORIES = ["All", "Journal", "Ideas", "To-do", "Work"]
 
+const CATEGORY_KEYS: Record<string, string> = {
+    "All": "all_notes",
+    "Journal": "journal",
+    "Ideas": "ideas",
+    "To-do": "todo",
+    "Work": "work"
+}
+
 export default function NotesPage() {
     const [notes, setNotes] = useState<Note[]>([])
     const [searchQuery, setSearchQuery] = useState("")
     const [selectedCategory, setSelectedCategory] = useState("All")
+    const { t } = useLanguage()
 
     // Quick Note State
     const [isQuickNoteExpanded, setIsQuickNoteExpanded] = useState(false)
@@ -150,10 +160,10 @@ export default function NotesPage() {
             setQuickContent("")
             setQuickColor(NOTE_COLORS[0].value)
             setIsQuickNoteExpanded(false)
-            toast.success("Note created!")
+            toast.success(t("note_created"))
         } catch (error) {
             console.error("Failed to add note", error)
-            toast.error("Failed to create note")
+            toast.error(t("failed_to_create_note"))
         }
     }
 
@@ -172,9 +182,9 @@ export default function NotesPage() {
             await updateNote(currentNote.id, title, content, assigneeIds, groupIds, newColor, newCategory)
             setIsDialogOpen(false)
             setCurrentNote(null)
-            toast.success("Note updated")
+            toast.success(t("note_updated"))
         } catch (e) {
-            toast.error("Failed to update")
+            toast.error(t("failed_to_update_note"))
         }
     }
 
@@ -182,9 +192,9 @@ export default function NotesPage() {
         e.stopPropagation()
         try {
             await deleteNote(noteId)
-            toast.success("Note deleted")
+            toast.success(t("note_deleted"))
         } catch (error) {
-            toast.error("Failed to delete note")
+            toast.error(t("failed_to_delete_note"))
         }
     }
 
@@ -193,7 +203,7 @@ export default function NotesPage() {
             <div className="flex h-[80vh] items-center justify-center">
                 <div className="text-center space-y-4 max-w-md">
                     <Shield className="h-12 w-12 text-destructive mx-auto" />
-                    <h2 className="text-2xl font-bold">Access Restricted</h2>
+                    <h2 className="text-2xl font-bold">{t("access_restricted")}</h2>
                 </div>
             </div>
         );
@@ -219,7 +229,7 @@ export default function NotesPage() {
                                     : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800"
                             )}
                         >
-                            {cat}
+                            {t(CATEGORY_KEYS[cat] as any)}
                         </button>
                     ))}
                 </div>
@@ -238,14 +248,14 @@ export default function NotesPage() {
                             <Input
                                 value={quickTitle}
                                 onChange={e => setQuickTitle(e.target.value)}
-                                placeholder="Title"
+                                placeholder={t("title_placeholder")}
                                 className="border-none shadow-none focus-visible:ring-0 text-lg font-bold px-4 pt-4 pb-0 bg-transparent placeholder:text-slate-400 dark:placeholder:text-slate-500 dark:text-slate-200"
                             />
                         )}
                         <Textarea
                             value={quickContent}
                             onChange={e => setQuickContent(e.target.value)}
-                            placeholder="Take a note..."
+                            placeholder={t("take_a_note")}
                             className={cn(
                                 "border-none shadow-none focus-visible:ring-0 resize-none bg-transparent placeholder:text-slate-500 dark:placeholder:text-slate-500 dark:text-slate-300",
                                 isQuickNoteExpanded ? "min-h-[120px] px-4 py-2 text-base leading-relaxed" : "h-14 py-4 px-6 truncate font-medium text-slate-500 dark:text-slate-400"
@@ -289,10 +299,10 @@ export default function NotesPage() {
                                             ))}
                                         </DropdownMenuContent>
                                     </DropdownMenu>
-                                    <span className="text-xs text-slate-400 self-center ml-2">{quickCategory}</span>
+                                    <span className="text-xs text-slate-400 self-center ml-2">{t(CATEGORY_KEYS[quickCategory] as any)}</span>
                                 </div>
                                 <Button size="sm" onClick={handleQuickAdd} className="bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-white/90 rounded-full px-6 transition-colors">
-                                    Add Note
+                                    {t("add_note")}
                                 </Button>
                             </div>
                         )}
@@ -316,8 +326,8 @@ export default function NotesPage() {
                             strokeWidth={1}
                         />
                     </div>
-                    <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-200">Your mind is clear</h3>
-                    <p className="text-slate-500 dark:text-slate-400 max-w-sm mt-2 mb-8 text-lg">Every great idea starts with a small note.<br />Type above to capture one!</p>
+                    <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-200">{t("mind_clear")}</h3>
+                    <p className="text-slate-500 dark:text-slate-400 max-w-sm mt-2 mb-8 text-lg">{t("mind_clear_desc")}</p>
                 </div>
             ) : (
                 <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 space-y-4 px-4 pb-12">
@@ -332,7 +342,9 @@ export default function NotesPage() {
                         >
                             <CardHeader className="pb-2 space-y-1">
                                 {note.title && <CardTitle className="text-lg font-bold leading-tight">{note.title}</CardTitle>}
-                                <CardDescription className="text-[10px] uppercase tracking-wider opacity-60 font-semibold">{note.category || "General"}</CardDescription>
+                                <CardDescription className="text-[10px] uppercase tracking-wider opacity-60 font-semibold">
+                                    {(note.category && CATEGORY_KEYS[note.category]) ? t(CATEGORY_KEYS[note.category] as any) : (note.category || "General")}
+                                </CardDescription>
                             </CardHeader>
                             <CardContent className="pb-4">
                                 <p className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">
@@ -386,6 +398,7 @@ function NoteEditDialog({
     orgId: string | null,
     members: OrganizationMember[]
 }) {
+    const { t } = useLanguage()
     const [title, setTitle] = useState("")
     const [content, setContent] = useState("")
     const [color, setColor] = useState(NOTE_COLORS[0].value)
@@ -413,7 +426,7 @@ function NoteEditDialog({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className={cn("sm:max-w-2xl h-[80vh] flex flex-col transition-colors duration-500", color.split(' ')[0])}>
                 <DialogHeader className="flex-row items-center justify-between space-y-0">
-                    <DialogTitle className="sr-only">Note Editor</DialogTitle>
+                    <DialogTitle className="sr-only">{t("note_editor")}</DialogTitle>
                     <div className="flex gap-2">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -435,40 +448,40 @@ function NoteEditDialog({
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="sm" className="h-8 gap-2 rounded-full border bg-white/50 text-xs">
-                                    <Tag className="h-3 w-3" /> {category}
+                                    <Tag className="h-3 w-3" /> {t(CATEGORY_KEYS[category] as any)}
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
                                 {CATEGORIES.filter(c => c !== "All").map(c => (
                                     <DropdownMenuItem key={c} onClick={() => setCategory(c)}>
-                                        {c}
+                                        {t(CATEGORY_KEYS[c] as any)}
                                     </DropdownMenuItem>
                                 ))}
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>
                     <span className="text-xs text-slate-400">
-                        {note?.updatedAt ? format(note.updatedAt.toDate(), 'MMMM d, yyyy h:mm a') : 'New Note'}
+                        {note?.updatedAt ? format(note.updatedAt.toDate(), 'MMMM d, yyyy h:mm a') : t("new_note_time")}
                     </span>
                 </DialogHeader>
 
                 <div className="flex-1 flex flex-col gap-4 py-4 min-h-0">
                     <Input
-                        placeholder="Title"
+                        placeholder={t("title_placeholder")}
                         className="text-2xl font-bold border-none shadow-none px-0 focus-visible:ring-0 bg-transparent placeholder:text-black/20 h-auto py-2"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                     />
                     <Textarea
-                        placeholder="Start typing..."
+                        placeholder={t("start_typing")}
                         className="w-full h-full resize-none border-none bg-transparent focus-visible:ring-0 p-0 leading-loose text-lg text-slate-800"
                         value={content}
                         onChange={(e) => setContent(e.target.value)}
                     />
                 </div>
                 <DialogFooter>
-                    <Button variant="ghost" onClick={() => onOpenChange(false)}>Close</Button>
-                    <Button onClick={handleSave} className="bg-slate-900 text-white rounded-full px-6">Save</Button>
+                    <Button variant="ghost" onClick={() => onOpenChange(false)}>{t("close")}</Button>
+                    <Button onClick={handleSave} className="bg-slate-900 text-white rounded-full px-6">{t("save")}</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

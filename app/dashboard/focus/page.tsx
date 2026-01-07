@@ -35,6 +35,16 @@ export default function FocusPage() {
     const [isRunning, setIsRunning] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
+    // Check screen size on mount
+    useEffect(() => {
+        const checkScreen = () => {
+            if (window.innerWidth < 768) {
+                setIsSidebarOpen(false);
+            }
+        };
+        checkScreen();
+    }, []);
+
     // Task State
     const [tasks, setTasks] = useState<Task[]>([]);
     const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
@@ -197,9 +207,18 @@ export default function FocusPage() {
         <div className="flex h-[calc(100vh-4rem)] w-full bg-[#FAFBFC] dark:bg-slate-950/20 font-sans text-slate-900 dark:text-slate-100 overflow-hidden">
 
             {/* 1. Sidebar (25%ish - Fixed Width) */}
+            {/* Mobile Backdrop */}
+            {isSidebarOpen && (
+                <div
+                    className="fixed inset-0 bg-black/20 backdrop-blur-sm z-30 md:hidden"
+                    onClick={() => setIsSidebarOpen(false)}
+                />
+            )}
+
+            {/* 1. Sidebar (Responsive: Overlay on mobile, Push on desktop) */}
             <div className={cn(
-                "w-80 border-r border-slate-200 dark:border-slate-800 bg-[#F8F9FA] dark:bg-slate-950 flex flex-col transition-all duration-500 ease-in-out relative z-20 shrink-0",
-                !isSidebarOpen && "-ml-80"
+                "fixed inset-y-0 left-0 z-40 w-80 border-r border-slate-200 dark:border-slate-800 bg-[#F8F9FA] dark:bg-slate-950 flex flex-col transition-transform duration-300 ease-in-out md:relative md:translate-x-0",
+                !isSidebarOpen && "-translate-x-full md:-ml-80 md:translate-x-0"
             )}>
                 {/* Sidebar Header */}
                 <div className="h-16 flex items-center justify-between px-4 border-b border-slate-200/50 dark:border-slate-800">
@@ -310,11 +329,23 @@ export default function FocusPage() {
             {/* 2. Main Focus Zone (75%) */}
             <div className="flex-1 relative flex flex-col items-center justify-center bg-gradient-to-br from-white to-blue-50/50 dark:from-slate-950 dark:to-slate-900">
                 {/* Floating Open Sidebar Button */}
+                {/* Floating Open Sidebar Button */}
                 {!isSidebarOpen && (
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="absolute top-4 left-4 z-30 text-slate-400 hover:text-slate-600"
+                        className="absolute top-4 left-4 z-30 text-slate-400 hover:text-slate-600 md:hidden"
+                        onClick={() => setIsSidebarOpen(true)}
+                    >
+                        <Layout className="w-5 h-5" />
+                    </Button>
+                )}
+                {/* Desktop Toggle (When closed) */}
+                {!isSidebarOpen && (
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="hidden md:flex absolute top-4 left-4 z-30 text-slate-400 hover:text-slate-600"
                         onClick={() => setIsSidebarOpen(true)}
                     >
                         <Layout className="w-5 h-5" />
@@ -322,22 +353,22 @@ export default function FocusPage() {
                 )}
 
                 {/* Visual Timer */}
-                <div className="relative mb-12 transform scale-95 md:scale-100 transition-transform">
+                <div className="relative mb-8 md:mb-12">
                     {/* Ring SVG */}
-                    <div className="relative w-[400px] h-[400px]">
-                        <svg className="w-full h-full transform -rotate-90">
+                    <div className="relative w-72 h-72 md:w-[400px] md:h-[400px]">
+                        <svg className="w-full h-full transform -rotate-90" viewBox="0 0 400 400">
                             {/* Track */}
                             <circle
-                                cx="50%"
-                                cy="50%"
+                                cx="200"
+                                cy="200"
                                 r={radius}
-                                className="stroke-slate-100 dark:stroke-slate-800 fill-transparent"
+                                className="stroke-slate-200 dark:stroke-slate-800 fill-transparent"
                                 strokeWidth="8"
                             />
                             {/* Progress */}
                             <circle
-                                cx="50%"
-                                cy="50%"
+                                cx="200"
+                                cy="200"
                                 r={radius}
                                 stroke="#3B82F6" // blue-500
                                 strokeWidth="8"
@@ -351,10 +382,10 @@ export default function FocusPage() {
 
                         {/* Center Content */}
                         <div className="absolute inset-0 flex flex-col items-center justify-center">
-                            <span className="text-8xl font-bold text-slate-900 dark:text-white tracking-tighter tabular-nums">
+                            <span className="text-6xl md:text-8xl font-bold text-slate-900 dark:text-white tracking-tighter tabular-nums">
                                 {formatTime(timeLeft)}
                             </span>
-                            <span className="text-sm font-bold text-slate-400 dark:text-slate-500 tracking-[0.3em] uppercase mt-4">
+                            <span className="text-xs md:text-sm font-bold text-slate-400 dark:text-slate-500 tracking-[0.3em] uppercase mt-2 md:mt-4">
                                 Focus Mode
                             </span>
                         </div>
@@ -362,12 +393,12 @@ export default function FocusPage() {
                 </div>
 
                 {/* Task Context */}
-                <div className="flex flex-col items-center space-y-4 mb-16 max-w-2xl px-8 text-center">
+                <div className="flex flex-col items-center space-y-4 mb-12 md:mb-16 max-w-2xl px-8 text-center">
                     <div className="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-bold tracking-wide uppercase">
                         <span className="w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-400 mr-2 animate-pulse" />
                         In Progress
                     </div>
-                    <h1 className="text-3xl md:text-4xl font-bold text-slate-800 dark:text-slate-100 leading-tight">
+                    <h1 className="text-2xl md:text-4xl font-bold text-slate-800 dark:text-slate-100 leading-tight line-clamp-2">
                         {activeTask
                             ? (typeof activeTask.title === 'string' ? activeTask.title : "Invalid Task Data")
                             : "Select a task to begin"
@@ -376,32 +407,32 @@ export default function FocusPage() {
                 </div>
 
                 {/* Control Dock */}
-                <div className="flex items-center gap-6">
+                <div className="flex items-center gap-4 md:gap-6 pb-8 md:pb-0">
                     {/* Break */}
                     <Button
                         size="icon"
-                        className="h-14 w-14 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 shadow-sm hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 hover:text-blue-500 dark:hover:text-blue-400 transition-all"
+                        className="h-12 w-12 md:h-14 md:w-14 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 shadow-sm hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 hover:text-blue-500 dark:hover:text-blue-400 transition-all"
                         onClick={setShortBreak}
                         title="Take a Break"
                     >
-                        <Coffee className="h-5 w-5" />
+                        <Coffee className="h-4 w-4 md:h-5 md:w-5" />
                     </Button>
 
                     {/* Reset */}
                     <Button
                         size="icon"
-                        className="h-14 w-14 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 shadow-sm hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 hover:text-red-500 dark:hover:text-red-400 transition-all"
+                        className="h-12 w-12 md:h-14 md:w-14 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 shadow-sm hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 hover:text-red-500 dark:hover:text-red-400 transition-all"
                         onClick={resetTimer}
                         title="Reset Timer"
                     >
-                        <RotateCcw className="h-5 w-5" />
+                        <RotateCcw className="h-4 w-4 md:h-5 md:w-5" />
                     </Button>
 
                     {/* Play/Pause Main Action */}
                     <Button
                         size="lg"
                         className={cn(
-                            "h-20 w-20 rounded-full shadow-lg transition-all duration-300 flex items-center justify-center",
+                            "h-16 w-16 md:h-20 md:w-20 rounded-full shadow-lg transition-all duration-300 flex items-center justify-center",
                             isRunning
                                 ? "bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 hover:scale-95"
                                 : "bg-gradient-to-r from-blue-500 to-blue-600 shadow-blue-500/25 dark:shadow-blue-900/20 text-white hover:from-blue-600 hover:to-blue-700 hover:shadow-blue-500/40 hover:scale-105"
@@ -409,20 +440,20 @@ export default function FocusPage() {
                         onClick={toggleTimer}
                     >
                         {isRunning ? (
-                            <Pause className="h-8 w-8 fill-current" />
+                            <Pause className="h-6 w-6 md:h-8 md:w-8 fill-current" />
                         ) : (
-                            <Play className="h-8 w-8 fill-current ml-1" />
+                            <Play className="h-6 w-6 md:h-8 md:w-8 fill-current ml-1" />
                         )}
                     </Button>
 
                     {/* Add Time */}
                     <Button
                         size="icon"
-                        className="h-14 w-14 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 shadow-sm hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 hover:text-green-500 dark:hover:text-green-400 transition-all"
+                        className="h-12 w-12 md:h-14 md:w-14 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 shadow-sm hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 hover:text-green-500 dark:hover:text-green-400 transition-all"
                         onClick={addTime}
                         title="Add 5 Minutes"
                     >
-                        <Plus className="h-6 w-6" />
+                        <Plus className="h-5 w-5 md:h-6 md:w-6" />
                     </Button>
                 </div>
             </div>

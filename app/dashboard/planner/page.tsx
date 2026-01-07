@@ -38,7 +38,7 @@ type Message = {
 }
 
 export default function PlannerPage() {
-    const { language } = useLanguage()
+    const { language, t } = useLanguage()
     const [isGenerating, setIsGenerating] = useState(false)
     const [plan, setPlan] = useState<Phase[] | null>(null)
     const [savedPlans, setSavedPlans] = useState<SavedPlan[]>([])
@@ -236,10 +236,10 @@ export default function PlannerPage() {
                             />
                         </div>
                         <h2 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                            Crafting your master plan...
+                            {t("crafting_plan")}
                         </h2>
                         <p className="text-slate-500 max-w-md text-center">
-                            Analyzing your responses and building a perfect roadmap.
+                            {t("analyzing_responses")}
                         </p>
                     </div>
                 ) : !plan ? (
@@ -248,10 +248,10 @@ export default function PlannerPage() {
                         <div className="space-y-8 text-center lg:text-left">
                             <div className="space-y-4">
                                 <h1 className="text-5xl md:text-7xl font-bold tracking-tighter text-slate-900 dark:text-white pb-2">
-                                    Dream Big.<br /> <span className="text-indigo-600 dark:text-indigo-400">Plan Smart.</span>
+                                    {t("planner_title")}
                                 </h1>
                                 <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 font-light max-w-lg mx-auto lg:mx-0 leading-relaxed">
-                                    Turn vague goals into actionable roadmaps. Our AI will guide you through a deep-dive interview to build the perfect plan.
+                                    {t("planner_subtitle")}
                                 </p>
                             </div>
 
@@ -270,7 +270,7 @@ export default function PlannerPage() {
                             {savedPlans.length > 0 && (
                                 <div className="pt-8 border-t border-slate-200 dark:border-slate-800">
                                     <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 mb-4 justify-center lg:justify-start">
-                                        <History className="h-4 w-4" /> Recent Plans
+                                        <History className="h-4 w-4" /> {t("recent_plans")}
                                     </div>
                                     <div className="flex gap-3 overflow-x-auto pb-2 justify-center lg:justify-start snap-x">
                                         {savedPlans.slice(0, 3).map(saved => (
@@ -295,7 +295,7 @@ export default function PlannerPage() {
                                 <div className="space-y-8">
                                     <div className="space-y-6">
                                         <p className="text-2xl md:text-3xl font-light leading-relaxed text-slate-600 dark:text-slate-400">
-                                            I want to{" "}
+                                            {t("i_want_to")}{" "}
                                             <span className="relative inline-block min-w-[200px]">
                                                 <input
                                                     type="text"
@@ -305,14 +305,14 @@ export default function PlannerPage() {
                                                     className="w-full bg-transparent border-b-2 border-slate-200 dark:border-slate-700 focus:border-indigo-500 dark:focus:border-indigo-400 outline-none text-slate-900 dark:text-white placeholder:text-slate-300 dark:placeholder:text-slate-600 font-medium transition-colors pb-1 text-center md:text-left"
                                                 />
                                             </span>
-                                            {" "}by{" "}
+                                            {" "}{t("by_date")}{" "}
                                             <Popover>
                                                 <PopoverTrigger asChild>
                                                     <button className={cn(
                                                         "inline-flex items-center border-b-2 border-slate-200 dark:border-slate-700 focus:border-indigo-500 dark:focus:border-indigo-400 outline-none text-slate-900 dark:text-white font-medium pb-1 min-w-[140px] justify-center md:justify-start hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors",
                                                         !dateInput && "text-slate-400"
                                                     )}>
-                                                        {dateInput ? format(dateInput, "PPP") : <span>pick a date</span>}
+                                                        {dateInput ? format(dateInput, "PPP") : <span>{t("pick_date")}</span>}
                                                     </button>
                                                 </PopoverTrigger>
                                                 <PopoverContent className="w-auto p-0 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white">
@@ -325,7 +325,7 @@ export default function PlannerPage() {
                                                     />
                                                 </PopoverContent>
                                             </Popover>
-                                            , spending{" "}
+                                            , {t("spending")}{" "}
                                             <span className="relative inline-block w-[60px]">
                                                 <input
                                                     type="number"
@@ -334,14 +334,14 @@ export default function PlannerPage() {
                                                     className="w-full bg-transparent border-b-2 border-slate-200 dark:border-slate-700 focus:border-indigo-500 dark:focus:border-indigo-400 outline-none text-slate-900 dark:text-white font-medium transition-colors pb-1 text-center"
                                                 />
                                             </span>
-                                            {" "}hours/day.
+                                            {" "}{t("hours_day")}.
                                         </p>
                                     </div>
 
                                     {/* Inspiration Chips */}
                                     <div className="space-y-3">
                                         <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                            <Sparkles className="h-3 w-3" /> Inspiration
+                                            <Sparkles className="h-3 w-3" /> {t("inspiration")}
                                         </p>
                                         <div className="flex flex-wrap gap-2">
                                             {INSPIRATION_CHIPS.map((chip) => (
@@ -366,7 +366,7 @@ export default function PlannerPage() {
                                     >
                                         <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-in-out" />
                                         <span className="relative flex items-center gap-3">
-                                            <Wand2 className="h-6 w-6" /> Generate Magic Plan
+                                            <Wand2 className="h-6 w-6" /> {t("generate_plan")}
                                         </span>
                                     </Button>
 
@@ -377,7 +377,7 @@ export default function PlannerPage() {
                                             onCheckedChange={setIsDeepDive}
                                         />
                                         <Label htmlFor="deep-dive-mode" className="text-slate-600 dark:text-slate-400 font-medium cursor-pointer">
-                                            Enable Deep Dive Mode (Detailed Plan)
+                                            {t("enable_deep_dive")}
                                         </Label>
                                     </div>
 
@@ -409,11 +409,11 @@ export default function PlannerPage() {
                                 onClick={() => setPlan(null)}
                                 className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
                             >
-                                <MoveRight className="h-4 w-4 mr-2 rotate-180" /> Back to Planner
+                                <MoveRight className="h-4 w-4 mr-2 rotate-180" /> {t("back_to_planner")}
                             </Button>
                             <div className="text-center">
-                                <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Your Magic Plan</h2>
-                                <p className="text-sm text-slate-500">Ready to conquer {goalInput}?</p>
+                                <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">{t("your_magic_plan")}</h2>
+                                <p className="text-sm text-slate-500">{t("ready_to_conquer")} {goalInput}?</p>
                             </div>
                             <div className="w-24" /> {/* Spacer */}
                         </div>
