@@ -385,7 +385,7 @@ export const dictionaries = {
         "board_view": "Bảng",
         "matrix_view": "Ma trận",
         "add_task_placeholder": "Cần làm gì hôm nay?",
-        "no_date": "Không có ngày",
+        "no_date": "Ngày",
         "add_task": "Thêm nhiệm vụ",
 
 

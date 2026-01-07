@@ -1,5 +1,3 @@
-import { ThreeWins } from "@/components/dashboard/three-wins"
-import { GoalOverview } from "@/components/dashboard/goal-overview"
 import { StatsOverview } from "@/components/dashboard/stats-overview"
 import { TasksView } from "@/components/dashboard/tasks-view"
 import { InvitationAlert } from "@/components/dashboard/invitation-alert"
@@ -17,18 +15,13 @@ export default function DashboardPage() {
 
             <div className="grid gap-8">
                 {/* Main Tasks Section */}
-                <div className="bg-background dark:bg-transparent rounded-2xl">
-                    <TasksView compact={true} className="border-t dark:border-none pt-6" />
+                <div className="bg-slate-50/80 dark:bg-slate-900/20 rounded-3xl p-1">
+                    <TasksView compact={true} className="pt-4" />
                 </div>
 
                 {/* Bottom Widgets */}
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-                    <div className="col-span-2 lg:col-span-4">
-                        <GoalOverview />
-                    </div>
-                    <div className="col-span-2 lg:col-span-3 h-full">
-                        <ThreeWins />
-                    </div>
+                    {/* Widgets removed as per request */}
                 </div>
             </div>
         </div>

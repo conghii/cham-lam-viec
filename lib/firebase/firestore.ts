@@ -113,7 +113,7 @@ export type MVS = {
 
 // --- Tasks ---
 
-export const addTask = async (title: string, tag: string = "general", dueDate?: string, priority: 'low' | 'medium' | 'high' = 'medium', assigneeId: string | null = null, assigneeIds: string[] = [], groupIds: string[] = []) => {
+export const addTask = async (title: string, tag: string = "general", dueDate?: string, priority: 'low' | 'medium' | 'high' = 'medium', assigneeId: string | null = null, assigneeIds: string[] = [], groupIds: string[] = [], status: string = "backlog") => {
     const { getCurrentUser } = await import("./auth");
     const user = await getCurrentUser();
     if (!user) throw new Error("User not authenticated");
@@ -136,7 +136,7 @@ export const addTask = async (title: string, tag: string = "general", dueDate?: 
         tag,
         dueDate: dueDate || null,
         priority,
-        status: "backlog",
+        status,
         createdAt: serverTimestamp(),
         subtasks: [],
         assigneeId: assigneeId || null, // Keep for backward compat for now

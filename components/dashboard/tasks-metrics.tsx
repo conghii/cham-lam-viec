@@ -9,7 +9,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Calendar, TrendingUp, Clock, Flame, ChevronDown } from "lucide-react";
+import { Calendar, TrendingUp, Clock, Flame, ChevronDown, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { isToday, isThisWeek, isThisMonth, startOfWeek, endOfWeek, differenceInDays } from "date-fns";
 import { useLanguage } from "@/components/shared/language-context";
@@ -121,13 +121,20 @@ export function TasksMetrics({ tasks, timeFilter, onTimeFilterChange }: TasksMet
     const streak = calculateStreak();
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-6">
             {/* Header with Time Filter */}
             <div className="flex items-center justify-between">
-                <h2 className="text-lg font-bold text-foreground">{t("overview")}</h2>
+                <div>
+                    <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+                        {t("overview")}
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                        Track your productivity
+                    </p>
+                </div>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="sm" className="gap-2">
+                        <Button variant="outline" size="sm" className="gap-2 h-9 rounded-full bg-white/50 backdrop-blur-sm border-slate-200 dark:border-slate-800">
                             <Calendar className="h-4 w-4" />
                             {t(timeFilter)}
                             <ChevronDown className="h-4 w-4 opacity-50" />
@@ -147,125 +154,94 @@ export function TasksMetrics({ tasks, timeFilter, onTimeFilterChange }: TasksMet
                 </DropdownMenu>
             </div>
 
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {/* Completion Rate Card */}
-                <Card className="p-4 bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-950/20 dark:to-slate-900 border-emerald-200/50 dark:border-emerald-900/50 hover:shadow-md transition-shadow">
-                    <div className="flex items-start justify-between mb-3">
-                        <div className="flex-1">
-                            <p className="text-xs font-medium text-muted-foreground mb-1">
-                                {t("completion_rate")}
-                            </p>
-                            <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
-                                {completionRate}%
-                            </p>
-                        </div>
-                        <div className="relative h-12 w-12">
-                            {/* Radial Progress */}
-                            <svg className="transform -rotate-90" width="48" height="48">
-                                <circle
-                                    cx="24"
-                                    cy="24"
-                                    r="20"
-                                    stroke="currentColor"
-                                    strokeWidth="4"
-                                    fill="none"
-                                    className="text-emerald-100 dark:text-emerald-900/30"
-                                />
-                                <circle
-                                    cx="24"
-                                    cy="24"
-                                    r="20"
-                                    stroke="currentColor"
-                                    strokeWidth="4"
-                                    fill="none"
-                                    strokeDasharray={`${2 * Math.PI * 20}`}
-                                    strokeDashoffset={`${2 * Math.PI * 20 * (1 - completionRate / 100)}`}
-                                    className="text-emerald-500 transition-all duration-500"
-                                    strokeLinecap="round"
-                                />
-                            </svg>
-                        </div>
+            {/* Stats Cards - Premium Layout */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Focus Time Cards */}
+                <Card className="p-6 bg-white dark:bg-slate-900 border-none shadow-sm rounded-3xl relative overflow-hidden group hover:shadow-md transition-all duration-300">
+                    <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <div className="h-24 w-24 bg-blue-500 rounded-full blur-3xl" />
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                        {completedTasks.length} / {totalTasks} {t("tasks").toLowerCase()}
-                    </p>
-                </Card>
 
-                {/* Productivity Velocity Card */}
-                <Card className="p-4 bg-gradient-to-br from-blue-50 to-white dark:from-blue-950/20 dark:to-slate-900 border-blue-200/50 dark:border-blue-900/50 hover:shadow-md transition-shadow">
-                    <div className="flex items-start justify-between mb-3">
-                        <div className="flex-1">
-                            <p className="text-xs font-medium text-muted-foreground mb-1">
-                                {t("productivity")}
-                            </p>
-                            <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-                                {completedTasks.length}
-                            </p>
-                        </div>
-                        <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                            <TrendingUp className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                        </div>
-                    </div>
-                    <p className={cn(
-                        "text-xs font-medium flex items-center gap-1",
-                        velocityChange >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
-                    )}>
-                        {velocityChange >= 0 ? "↑" : "↓"} {Math.abs(velocityChange)}% {
-                            timeFilter === "today" ? t("vs_yesterday") :
-                                timeFilter === "week" ? t("vs_last_week") :
-                                    t("vs_last_month")
-                        }
-                    </p>
-                </Card>
-
-                {/* Time Focus Card (Real Data) */}
-                <Card className="p-4 bg-gradient-to-br from-purple-50 to-white dark:from-purple-950/20 dark:to-slate-900 border-purple-200/50 dark:border-purple-900/50 hover:shadow-md transition-shadow">
-                    <div className="flex items-start justify-between mb-3">
-                        <div className="flex-1">
-                            <p className="text-xs font-medium text-muted-foreground mb-1">
+                    <div className="flex justify-between items-start z-10 relative">
+                        <div>
+                            <p className="text-sm font-semibold tracking-wider text-muted-foreground uppercase mb-1">
                                 {t("focus_time")}
                             </p>
-                            <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">
+                            <h3 className="text-4xl font-bold text-foreground tracking-tight">
                                 {(() => {
                                     const totalSeconds = completedTasks.reduce((acc, t) => acc + (t.totalTimeSpent || 0), 0);
                                     const hours = (totalSeconds / 3600).toFixed(1);
                                     return `${hours}h`;
                                 })()}
-                            </p>
+                            </h3>
                         </div>
-                        <div className="h-10 w-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                            <Clock className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                        <div className="h-12 w-12 rounded-2xl bg-blue-50 dark:bg-blue-900/30 text-blue-500 flex items-center justify-center">
+                            <Clock className="h-6 w-6" />
                         </div>
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                        {(() => {
-                            const totalSeconds = completedTasks.reduce((acc, t) => acc + (t.totalTimeSpent || 0), 0);
-                            const avgMinutes = completedTasks.length > 0 ? Math.round((totalSeconds / 60) / completedTasks.length) : 0;
-                            return `~${avgMinutes} ${t("minutes_per_task")}`;
-                        })()}
-                    </p>
+                    <div className="mt-4 flex items-center gap-2">
+                        <span className="text-xs font-medium text-muted-foreground bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-lg">
+                            {(() => {
+                                const totalSeconds = completedTasks.reduce((acc, t) => acc + (t.totalTimeSpent || 0), 0);
+                                const avgMinutes = completedTasks.length > 0 ? Math.round((totalSeconds / 60) / completedTasks.length) : 0;
+                                return `~${avgMinutes}m / task`;
+                            })()}
+                        </span>
+                    </div>
                 </Card>
 
-                {/* Streak Card */}
-                <Card className="p-4 bg-gradient-to-br from-orange-50 to-white dark:from-orange-950/20 dark:to-slate-900 border-orange-200/50 dark:border-orange-900/50 hover:shadow-md transition-shadow">
-                    <div className="flex items-start justify-between mb-3">
-                        <div className="flex-1">
-                            <p className="text-xs font-medium text-muted-foreground mb-1">
-                                {t("streak")}
+                {/* Task Completion Card */}
+                <Card className="p-6 bg-white dark:bg-slate-900 border-none shadow-sm rounded-3xl relative overflow-hidden group hover:shadow-md transition-all duration-300">
+                    <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <div className="h-24 w-24 bg-emerald-500 rounded-full blur-3xl" />
+                    </div>
+
+                    <div className="flex justify-between items-start z-10 relative">
+                        <div>
+                            <p className="text-sm font-semibold tracking-wider text-muted-foreground uppercase mb-1">
+                                {t("tasks")}
                             </p>
-                            <p className="text-3xl font-bold text-orange-600 dark:text-orange-400 flex items-center gap-2">
-                                {streak}
-                                <Flame className="h-6 w-6 text-orange-500" />
-                            </p>
+                            <h3 className="text-4xl font-bold text-foreground tracking-tight">
+                                {completedTasks.length}/{totalTasks}
+                            </h3>
                         </div>
-                        <div className="text-4xl">
-                            🔥
+                        <div className="h-12 w-12 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-500 flex items-center justify-center">
+                            <CheckCircle2 className="h-6 w-6" />
                         </div>
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                        {streak > 0 ? t("keep_it_up") : t("start_streak")}
-                    </p>
+                    <div className="mt-4 w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                        <div
+                            className="bg-emerald-500 h-full rounded-full transition-all duration-500"
+                            style={{ width: `${completionRate}%` }}
+                        />
+                    </div>
+                </Card>
+
+                {/* Streak/OKR Card */}
+                <Card className="p-6 bg-white dark:bg-slate-900 border-none shadow-sm rounded-3xl relative overflow-hidden group hover:shadow-md transition-all duration-300">
+                    <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <div className="h-24 w-24 bg-orange-500 rounded-full blur-3xl" />
+                    </div>
+
+                    <div className="flex justify-between items-start z-10 relative">
+                        <div>
+                            <p className="text-sm font-semibold tracking-wider text-muted-foreground uppercase mb-1">
+                                {t("streak")}
+                            </p>
+                            <h3 className="text-4xl font-bold text-foreground tracking-tight flex items-center gap-2">
+                                {streak}
+                                <span className="text-lg text-muted-foreground font-normal">days</span>
+                            </h3>
+                        </div>
+                        <div className="h-12 w-12 rounded-2xl bg-orange-50 dark:bg-orange-900/30 text-orange-500 flex items-center justify-center">
+                            <Flame className="h-6 w-6" />
+                        </div>
+                    </div>
+                    <div className="mt-4 flex items-center gap-2">
+                        <span className="text-xs font-medium text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/30 px-2 py-1 rounded-lg flex items-center gap-1">
+                            {streak > 0 ? t("keep_it_up") : t("start_streak")}
+                        </span>
+                    </div>
                 </Card>
             </div>
         </div>

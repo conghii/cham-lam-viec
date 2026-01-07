@@ -6,6 +6,7 @@ import { useLanguage } from "@/components/shared/language-context"
 import { getCurrentUser, updateUserProfile } from "@/lib/firebase/auth"
 import { getDailyWinsHistory, DailyWin, updateMemberName, subscribeToUserPosts, type Post } from "@/lib/firebase/firestore"
 import { uploadFile } from "@/lib/firebase/storage"
+import { ThreeWins } from "@/components/dashboard/three-wins"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -181,13 +182,12 @@ export default function ProfilePage() {
                                                 <AvatarImage src={previewUrl || user.photoURL || "/avatars/01.png"} />
                                                 <AvatarFallback>{user.email?.[0].toUpperCase()}</AvatarFallback>
                                             </Avatar>
-                                            <div className="flex-1">
+                                            <div className="relative">
                                                 <Input
                                                     type="file"
                                                     accept="image/*"
                                                     className="hidden"
                                                     id="avatar-upload"
-                                                    onChange={handleFileSelect}
                                                 />
                                                 <Button
                                                     variant="outline"
@@ -241,7 +241,10 @@ export default function ProfilePage() {
 
 
 
-                <TabsContent value="overview">
+                <TabsContent value="overview" className="space-y-6">
+                    {/* 3 Wins Today */}
+                    <ThreeWins />
+
                     {/* Stats / 3 Wins History */}
                     <div className="grid gap-8 md:grid-cols-3">
                         {/* Main History Column */}
