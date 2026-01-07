@@ -126,6 +126,7 @@ import { TagSelector } from "@/components/dashboard/tag-selector";
 import { AssigneeDisplay } from "@/components/dashboard/assignee-display";
 import { subscribeToGroups, type Group } from "@/lib/firebase/firestore";
 import { toast } from "sonner";
+import { useLanguage } from "@/components/shared/language-context";
 
 // Default tags if none exist
 const defaultTags: Tag[] = [
@@ -220,6 +221,7 @@ function TaskCard({
     onCreateTag,
     isDragging,
 }: TaskCardProps) {
+    const { t } = useLanguage()
     const priorityStyle =
         priorityConfig[task.priority as keyof typeof priorityConfig] ||
         priorityConfig.medium;
@@ -487,7 +489,7 @@ function TaskCard({
                                 <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-1">
                                     <span className="flex items-center gap-1">
                                         <div className="h-1.5 w-1.5 rounded-full bg-primary/40"></div>
-                                        Subtasks
+                                        {t("subtasks")}
                                     </span>
                                     <span>{subtasksCompleted}/{subtasksTotal}</span>
                                 </div>
@@ -548,7 +550,7 @@ function TaskCard({
                                         openDetails(true);
                                     }}
                                 >
-                                    <Edit2 className="h-4 w-4 mr-2" /> Edit Task
+                                    <Edit2 className="h-4 w-4 mr-2" /> {t("edit_task")}
                                 </DropdownMenuItem>
                                 {columns && onMove && !dragHandleProps && (
                                     <>
@@ -558,7 +560,7 @@ function TaskCard({
                                                 key={col.id}
                                                 onClick={() => onMove(task.id, col.id)}
                                             >
-                                                Move to {col.title}
+                                                {t("move_to")} {col.title}
                                             </DropdownMenuItem>
                                         ))}
                                         <DropdownMenuSeparator />
@@ -571,7 +573,7 @@ function TaskCard({
                                         deleteTask(task.id);
                                     }}
                                 >
-                                    <Trash2 className="h-4 w-4 mr-2" /> Delete
+                                    <Trash2 className="h-4 w-4 mr-2" /> {t("delete_task")}
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
@@ -611,7 +613,7 @@ function TaskCard({
                                     In{" "}
                                     <Badge variant="secondary" className="rounded-sm font-normal">
                                         {columns?.find((c) => c.id === task.status)?.title ||
-                                            "Backlog"}
+                                            t("backlog")}
                                     </Badge>
                                 </div>
                             </div>
@@ -647,7 +649,7 @@ function TaskCard({
                                 <div className="flex flex-wrap gap-6 p-4 bg-muted/20 rounded-xl border border-border/40">
                                     <div className="space-y-1.5">
                                         <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                            Status
+                                            {t("status")}
                                         </Label>
                                         {isEditMode ? (
                                             <Select
@@ -668,13 +670,13 @@ function TaskCard({
                                         ) : (
                                             <div className="flex items-center h-8 text-sm font-medium">
                                                 {columns?.find((c) => c.id === task.status)?.title ||
-                                                    "Backlog"}
+                                                    t("backlog")}
                                             </div>
                                         )}
                                     </div>
                                     <div className="space-y-1.5">
                                         <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                            Due Date
+                                            {t("due_date")}
                                         </Label>
                                         {isEditMode ? (
                                             <Popover>
@@ -688,7 +690,7 @@ function TaskCard({
                                                         )}
                                                     >
                                                         <CalendarIcon className="mr-2 h-3 w-3" />
-                                                        {date ? format(date, "MMM d") : "Set date"}
+                                                        {date ? format(date, "MMM d") : t("set_date")}
                                                     </Button>
                                                 </PopoverTrigger>
                                                 <PopoverContent className="w-auto p-0">
@@ -706,14 +708,14 @@ function TaskCard({
                                                 {date ? (
                                                     format(date, "MMM d, yyyy")
                                                 ) : (
-                                                    <span className="text-foreground">No due date</span>
+                                                    <span className="text-foreground">{t("no_due_date")}</span>
                                                 )}
                                             </div>
                                         )}
                                     </div>
                                     <div className="space-y-1.5">
                                         <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                            Priority
+                                            {t("priority")}
                                         </Label>
                                         {isEditMode ? (
                                             <Select
@@ -745,7 +747,7 @@ function TaskCard({
                                     </div>
                                     <div className="space-y-1.5">
                                         <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                            Tag
+                                            {t("tag")}
                                         </Label>
                                         {isEditMode ? (
                                             <TagSelector
@@ -789,7 +791,7 @@ function TaskCard({
                                     </div>
                                     <div className="space-y-1.5">
                                         <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                            Linked Goal
+                                            {t("linked_goal")}
                                         </Label>
                                         {isEditMode ? (
                                             <Select
@@ -1173,6 +1175,7 @@ interface TasksViewProps {
 }
 
 export function TasksView({ compact = false, className }: TasksViewProps) {
+    const { t } = useLanguage()
     const [tasks, setTasks] = useState<Task[]>([]);
     const [columns, setColumns] = useState<TaskColumn[]>([]);
     const [newTaskTitle, setNewTaskTitle] = useState("");
@@ -1516,10 +1519,10 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
                         {!compact && (
                             <>
                                 <h2 className="text-3xl font-extrabold tracking-tight text-foreground">
-                                    Tasks
+                                    {t("tasks_title")}
                                 </h2>
                                 <p className="text-muted-foreground mt-1 text-lg">
-                                    Manage your daily tasks and track your progress.
+                                    {t("tasks_description")}
                                 </p>
                             </>
                         )}
@@ -1532,13 +1535,13 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
                     >
                         <TabsList className="grid w-full md:w-[300px] grid-cols-3">
                             <TabsTrigger value="list">
-                                <LayoutList className="h-4 w-4 mr-2" /> List
+                                <LayoutList className="h-4 w-4 mr-2" /> {t("list_view")}
                             </TabsTrigger>
                             <TabsTrigger value="board">
-                                <Kanban className="h-4 w-4 mr-2" /> Board
+                                <Kanban className="h-4 w-4 mr-2" /> {t("board_view")}
                             </TabsTrigger>
                             <TabsTrigger value="matrix">
-                                <Grid2X2 className="h-4 w-4 mr-2" /> Matrix
+                                <Grid2X2 className="h-4 w-4 mr-2" /> {t("matrix_view")}
                             </TabsTrigger>
                         </TabsList>
                     </Tabs>
@@ -1561,14 +1564,14 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
                     >
                         <div className="flex-1 w-full">
                             <Input
-                                placeholder="What needs to be done?"
+                                placeholder={t("add_task_placeholder")}
                                 value={newTaskTitle}
                                 onChange={(e) => setNewTaskTitle(e.target.value)}
                                 className="h-12 border-transparent bg-transparent text-lg focus-visible:ring-0 px-4 placeholder:text-muted-foreground/60 dark:text-slate-100 shadow-none"
                             />
                         </div>
 
-                        <div className="flex items-center gap-2 w-full md:w-auto px-2">
+                        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto px-2">
                             <Popover>
                                 <PopoverTrigger asChild>
                                     <Button
@@ -1584,7 +1587,7 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
                                         {newTaskDate ? (
                                             format(newTaskDate, "MMM d")
                                         ) : (
-                                            <span>No Date</span>
+                                            <span>{t("no_date")}</span>
                                         )}
                                     </Button>
                                 </PopoverTrigger>
@@ -2174,7 +2177,7 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
 
                         {/* Matrix View */}
                         {view === "matrix" && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-[600px]">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-auto min-h-[600px]">
                                 {/* Q1: Do First (Urgent & Important) */}
                                 <Droppable droppableId="matrix-q1" type="MATRIX_TASK">
                                     {(provided, snapshot) => (

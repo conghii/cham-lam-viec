@@ -31,26 +31,29 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { createOrganization } from "@/lib/firebase/firestore"
+import { useLanguage } from "@/components/shared/language-context"
 
-const mainItems = [
-    { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
-    { icon: CheckSquare, label: "Tasks", href: "/dashboard/tasks" },
-    { icon: Target, label: "Goals", href: "/dashboard/goals" },
-    { icon: Users, label: "Team", href: "/dashboard/team" },
-    { icon: Zap, label: "MVS", href: "/dashboard/mvs" },
-]
 
-const utilityItems = [
-    { icon: Share2, label: "Sharing", href: "/dashboard/sharing" },
-    { icon: Timer, label: "Focus", href: "/dashboard/focus" },
-    { icon: StickyNote, label: "Notes", href: "/dashboard/notes" },
-    { icon: PenTool, label: "Blog", href: "/dashboard/blog" },
-    { icon: BookOpen, label: "Planner", href: "/dashboard/planner" },
-]
-
-export function Sidebar({ isCollapsed = false }: { isCollapsed?: boolean }) {
+export function Sidebar({ isCollapsed = false, className }: { isCollapsed?: boolean, className?: string }) {
     const pathname = usePathname()
     const router = useRouter()
+    const { t } = useLanguage()
+
+    const mainItems = [
+        { icon: LayoutDashboard, label: t("dashboard"), href: "/dashboard" },
+        { icon: CheckSquare, label: t("tasks"), href: "/dashboard/tasks" },
+        { icon: Target, label: t("goals"), href: "/dashboard/goals" },
+        { icon: Users, label: t("team"), href: "/dashboard/team" },
+        { icon: Zap, label: t("mvs"), href: "/dashboard/mvs" },
+    ]
+
+    const utilityItems = [
+        { icon: Share2, label: t("sharing"), href: "/dashboard/sharing" },
+        { icon: Timer, label: t("focus"), href: "/dashboard/focus" },
+        { icon: StickyNote, label: t("notes"), href: "/dashboard/notes" },
+        { icon: PenTool, label: t("blog"), href: "/dashboard/blog" },
+        { icon: BookOpen, label: t("planner"), href: "/dashboard/planner" },
+    ]
 
     const [orgs, setOrgs] = useState<Organization[]>([])
     const [currentOrg, setCurrentOrg] = useState<Organization | null>(null)
@@ -150,7 +153,10 @@ export function Sidebar({ isCollapsed = false }: { isCollapsed?: boolean }) {
     return (
         <aside
             data-collapsed={isCollapsed}
-            className="group hidden h-screen w-full flex-col border-r border-border/40 dark:border-slate-800 bg-card/50 dark:bg-slate-950 backdrop-blur-xl md:flex data-[collapsed=true]:w-[50px] transition-all duration-300"
+            className={cn(
+                "group hidden h-screen w-full flex-col border-r border-border/40 dark:border-slate-800 bg-card/50 dark:bg-slate-950 backdrop-blur-xl md:flex data-[collapsed=true]:w-[50px] transition-all duration-300",
+                className
+            )}
         >
             <div className="flex h-16 items-center px-4 border-b border-border/40 dark:border-slate-800">
                 <DropdownMenu>
@@ -175,7 +181,7 @@ export function Sidebar({ isCollapsed = false }: { isCollapsed?: boolean }) {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start" className="w-[240px]">
                         <div className="px-2 py-1.5">
-                            <DropdownMenuLabel className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Personal Space</DropdownMenuLabel>
+                            <DropdownMenuLabel className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">{t("personal_space")}</DropdownMenuLabel>
                         </div>
                         {orgs.filter(o => o.isPersonal).map((org) => (
                             <DropdownMenuItem key={org.id} onClick={() => handleSwitchOrg(org.id)} className="gap-2 cursor-pointer py-2">
@@ -184,7 +190,7 @@ export function Sidebar({ isCollapsed = false }: { isCollapsed?: boolean }) {
                                 </div>
                                 <div className="flex-1 truncate">
                                     <p className="text-sm font-medium truncate">{org.name}</p>
-                                    <p className="text-[10px] text-muted-foreground">Personal Workspace</p>
+                                    <p className="text-[10px] text-muted-foreground">{t("personal_space")}</p>
                                 </div>
                                 {currentOrg?.id === org.id && <Check className="h-3.5 w-3.5 text-primary ml-auto" />}
                             </DropdownMenuItem>
@@ -193,7 +199,7 @@ export function Sidebar({ isCollapsed = false }: { isCollapsed?: boolean }) {
                         <DropdownMenuSeparator />
 
                         <div className="px-2 py-1.5">
-                            <DropdownMenuLabel className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Shared Teams</DropdownMenuLabel>
+                            <DropdownMenuLabel className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">{t("shared_teams")}</DropdownMenuLabel>
                         </div>
                         {orgs.filter(o => !o.isPersonal).map((org) => {
                             const isOrgOwner = org.ownerId === user?.uid;
@@ -212,12 +218,12 @@ export function Sidebar({ isCollapsed = false }: { isCollapsed?: boolean }) {
                         })}
 
                         {orgs.filter(o => !o.isPersonal).length === 0 && (
-                            <p className="text-[10px] text-muted-foreground px-4 py-2 italic">No shared teams yet</p>
+                            <p className="text-[10px] text-muted-foreground px-4 py-2 italic">{t("no_shared_teams")}</p>
                         )}
 
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onSelect={() => setIsCreateTeamOpen(true)} className="cursor-pointer">
-                            <Plus className="h-4 w-4 mr-2" /> CREATE NEW TEAM
+                            <Plus className="h-4 w-4 mr-2" /> {t("create_new_team").toUpperCase()}
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -225,7 +231,7 @@ export function Sidebar({ isCollapsed = false }: { isCollapsed?: boolean }) {
                 <Dialog open={isCreateTeamOpen} onOpenChange={setIsCreateTeamOpen}>
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle>Create New Team</DialogTitle>
+                            <DialogTitle>{t("create_new_team")}</DialogTitle>
                             <DialogDescription>Create a shared workspace to collaborate with others.</DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4 py-4">

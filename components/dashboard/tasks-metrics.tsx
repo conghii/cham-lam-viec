@@ -12,6 +12,7 @@ import {
 import { Calendar, TrendingUp, Clock, Flame, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { isToday, isThisWeek, isThisMonth, startOfWeek, endOfWeek, differenceInDays } from "date-fns";
+import { useLanguage } from "@/components/shared/language-context";
 
 interface TasksMetricsProps {
     tasks: Task[];
@@ -115,36 +116,32 @@ export function TasksMetrics({ tasks, timeFilter, onTimeFilterChange }: TasksMet
         return streak;
     };
 
-    const streak = calculateStreak();
+    const { t } = useLanguage();
 
-    const timeFilterLabels = {
-        today: "Hôm nay",
-        week: "Tuần này",
-        month: "Tháng này",
-    };
+    const streak = calculateStreak();
 
     return (
         <div className="space-y-4">
             {/* Header with Time Filter */}
             <div className="flex items-center justify-between">
-                <h2 className="text-lg font-bold text-foreground">Tổng quan</h2>
+                <h2 className="text-lg font-bold text-foreground">{t("overview")}</h2>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" size="sm" className="gap-2">
                             <Calendar className="h-4 w-4" />
-                            {timeFilterLabels[timeFilter]}
+                            {t(timeFilter)}
                             <ChevronDown className="h-4 w-4 opacity-50" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => onTimeFilterChange("today")}>
-                            Hôm nay
+                            {t("today")}
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => onTimeFilterChange("week")}>
-                            Tuần này
+                            {t("week")}
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => onTimeFilterChange("month")}>
-                            Tháng này
+                            {t("month")}
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -157,7 +154,7 @@ export function TasksMetrics({ tasks, timeFilter, onTimeFilterChange }: TasksMet
                     <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">
                             <p className="text-xs font-medium text-muted-foreground mb-1">
-                                Tỷ lệ hoàn thành
+                                {t("completion_rate")}
                             </p>
                             <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
                                 {completionRate}%
@@ -191,7 +188,7 @@ export function TasksMetrics({ tasks, timeFilter, onTimeFilterChange }: TasksMet
                         </div>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                        {completedTasks.length} / {totalTasks} tasks
+                        {completedTasks.length} / {totalTasks} {t("tasks").toLowerCase()}
                     </p>
                 </Card>
 
@@ -200,7 +197,7 @@ export function TasksMetrics({ tasks, timeFilter, onTimeFilterChange }: TasksMet
                     <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">
                             <p className="text-xs font-medium text-muted-foreground mb-1">
-                                Năng suất
+                                {t("productivity")}
                             </p>
                             <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
                                 {completedTasks.length}
@@ -214,10 +211,10 @@ export function TasksMetrics({ tasks, timeFilter, onTimeFilterChange }: TasksMet
                         "text-xs font-medium flex items-center gap-1",
                         velocityChange >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
                     )}>
-                        {velocityChange >= 0 ? "↑" : "↓"} {Math.abs(velocityChange)}% vs {
-                            timeFilter === "today" ? "hôm qua" :
-                                timeFilter === "week" ? "tuần trước" :
-                                    "tháng trước"
+                        {velocityChange >= 0 ? "↑" : "↓"} {Math.abs(velocityChange)}% {
+                            timeFilter === "today" ? t("vs_yesterday") :
+                                timeFilter === "week" ? t("vs_last_week") :
+                                    t("vs_last_month")
                         }
                     </p>
                 </Card>
@@ -227,7 +224,7 @@ export function TasksMetrics({ tasks, timeFilter, onTimeFilterChange }: TasksMet
                     <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">
                             <p className="text-xs font-medium text-muted-foreground mb-1">
-                                Thời gian tập trung
+                                {t("focus_time")}
                             </p>
                             <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">
                                 {(() => {
@@ -245,7 +242,7 @@ export function TasksMetrics({ tasks, timeFilter, onTimeFilterChange }: TasksMet
                         {(() => {
                             const totalSeconds = completedTasks.reduce((acc, t) => acc + (t.totalTimeSpent || 0), 0);
                             const avgMinutes = completedTasks.length > 0 ? Math.round((totalSeconds / 60) / completedTasks.length) : 0;
-                            return `~${avgMinutes} phút / task`;
+                            return `~${avgMinutes} ${t("minutes_per_task")}`;
                         })()}
                     </p>
                 </Card>
@@ -255,7 +252,7 @@ export function TasksMetrics({ tasks, timeFilter, onTimeFilterChange }: TasksMet
                     <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">
                             <p className="text-xs font-medium text-muted-foreground mb-1">
-                                Chuỗi ngày
+                                {t("streak")}
                             </p>
                             <p className="text-3xl font-bold text-orange-600 dark:text-orange-400 flex items-center gap-2">
                                 {streak}
@@ -267,7 +264,7 @@ export function TasksMetrics({ tasks, timeFilter, onTimeFilterChange }: TasksMet
                         </div>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                        {streak > 0 ? "Tiếp tục phát huy!" : "Bắt đầu streak mới!"}
+                        {streak > 0 ? t("keep_it_up") : t("start_streak")}
                     </p>
                 </Card>
             </div>

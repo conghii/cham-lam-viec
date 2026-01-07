@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
     try {
-        const { goal, deadline, hoursPerDay, interviewContext, deepDiveData } = await req.json();
+        const { goal, deadline, hoursPerDay, interviewContext, deepDiveData, language } = await req.json();
 
         const apiKey = process.env.GEMINI_API_KEY;
         if (!apiKey) {
@@ -27,12 +27,15 @@ export async function POST(req: Request) {
             `;
         }
 
+        const targetLanguage = language === 'vi' ? 'Vietnamese (Tiếng Việt)' : 'English';
+
         const prompt = `
             You are a world-class Strategist, Project Manager, and Domain Expert.
             
             **USER GOAL**: "${goal}"
             **DEADLINE**: ${deadline}
             **DAILY BUDGET**: ${hoursPerDay} hours/day
+            **OUTPUT LANGUAGE**: ${targetLanguage}
 
             **INTERVIEW INSIGHTS (CONTEXT)**:
             ${interviewContext || "No basic interview context."}
@@ -45,6 +48,11 @@ export async function POST(req: Request) {
             3.  **Proof of Work**: Define actionable "Key Results".
             4.  **Adapt to Level**: If the user is a Beginner, focus on fundamentals. If Advanced, focus on optimization.
             5.  **Respect Constraints**: Account for known blockers and availability.
+
+            **IMPORTANT LANGUAGE RULE**:
+            - THE TEXT CONTENT MUST BE IN ${targetLanguage}.
+            - The JSON KEYS (like "phases", "title", "tasks") must remain in ENGLISH.
+            - Only the VALUES should be in ${targetLanguage}.
 
             **OUTPUT RULES**:
             - Return ONLY a valid JSON object.

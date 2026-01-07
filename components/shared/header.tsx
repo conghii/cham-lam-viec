@@ -5,8 +5,10 @@ import Link from "next/link"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Bell, Users } from "lucide-react"
+import { Bell, Users, Menu } from "lucide-react"
 import { ModeToggle } from "@/components/theme-toggle"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Sidebar } from "@/components/shared/sidebar"
 
 import { auth, logOut } from "@/lib/firebase/auth"
 import { subscribeToUserProfile, subscribeToChats, type Chat } from "@/lib/firebase/firestore"
@@ -118,7 +120,21 @@ export function Header() {
     const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || "U"
 
     return (
-        <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b dark:border-slate-800 bg-background/95 dark:bg-slate-950/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-6 transition-colors duration-300">
+        <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b dark:border-slate-800 bg-background/95 dark:bg-slate-950/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 md:px-6 transition-colors duration-300">
+            {/* Mobile Sidebar Trigger */}
+            <div className="md:hidden">
+                <Sheet>
+                    <SheetTrigger asChild>
+                        <Button variant="ghost" size="icon" className="-ml-2">
+                            <Menu className="h-5 w-5" />
+                        </Button>
+                    </SheetTrigger>
+                    <SheetContent side="left" className="p-0 border-r-0 w-[85vw] max-w-[300px]">
+                        <Sidebar className="flex h-full w-full border-none bg-transparent" />
+                    </SheetContent>
+                </Sheet>
+            </div>
+
             <div className="flex flex-1 flex-col justify-center py-2">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
                     <span>{greeting}, {displayName}</span>

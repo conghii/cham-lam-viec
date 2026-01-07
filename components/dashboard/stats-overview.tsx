@@ -77,7 +77,7 @@ export function StatsOverview() {
     const completedGoalsCount = goals.filter(g => g.progress === 100).length;
 
     return (
-        <div className="flex items-center justify-center gap-24 px-1 py-2 w-full">
+        <div className="flex flex-wrap items-center justify-around gap-6 px-1 py-4 w-full">
             {/* Active Tasks */}
             <div className="flex items-center gap-3">
                 <div className="h-8 w-8 rounded-full bg-blue-500/10 flex items-center justify-center">
@@ -96,7 +96,7 @@ export function StatsOverview() {
                 </div>
             </div>
 
-            <div className="h-8 w-px bg-border/60" />
+            <div className="hidden md:block h-8 w-px bg-border/60" />
 
             {/* Active Goals */}
             <div className="flex items-center gap-3">
@@ -114,7 +114,7 @@ export function StatsOverview() {
                 </div>
             </div>
 
-            <div className="h-8 w-px bg-border/60" />
+            <div className="hidden md:block h-8 w-px bg-border/60" />
 
             {/* Completion Rate */}
             <div className="flex items-center gap-3">

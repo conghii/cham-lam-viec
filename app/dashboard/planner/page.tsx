@@ -10,6 +10,7 @@ import { Trash2, History, Wand2, Sparkles, MoveRight, Calendar as CalendarIcon, 
 import { PlanDetailsDialog } from "@/components/planner/plan-details-dialog"
 import { DeepDiveFlow, type DeepDiveData } from "@/components/planner/deep-dive-flow"
 import { Switch } from "@/components/ui/switch"
+import { useLanguage } from "@/components/shared/language-context"
 import { Label } from "@/components/ui/label"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -163,7 +164,8 @@ export default function PlannerPage() {
                     deadline: dateInput ? format(dateInput, 'yyyy-MM-dd') : "As soon as possible",
                     hoursPerDay: parseInt(hoursInput) || 2,
                     interviewContext: context,
-                    deepDiveData: deepDiveData // Pass this to the API
+                    deepDiveData: deepDiveData, // Pass this to the API
+                    language: language // Pass language
                 })
             })
 

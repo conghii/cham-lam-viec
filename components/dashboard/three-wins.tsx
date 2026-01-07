@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { CheckCircle2, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { saveDailyWins, subscribeToTodayWins } from "@/lib/firebase/firestore"
+import { useLanguage } from "@/components/shared/language-context"
 
 // Simple debounce
 function useDebounce<T>(value: T, delay: number): T {
@@ -23,6 +24,7 @@ function useDebounce<T>(value: T, delay: number): T {
 }
 
 export function ThreeWins() {
+    const { t } = useLanguage()
     const [wins, setWins] = useState(["", "", ""])
     const [loading, setLoading] = useState(true)
 
@@ -76,12 +78,12 @@ export function ThreeWins() {
         <Card className="h-full flex flex-col bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-lg font-bold text-foreground/80 dark:text-white">
-                    3 Wins for Today
+                    {t("three_wins_title")}
                 </CardTitle>
                 <div className="flex items-center gap-2">
                     {showSaved && (
                         <span className="text-xs font-medium text-green-600 flex items-center gap-1 animate-in fade-in duration-300">
-                            <CheckCircle2 className="h-3 w-3" /> Saved to Profile
+                            <CheckCircle2 className="h-3 w-3" /> {t("saved_to_profile")}
                         </span>
                     )}
                     <Button
@@ -91,7 +93,7 @@ export function ThreeWins() {
                         className="h-8 px-3 text-xs"
                     >
                         {loading ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : null}
-                        Save
+                        {t("save")}
                     </Button>
                 </div>
             </CardHeader>
@@ -106,7 +108,7 @@ export function ThreeWins() {
                         <Input
                             value={win}
                             onChange={(e) => handleWinChange(index, e.target.value)}
-                            placeholder={`Win #${index + 1}`}
+                            placeholder={`${t("win_placeholder")}${index + 1}`}
                             className="flex-1 border-none bg-secondary/50 dark:bg-slate-800/50 shadow-none focus-visible:ring-1 dark:text-slate-200 dark:placeholder:text-slate-600"
                         />
                         <CheckCircle2 className={cn(

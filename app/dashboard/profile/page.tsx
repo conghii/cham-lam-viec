@@ -1,6 +1,8 @@
 "use client"
 
+
 import { useEffect, useState } from "react"
+import { useLanguage } from "@/components/shared/language-context"
 import { getCurrentUser, updateUserProfile } from "@/lib/firebase/auth"
 import { getDailyWinsHistory, DailyWin, updateMemberName, subscribeToUserPosts, type Post } from "@/lib/firebase/firestore"
 import { uploadFile } from "@/lib/firebase/storage"
@@ -34,6 +36,7 @@ interface UserProfile {
 }
 
 export default function ProfilePage() {
+    const { t } = useLanguage()
     const [user, setUser] = useState<UserProfile | null>(null)
     const [history, setHistory] = useState<DailyWin[]>([])
     const [posts, setPosts] = useState<Post[]>([])
@@ -232,9 +235,14 @@ export default function ProfilePage() {
             {/* Content Tabs */}
             <Tabs defaultValue="overview" className="w-full">
                 <TabsList className="grid w-full grid-cols-2 mb-8 items-center bg-transparent border-b rounded-none h-auto p-0">
-                    <TabsTrigger value="overview" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-8 py-3 text-base">Overview</TabsTrigger>
-                    <TabsTrigger value="posts" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-8 py-3 text-base">Posts</TabsTrigger>
+                    <TabsTrigger value="overview" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-8 py-3 text-base">{t("overview")}</TabsTrigger>
+                    <TabsTrigger value="posts" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-8 py-3 text-base">{t("posts")}</TabsTrigger>
+                    <TabsTrigger value="settings" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-8 py-3 text-base">{t("settings")}</TabsTrigger>
                 </TabsList>
+
+                <TabsContent value="settings">
+                    <SettingsTab />
+                </TabsContent>
 
                 <TabsContent value="overview">
                     {/* Stats / 3 Wins History */}
@@ -245,7 +253,7 @@ export default function ProfilePage() {
                                 <div className="h-10 w-10 rounded-full bg-yellow-500/10 flex items-center justify-center text-yellow-500">
                                     <Trophy className="h-5 w-5" />
                                 </div>
-                                <h2 className="text-2xl font-semibold">Victory Log</h2>
+                                <h2 className="text-2xl font-semibold">{t("victory_log")}</h2>
                             </div>
 
                             <ScrollArea className="h-[500px] pr-4">
@@ -319,6 +327,48 @@ export default function ProfilePage() {
                     </div>
                 </TabsContent>
             </Tabs>
+        </div>
+    )
+}
+
+function SettingsTab() {
+    const { language, setLanguage, t } = useLanguage()
+
+    return (
+        <div className="max-w-2xl mx-auto space-y-6">
+            <Card>
+                <CardHeader>
+                    <CardTitle>{t("preferences")}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                            <Label className="text-base">{t("system_language")}</Label>
+                            <p className="text-sm text-muted-foreground">{t("select_language_desc")}</p>
+                        </div>
+                        <div className="flex items-center bg-secondary p-1 rounded-lg">
+                            <button
+                                onClick={() => setLanguage("en")}
+                                className={cn(
+                                    "px-4 py-2 text-sm font-medium rounded-md transition-all",
+                                    language === "en" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                                )}
+                            >
+                                {t("english")}
+                            </button>
+                            <button
+                                onClick={() => setLanguage("vi")}
+                                className={cn(
+                                    "px-4 py-2 text-sm font-medium rounded-md transition-all",
+                                    language === "vi" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                                )}
+                            >
+                                {t("vietnamese")}
+                            </button>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
         </div>
     )
 }
