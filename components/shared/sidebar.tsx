@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { logOut, auth } from "@/lib/firebase/auth"
 import { useState, useEffect } from "react"
-import { Organization, subscribeToUserOrganizations, getUserOrganization, switchOrganization, subscribeToUserProfile, subscribeToTasks, type Task } from "@/lib/firebase/firestore"
+import { Organization, subscribeToUserOrganizations, getUserOrganization, switchOrganization, subscribeToUserProfile, subscribeToTasks, type Task, subscribeToTaskColumns, type TaskColumn } from "@/lib/firebase/firestore"
 import { isToday } from "date-fns"
 import { toast } from "sonner"
 
@@ -59,6 +59,10 @@ export function Sidebar({ isCollapsed = false, className }: { isCollapsed?: bool
     const [currentOrg, setCurrentOrg] = useState<Organization | null>(null)
     const [user, setUser] = useState(auth.currentUser)
     const [userData, setUserData] = useState<any>(null)
+
+    // Badge State
+    const [tasks, setTasks] = useState<Task[]>([])
+    const [columns, setColumns] = useState<TaskColumn[]>([])
     const [todayTaskCount, setTodayTaskCount] = useState(0)
 
     // Create Team Dialog State
@@ -79,10 +83,35 @@ export function Sidebar({ isCollapsed = false, className }: { isCollapsed?: bool
         }
     };
 
+    // Effect to calculate badget count
+    useEffect(() => {
+        if (tasks.length === 0 || columns.length === 0) {
+            setTodayTaskCount(0)
+            return
+        }
+
+        const todayCol = columns.find(c => c.title === "Today")
+        if (todayCol) {
+            const count = tasks.filter(t => t.status === todayCol.id && !t.completed).length
+            setTodayTaskCount(count)
+        } else {
+            // Fallback to date-based if no "Today" column found (though explicit column check is preferred)
+            const count = tasks.filter(t =>
+                !t.completed &&
+                t.dueDate &&
+                (isToday(new Date(t.dueDate)) || new Date(t.dueDate) < new Date())
+            ).length;
+            setTodayTaskCount(count);
+        }
+
+    }, [tasks, columns])
+
+
     useEffect(() => {
         let unsubOrgs: () => void = () => { }
         let unsubProfile: () => void = () => { }
         let unsubTasks: () => void = () => { }
+        let unsubColumns: () => void = () => { }
 
         const unsubscribeAuth = auth.onAuthStateChanged(async (u) => {
             setUser(u)
@@ -102,19 +131,22 @@ export function Sidebar({ isCollapsed = false, className }: { isCollapsed?: bool
                     setUserData(data);
                 });
 
-                // 4. Subscribe to Tasks for Badge
-                unsubTasks = subscribeToTasks((tasks: Task[]) => {
-                    const count = tasks.filter(t =>
-                        !t.completed &&
-                        t.dueDate &&
-                        (isToday(new Date(t.dueDate)) || new Date(t.dueDate) < new Date()) // Count today and overdue
-                    ).length;
-                    setTodayTaskCount(count);
+                // 4. Subscribe to Tasks
+                unsubTasks = subscribeToTasks((data) => {
+                    setTasks(data)
                 });
+
+                // 5. Subscribe to Columns
+                unsubColumns = subscribeToTaskColumns((data) => {
+                    setColumns(data)
+                });
+
             } else {
                 setOrgs([]);
                 setCurrentOrg(null);
                 setUserData(null);
+                setTasks([]);
+                setColumns([]);
                 setTodayTaskCount(0);
             }
         })
@@ -124,6 +156,7 @@ export function Sidebar({ isCollapsed = false, className }: { isCollapsed?: bool
             unsubOrgs();
             unsubProfile();
             unsubTasks();
+            unsubColumns();
         }
     }, [])
 
@@ -266,7 +299,7 @@ export function Sidebar({ isCollapsed = false, className }: { isCollapsed?: bool
                                 {!isCollapsed && (
                                     <div className="flex-1 flex items-center justify-between">
                                         <span>{item.label}</span>
-                                        {item.label === "Tasks" && todayTaskCount > 0 && (
+                                        {item.href === "/dashboard/tasks" && todayTaskCount > 0 && (
                                             <span className="h-5 w-5 rounded-full bg-rose-500 text-[10px] font-bold text-white flex items-center justify-center">
                                                 {todayTaskCount > 99 ? '99+' : todayTaskCount}
                                             </span>
