@@ -129,6 +129,7 @@ import { AssigneeDisplay } from "@/components/dashboard/assignee-display";
 import { subscribeToGroups, type Group } from "@/lib/firebase/firestore";
 import { toast } from "sonner";
 import { useLanguage } from "@/components/shared/language-context";
+import { CreateTaskDialog } from "@/components/dashboard/create-task-dialog";
 
 // Default tags if none exist
 const defaultTags: Tag[] = [];
@@ -235,6 +236,8 @@ function TaskCard({
 
     // Goals State
     const [goals, setGoals] = useState<Goal[]>([]);
+
+
 
     // Subscribe to data
     useEffect(() => {
@@ -1184,6 +1187,31 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
     const [resizeContainerWidth, setResizeContainerWidth] = useState(0); // New state for container width
     const [columnWidths, setColumnWidths] = useState<Record<string, number>>({});
 
+    // Create Task Modal State
+    const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
+    const [createTaskStatus, setCreateTaskStatus] = useState<string>("backlog");
+
+    const handleCreateTaskFromModal = async (data: any) => {
+        try {
+            await addTask(
+                data.title,
+                data.tag || "general",
+                data.dueDate ? data.dueDate.toISOString() : undefined,
+                data.priority,
+                data.assigneeId || undefined, // assigneeId
+                [], // assigneeIds
+                [], // groupIds
+                createTaskStatus,
+                data.goalId
+            );
+            toast.success(t("task_created") || "Task created");
+            setIsCreateTaskOpen(false);
+        } catch (error: any) {
+            console.error("Failed to add task", error);
+            toast.success("Failed to add task");
+        }
+    };
+
     // Initialize/Sync column widths from Firestore
     useEffect(() => {
         const widths: Record<string, number> = {};
@@ -2124,8 +2152,8 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
                                                                         variant="ghost"
                                                                         className="w-full justify-center text-muted-foreground hover:text-primary hover:bg-secondary/50 h-9"
                                                                         onClick={() => {
-                                                                            setNewTaskStatus(col.id);
-                                                                            document.getElementById("main-task-input")?.focus();
+                                                                            setCreateTaskStatus(col.id);
+                                                                            setIsCreateTaskOpen(true);
                                                                         }}
                                                                     >
                                                                         <Plus className="h-4 w-4 mr-2" />
@@ -2529,6 +2557,18 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
                 )
                 }
             </div >
-        </DragDropContext >
+            {/* Create Task Dialog */}
+            <CreateTaskDialog
+                open={isCreateTaskOpen}
+                onOpenChange={setIsCreateTaskOpen}
+                initialStatus={createTaskStatus}
+                statusLabel={columns.find(c => c.id === createTaskStatus)?.title || "Backlog"}
+                onSubmit={handleCreateTaskFromModal}
+                goals={goals}
+                tags={availableTags}
+                members={members}
+            />
+        </DragDropContext>
     );
 }
+

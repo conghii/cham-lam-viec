@@ -115,7 +115,7 @@ export type MVS = {
 
 // --- Tasks ---
 
-export const addTask = async (title: string, tag: string = "general", dueDate?: string, priority: 'low' | 'medium' | 'high' = 'medium', assigneeId: string | null = null, assigneeIds: string[] = [], groupIds: string[] = [], status: string = "backlog") => {
+export const addTask = async (title: string, tag: string = "general", dueDate?: string, priority: 'low' | 'medium' | 'high' = 'medium', assigneeId: string | null = null, assigneeIds: string[] = [], groupIds: string[] = [], status: string = "backlog", goalId: string | null = null) => {
     const { getCurrentUser } = await import("./auth");
     const user = await getCurrentUser();
     if (!user) throw new Error("User not authenticated");
@@ -143,7 +143,8 @@ export const addTask = async (title: string, tag: string = "general", dueDate?: 
         subtasks: [],
         assigneeId: assigneeId || null, // Keep for backward compat for now
         assigneeIds: finalAssigneeIds,
-        groupIds
+        groupIds,
+        goalId
     });
 
     // Send notifications to assignees
@@ -2455,4 +2456,88 @@ export const getPost = async (postId: string): Promise<Post | null> => {
         console.error("Error fetching post:", error);
         return null;
     }
+};
+
+// --- Mindmaps ---
+
+export type Mindmap = {
+    id: string;
+    userId: string;
+    orgId?: string | null;
+    title: string;
+    nodes: any[];
+    edges: any[];
+    createdAt: Timestamp;
+    updatedAt: Timestamp;
+}
+
+export const addMindmap = async (title: string, nodes: any[] = [], edges: any[] = []) => {
+    const { getCurrentUser } = await import("./auth");
+    const user = await getCurrentUser();
+    if (!user) throw new Error("User not authenticated");
+
+    const userRef = doc(db, "users", user.uid);
+    const userSnap = await getDoc(userRef);
+    const orgId = userSnap.exists() ? userSnap.data().orgId : null;
+
+    await addDoc(collection(db, "mindmaps"), {
+        title,
+        nodes,
+        edges,
+        userId: user.uid,
+        orgId: orgId || null,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+    });
+};
+
+export const updateMindmap = async (mindmapId: string, data: Partial<Mindmap>) => {
+    const ref = doc(db, "mindmaps", mindmapId);
+    await updateDoc(ref, {
+        ...data,
+        updatedAt: serverTimestamp()
+    });
+};
+
+export const deleteMindmap = async (mindmapId: string) => {
+    await deleteDoc(doc(db, "mindmaps", mindmapId));
+};
+
+export const subscribeToMindmaps = (callback: (mindmaps: Mindmap[]) => void) => {
+    const user = auth.currentUser;
+    if (!user) return () => { };
+
+    let unsubscribe: () => void;
+
+    (async () => {
+        const userRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userRef);
+        const orgId = userSnap.exists() ? userSnap.data().orgId : null;
+
+        const q = orgId
+            ? query(collection(db, "mindmaps"), where("orgId", "==", orgId))
+            : query(collection(db, "mindmaps"), where("userId", "==", user.uid));
+
+        unsubscribe = onSnapshot(q, (snapshot) => {
+            const items = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            })) as Mindmap[];
+            items.sort((a, b) => (b.updatedAt?.toMillis() || 0) - (a.updatedAt?.toMillis() || 0));
+            callback(items);
+        });
+    })();
+
+    return () => {
+        if (unsubscribe) unsubscribe();
+    };
+};
+
+export const getMindmap = async (mindmapId: string) => {
+    const docRef = doc(db, "mindmaps", mindmapId);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+        return { id: docSnap.id, ...docSnap.data() } as Mindmap;
+    }
+    return null;
 };

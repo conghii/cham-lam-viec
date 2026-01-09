@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { LayoutDashboard, CheckSquare, Target, BookOpen, PenTool, Settings, Users, Timer, StickyNote, ChevronDown, Plus, Check, MoreVertical, Zap, Share2 } from "lucide-react"
+import { LayoutDashboard, CheckSquare, Target, BookOpen, PenTool, Settings, Users, Timer, StickyNote, ChevronDown, Plus, Check, MoreVertical, Zap, Share2, Network } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { logOut, auth } from "@/lib/firebase/auth"
@@ -48,6 +48,7 @@ export function Sidebar({ isCollapsed = false, className }: { isCollapsed?: bool
     ]
 
     const utilityItems = [
+        { icon: Network, label: t("mindmap"), href: "/dashboard/mindmap" },
         { icon: Share2, label: t("sharing"), href: "/dashboard/sharing" },
         { icon: Timer, label: t("focus"), href: "/dashboard/focus" },
         { icon: StickyNote, label: t("notes"), href: "/dashboard/notes" },

@@ -11,6 +11,7 @@ export const dictionaries = {
         "notes": "Notes",
         "blog": "Blog",
         "planner": "Planner",
+        "mindmap": "Mindmap",
         "personal_space": "Personal Space",
         "shared_team": "Shared Team",
         "shared_teams": "Shared Teams",
@@ -146,6 +147,7 @@ export const dictionaries = {
         "keep_it_up": "Keep it up!",
         "start_streak": "Start a new streak!",
         "focus_time": "Focus Time",
+        "task_created": "Task created successfully",
 
         // Tasks
         "status": "Status",
@@ -236,6 +238,13 @@ export const dictionaries = {
         "entry_title_placeholder": "Give it a title...",
         "entry_content_placeholder": "What's on your mind?",
         "saving": "Saving...",
+        "mindmap_welcome_1": "Hello",
+        "mindmap_welcome_2": "what do you want to explore today?",
+        "mindmap_search_placeholder": "Type a topic, or paste a paragraph...",
+        "draw_manually": "Manual Draw",
+        "create_ai": "Create with AI",
+        "recent_mindmaps": "Your recent mindmaps",
+        "edited": "Edited",
 
         // Sharing
         "knowledge_hub": "Knowledge Hub",
@@ -325,6 +334,7 @@ export const dictionaries = {
         "notes": "Ghi chú",
         "blog": "Blog",
         "planner": "Lập kế hoạch",
+        "mindmap": "Sơ đồ tư duy",
         "personal_space": "Không gian cá nhân",
         "shared_team": "Nhóm chung",
         "shared_teams": "Các nhóm chung",
@@ -459,6 +469,7 @@ export const dictionaries = {
         "keep_it_up": "Tiếp tục phát huy!",
         "start_streak": "Bắt đầu streak mới!",
         "focus_time": "Thời gian tập trung",
+        "task_created": "Đã tạo nhiệm vụ thành công",
 
         // Tasks
         "status": "Trạng thái",
@@ -548,6 +559,13 @@ export const dictionaries = {
         "entry_title_placeholder": "Tiêu đề bài viết...",
         "entry_content_placeholder": "Bạn đang nghĩ gì?",
         "saving": "Đang lưu...",
+        "mindmap_welcome_1": "Chào",
+        "mindmap_welcome_2": "hôm nay bạn muốn khám phá điều gì?",
+        "mindmap_search_placeholder": "Gõ một chủ đề, hoặc dán một đoạn văn",
+        "draw_manually": "Vẽ thủ công",
+        "create_ai": "Tạo bằng AI",
+        "recent_mindmaps": "Các sơ đồ gần đây của bạn",
+        "edited": "Chỉnh sửa",
 
         // Sharing
         "knowledge_hub": "Trung tâm tri thức",
