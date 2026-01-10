@@ -357,7 +357,7 @@ export function HabitTracker() {
                                             );
                                         })}
                                         <th className="text-right py-6 px-4 text-xs font-bold text-gray-400 uppercase tracking-wider w-[100px]">{t("score")}</th>
-                                        <th className="py-6 px-4 w-[50px]"></th> {/* Actions */}
+                                        <th className="py-6 px-4 w-[50px]" />
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -370,7 +370,6 @@ export function HabitTracker() {
 
                                         return (
                                             <tr key={habit.id} className="group hover:bg-gray-50/50 transition-colors border-b border-gray-50 last:border-0 border-dashed">
-                                                {/* Habit ID / Name */}
                                                 <td className="py-6 px-4">
                                                     <div className="flex items-center gap-4">
                                                         <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center bg-gray-50", habit.iconColor && "bg-opacity-20")}>
@@ -384,7 +383,6 @@ export function HabitTracker() {
                                                     </div>
                                                 </td>
 
-                                                {/* Days */}
                                                 {weekDays.map((date, i) => {
                                                     const dateStr = format(date, 'yyyy-MM-dd');
                                                     const isCompleted = !!habit.history[dateStr];
@@ -417,7 +415,6 @@ export function HabitTracker() {
                                                     );
                                                 })}
 
-                                                {/* Score */}
                                                 <td className="py-6 px-4">
                                                     <div className="flex flex-col items-end gap-1">
                                                         <span className="text-xs font-bold text-gray-900">{weeklyCompleted}/{weeklyTarget}</span>
@@ -430,7 +427,6 @@ export function HabitTracker() {
                                                     </div>
                                                 </td>
 
-                                                {/* Actions */}
                                                 <td className="py-6 px-4 text-right">
                                                     <DropdownMenu>
                                                         <DropdownMenuTrigger asChild>

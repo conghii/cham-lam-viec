@@ -1,12 +1,22 @@
 "use client";
 
 import { memo, useState } from 'react';
-import { Handle, Position, NodeProps, NodeToolbar } from '@xyflow/react';
+import { Handle, Position, NodeProps, NodeToolbar, type Node } from '@xyflow/react';
 import { cn } from '@/lib/utils';
 import { Palette, Bold, Italic, StickyNote, Sparkles, Trash2, Smile, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-export const GradientNode = memo(({ data, selected, id }: NodeProps) => {
+interface GradientNodeData extends Record<string, unknown> {
+    isCentral?: boolean;
+    dimmed?: boolean;
+    onDelete?: () => void;
+    subLabel?: string;
+    label?: string;
+}
+
+type GradientNode = Node<GradientNodeData>;
+
+export const GradientNode = memo(({ data, selected, id }: NodeProps<GradientNode>) => {
     const isCentral = data.isCentral === true;
     const isDimmed = data.dimmed === true;
 
