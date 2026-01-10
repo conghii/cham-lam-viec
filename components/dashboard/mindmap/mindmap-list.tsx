@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Network, MoreVertical, Trash2, Edit2, ExternalLink, Search, Sparkles, Clock } from "lucide-react";
+import { Plus, Network, MoreVertical, Trash2, Edit2, ExternalLink, Search, Sparkles, Clock, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import {
@@ -44,6 +44,8 @@ export function MindmapList() {
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [newTitle, setNewTitle] = useState("");
     const [isCreating, setIsCreating] = useState(false);
+    const [aiPrompt, setAiPrompt] = useState("");
+    const [isAiCreating, setIsAiCreating] = useState(false);
 
     // Rename State
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -84,6 +86,21 @@ export function MindmapList() {
             setIsCreating(false);
         }
     }
+
+    const handleCreateAI = async () => {
+        if (!aiPrompt.trim()) return;
+        setIsAiCreating(true);
+        try {
+            const title = "AI: " + (aiPrompt.length > 20 ? aiPrompt.slice(0, 20) + "..." : aiPrompt);
+            const id = await addMindmap(title);
+            // Redirect with prompt query param
+            router.push(`/dashboard/mindmap/${id}?prompt=${encodeURIComponent(aiPrompt)}`);
+        } catch (error) {
+            console.error(error);
+            toast.error("Failed to create mindmap");
+            setIsAiCreating(false);
+        }
+    };
 
     const handleDelete = async (id: string, e: React.MouseEvent) => {
         e.stopPropagation();
@@ -143,6 +160,9 @@ export function MindmapList() {
                         <Input
                             className="border-none bg-transparent shadow-none focus-visible:ring-0 text-lg h-12 placeholder:text-muted-foreground/50"
                             placeholder={t("mindmap_search_placeholder")}
+                            value={aiPrompt}
+                            onChange={(e) => setAiPrompt(e.target.value)}
+                            onKeyDown={(e) => e.key === "Enter" && handleCreateAI()}
                         />
 
                         <div className="flex items-center gap-2 shrink-0">
@@ -150,8 +170,12 @@ export function MindmapList() {
                                 <Plus className="h-4 w-4" />
                                 {t("draw_manually")}
                             </Button>
-                            <Button className="gap-2 bg-blue-600 hover:bg-blue-700 text-white shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:shadow-[0_0_30px_rgba(37,99,235,0.5)] transition-all">
-                                <Sparkles className="h-4 w-4" />
+                            <Button
+                                className="gap-2 bg-blue-600 hover:bg-blue-700 text-white shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:shadow-[0_0_30px_rgba(37,99,235,0.5)] transition-all"
+                                onClick={handleCreateAI}
+                                disabled={!aiPrompt.trim() || isAiCreating}
+                            >
+                                {isAiCreating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
                                 {t("create_ai")}
                             </Button>
                         </div>

@@ -135,7 +135,7 @@ export default function BlogListPage() {
     const canEdit = userRole === 'owner' || userRole === 'member';
 
     return (
-        <div className="flex h-[calc(100vh-4rem)] bg-slate-50/50 dark:bg-slate-950/20 -m-6 p-6 overflow-hidden transition-colors duration-500">
+        <div className="flex h-[calc(100vh-4rem)] bg-slate-50/50 dark:bg-slate-950/20 p-6 pt-8 pr-8 overflow-hidden transition-colors duration-500">
             {/* Left Sidebar */}
             <div className="w-64 hidden xl:flex flex-col gap-6 pr-6 border-r border-slate-200/60 dark:border-slate-800/60 sticky top-0 h-full">
                 <div className="flex items-center gap-2 px-2 py-1">

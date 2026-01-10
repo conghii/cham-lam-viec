@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { LayoutDashboard, CheckSquare, Target, BookOpen, PenTool, Settings, Users, Timer, StickyNote, ChevronDown, Plus, Check, MoreVertical, Zap, Share2, Network } from "lucide-react"
+import { LayoutDashboard, CheckSquare, Target, BookOpen, PenTool, Settings, Users, Timer, StickyNote, ChevronDown, Plus, Check, MoreVertical, Zap, Share2, Network, Activity } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { logOut, auth } from "@/lib/firebase/auth"
@@ -32,12 +32,28 @@ import { Label } from "@/components/ui/label"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { createOrganization } from "@/lib/firebase/firestore"
 import { useLanguage } from "@/components/shared/language-context"
+import { useHabits } from "@/components/dashboard/habit-context"
+import { isSameDay } from "date-fns"
 
 
 export function Sidebar({ isCollapsed = false, className }: { isCollapsed?: boolean, className?: string }) {
     const pathname = usePathname()
     const router = useRouter()
     const { t } = useLanguage()
+    const { habits } = useHabits()
+
+    // Calculate incomplete habits for today
+    const incompleteHabitsCount = habits.filter(h => {
+        // Check if scheduled for today
+        const todayDay = new Date().getDay(); // 0-6
+        // Adjust for Sunday=0, Monday=1 to match habit frequency if needed, but Habit frequency follows date-fns getDay (0=Sun)
+        const isScheduled = h.frequency.includes(todayDay);
+
+        // Check if completed today
+        const isCompleted = !!h.history[new Date().toISOString().split('T')[0]];
+
+        return isScheduled && !isCompleted;
+    }).length;
 
     const mainItems = [
         { icon: LayoutDashboard, label: t("dashboard"), href: "/dashboard" },
@@ -48,7 +64,7 @@ export function Sidebar({ isCollapsed = false, className }: { isCollapsed?: bool
     ]
 
     const utilityItems = [
-        { icon: Network, label: t("mindmap"), href: "/dashboard/mindmap" },
+        { icon: Activity, label: t("habits"), href: "/dashboard/habits" },
         { icon: Share2, label: t("sharing"), href: "/dashboard/sharing" },
         { icon: Timer, label: t("focus"), href: "/dashboard/focus" },
         { icon: StickyNote, label: t("notes"), href: "/dashboard/notes" },
@@ -325,7 +341,14 @@ export function Sidebar({ isCollapsed = false, className }: { isCollapsed?: bool
                                 )}
                             >
                                 <item.icon className="h-4 w-4 shrink-0" />
-                                {!isCollapsed && item.label}
+                                {!isCollapsed && <span className="flex-1 text-left">{item.label}</span>}
+
+                                {/* Habit Badge */}
+                                {!isCollapsed && item.href === "/dashboard/habits" && incompleteHabitsCount > 0 && (
+                                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white shadow-sm ring-2 ring-white dark:ring-slate-950 ml-2">
+                                        {incompleteHabitsCount}
+                                    </span>
+                                )}
                             </Button>
                         </Link>
                     ))}

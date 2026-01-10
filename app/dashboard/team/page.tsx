@@ -387,8 +387,8 @@ export default function TeamPage() {
 
 
     return (
-        <div className="min-h-screen bg-white dark:bg-slate-950 pb-12">
-            <div className="max-w-7xl mx-auto px-6">
+        <div className="min-h-screen bg-white dark:bg-slate-950 p-6 md:p-8 pb-24">
+            <div className="max-w-7xl mx-auto">
                 {/* 2. HEADER: BENTO GRID (Identity, Health, People) */}
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mb-12">
 

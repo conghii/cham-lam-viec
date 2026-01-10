@@ -12,6 +12,7 @@ import { ContentWrapper } from "@/components/dashboard/content-wrapper"
 
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
 import { cn } from "@/lib/utils"
+import { HabitProvider } from "@/components/dashboard/habit-context"
 
 export default function DashboardLayout({
     children,
@@ -50,47 +51,49 @@ export default function DashboardLayout({
     const isFocusMode = pathname?.includes("/focus") || pathname?.includes("/planner")
 
     return (
-        <div className={cn(
-            "flex h-screen overflow-hidden transition-colors duration-700 ease-in-out bg-background dark:bg-slate-950",
-            isFocusMode && "bg-slate-50 dark:bg-slate-950"
-        )}>
-            <ResizablePanelGroup
-                direction="horizontal"
-                className="hidden md:flex"
-            >
-                <ResizablePanel
-                    defaultSize={20}
-                    minSize={15}
-                    maxSize={250}
-                    collapsible={true}
-                    collapsedSize={4}
-                    className={cn(isCollapsed && "min-w-[50px] transition-all duration-300 ease-in-out")}
-                    onResize={(size: any) => setIsCollapsed(size < 10)}
+        <HabitProvider>
+            <div className={cn(
+                "flex h-screen overflow-hidden transition-colors duration-700 ease-in-out bg-background dark:bg-slate-950",
+                isFocusMode && "bg-slate-50 dark:bg-slate-950"
+            )}>
+                <ResizablePanelGroup
+                    direction="horizontal"
+                    className="hidden md:flex"
                 >
-                    <Sidebar isCollapsed={isCollapsed} />
-                </ResizablePanel>
-                <ResizableHandle withHandle />
-                <ResizablePanel defaultSize={80}>
-                    <div className="flex flex-1 flex-col overflow-hidden h-full">
+                    <ResizablePanel
+                        defaultSize={20}
+                        minSize={15}
+                        maxSize={250}
+                        collapsible={true}
+                        collapsedSize={4}
+                        className={cn(isCollapsed && "min-w-[50px] transition-all duration-300 ease-in-out")}
+                        onResize={(size: any) => setIsCollapsed(size < 10)}
+                    >
+                        <Sidebar isCollapsed={isCollapsed} />
+                    </ResizablePanel>
+                    <ResizableHandle withHandle />
+                    <ResizablePanel defaultSize={80}>
+                        <div className="flex flex-1 flex-col overflow-hidden h-full">
+                            <Header />
+                            <ContentWrapper>
+                                {children}
+                            </ContentWrapper>
+                        </div>
+                    </ResizablePanel>
+                </ResizablePanelGroup>
+
+                {/* Mobile Layout (No Resizable Panels) */}
+                <div className="flex flex-col h-full w-full md:hidden">
+                    <div className="flex-1 flex flex-col overflow-hidden">
                         <Header />
                         <ContentWrapper>
                             {children}
                         </ContentWrapper>
                     </div>
-                </ResizablePanel>
-            </ResizablePanelGroup>
-
-            {/* Mobile Layout (No Resizable Panels) */}
-            <div className="flex flex-col h-full w-full md:hidden">
-                <div className="flex-1 flex flex-col overflow-hidden">
-                    <Header />
-                    <ContentWrapper>
-                        {children}
-                    </ContentWrapper>
                 </div>
-            </div>
 
-            <BottomNav />
-        </div>
+                <BottomNav />
+            </div>
+        </HabitProvider>
     )
 }
