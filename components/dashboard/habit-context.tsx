@@ -2,13 +2,27 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react"
 import { addDays, format, isSameDay } from "date-fns"
-import { Droplets, Activity, Footprints, BookOpen, Carrot } from "lucide-react"
+import { Droplets, Activity, Footprints, BookOpen, Carrot, Flame, Pill, Target, Zap, Heart } from "lucide-react"
+
+// Icon Mapping
+export const ICON_MAP: { [key: string]: any } = {
+    "Droplets": Droplets,
+    "Activity": Activity,
+    "Footprints": Footprints,
+    "BookOpen": BookOpen,
+    "Carrot": Carrot,
+    "Flame": Flame,
+    "Pill": Pill,
+    "Target": Target,
+    "Zap": Zap,
+    "Heart": Heart
+};
 
 // Types
 export type Habit = {
     id: string;
     name: string;
-    icon: any;
+    icon: string; // Changed from any (component) to string (name)
     streak: number;
     goal: number;
     unit: string;
@@ -19,73 +33,7 @@ export type Habit = {
     history: { [dateStr: string]: boolean }; // 'YYYY-MM-DD': true/false
 };
 
-// Helper to generate mock history
-const generateMockHistory = () => {
-    const history: { [key: string]: boolean } = {};
-    const today = new Date();
-    // Generate for the last 365 days
-    for (let i = 0; i < 365; i++) {
-        const date = addDays(today, -i);
-        history[format(date, 'yyyy-MM-dd')] = Math.random() > 0.4;
-    }
-    return history;
-};
-
-// Initial Mock Data
-const INITIAL_HABITS: Habit[] = [
-    {
-        id: "1",
-        name: "Drink Water (2L)",
-        icon: Droplets,
-        streak: 12,
-        goal: 2,
-        unit: "L",
-        completed: false,
-        color: "bg-cyan-50 text-cyan-500",
-        iconColor: "bg-cyan-100 text-cyan-600",
-        frequency: [0, 1, 2, 3, 4, 5, 6],
-        history: generateMockHistory()
-    },
-    {
-        id: "2",
-        name: "Meditate (15 min)",
-        icon: Activity,
-        streak: 5,
-        goal: 15,
-        unit: "min",
-        completed: true,
-        color: "bg-purple-50 text-purple-500",
-        iconColor: "bg-purple-100 text-purple-600",
-        frequency: [1, 2, 3, 4, 5],
-        history: generateMockHistory()
-    },
-    {
-        id: "3",
-        name: "5km Morning Run",
-        icon: Footprints,
-        streak: 3,
-        goal: 5,
-        unit: "km",
-        completed: false,
-        color: "bg-orange-50 text-orange-500",
-        iconColor: "bg-orange-100 text-orange-600",
-        frequency: [1, 3, 5],
-        history: generateMockHistory()
-    },
-    {
-        id: "4",
-        name: "Read 20 Pages",
-        icon: BookOpen,
-        streak: 20,
-        goal: 20,
-        unit: "pages",
-        completed: true,
-        color: "bg-emerald-50 text-emerald-500",
-        iconColor: "bg-emerald-100 text-emerald-600",
-        frequency: [0, 1, 2, 3, 4, 5, 6],
-        history: generateMockHistory()
-    }
-];
+// Initial Mock Data Removed
 
 interface HabitContextType {
     habits: Habit[];
@@ -97,8 +45,34 @@ interface HabitContextType {
 
 const HabitContext = createContext<HabitContextType | undefined>(undefined);
 
+const STORAGE_KEY = 'chamlam_habits';
+
 export function HabitProvider({ children }: { children: React.ReactNode }) {
-    const [habits, setHabits] = useState<Habit[]>(INITIAL_HABITS);
+    const [habits, setHabits] = useState<Habit[]>([]);
+    const [isLoaded, setIsLoaded] = useState(false);
+
+    // Load from localStorage on mount
+    useEffect(() => {
+        try {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                // Basic validation could go here
+                setHabits(parsed);
+            }
+        } catch (error) {
+            console.error('Failed to load habits from storage:', error);
+        } finally {
+            setIsLoaded(true);
+        }
+    }, []);
+
+    // Save to localStorage whenever habits change
+    useEffect(() => {
+        if (isLoaded) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(habits));
+        }
+    }, [habits, isLoaded]);
 
     const addHabit = (habit: Habit) => {
         setHabits(prev => [...prev, habit]);
@@ -134,6 +108,12 @@ export function HabitProvider({ children }: { children: React.ReactNode }) {
             return h;
         }));
     };
+
+    // Don't render until loaded to prevent hydration mismatch if we were using server-side rendering
+    // or just to avoid flashing defaults (though we default to empty now)
+    if (!isLoaded) {
+        return null; // Or a loading spinner
+    }
 
     return (
         <HabitContext.Provider value={{ habits, addHabit, updateHabit, deleteHabit, toggleHabit }}>

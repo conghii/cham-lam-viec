@@ -60,14 +60,14 @@ import {
 } from "@/components/ui/select";
 
 import { useLanguage } from "@/components/shared/language-context";
-import { useHabits, type Habit } from "@/components/dashboard/habit-context";
+import { useHabits, type Habit, ICON_MAP } from "@/components/dashboard/habit-context";
 
 const SUGGESTIONS = [
-    { label: "Drink Water", icon: Droplets, color: "bg-cyan-100 text-cyan-600" },
-    { label: "Run", icon: Activity, color: "bg-cyan-100 text-cyan-600" },
-    { label: "Meditate", icon: Activity, color: "bg-teal-100 text-teal-600" },
-    { label: "Read", icon: BookOpen, color: "bg-cyan-100 text-cyan-600" },
-    { label: "Eat Healthy", icon: Carrot, color: "bg-emerald-100 text-emerald-600" },
+    { label: "Drink Water", icon: "Droplets", color: "bg-cyan-100 text-cyan-600" },
+    { label: "Run", icon: "Activity", color: "bg-cyan-100 text-cyan-600" },
+    { label: "Meditate", icon: "Activity", color: "bg-teal-100 text-teal-600" },
+    { label: "Read", icon: "BookOpen", color: "bg-cyan-100 text-cyan-600" },
+    { label: "Eat Healthy", icon: "Carrot", color: "bg-emerald-100 text-emerald-600" },
 ];
 
 const DAYS = [
@@ -97,7 +97,7 @@ export function HabitTracker() {
         goal: "1",
         unit: "times",
         frequency: [0, 1, 2, 3, 4, 5, 6] as number[],
-        icon: Activity // Default icon
+        icon: "Activity" // Default icon name
     });
 
     // Calendar Generation for Matrix
@@ -137,7 +137,7 @@ export function HabitTracker() {
             goal: "1",
             unit: "times",
             frequency: [0, 1, 2, 3, 4, 5, 6],
-            icon: Activity
+            icon: "Activity"
         });
         setIsDialogOpen(true);
     };
@@ -373,8 +373,10 @@ export function HabitTracker() {
                                                 <td className="py-6 px-4">
                                                     <div className="flex items-center gap-4">
                                                         <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center bg-gray-50", habit.iconColor && "bg-opacity-20")}>
-                                                            {/* Use generic icon color if not specified properly in mock */}
-                                                            <habit.icon className={cn("h-5 w-5", habit.color.split(' ')[1] || "text-gray-500")} />
+                                                            {(() => {
+                                                                const IconComponent = ICON_MAP[habit.icon] || Activity;
+                                                                return <IconComponent className={cn("h-5 w-5", habit.color.split(' ')[1] || "text-gray-500")} />;
+                                                            })()}
                                                         </div>
                                                         <div>
                                                             <p className="font-bold text-gray-800 text-sm">{habit.name}</p>
@@ -532,14 +534,17 @@ export function HabitTracker() {
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="all">{t("all_habits")}</SelectItem>
-                                        {habits.map(h => (
-                                            <SelectItem key={h.id} value={h.id}>
-                                                <div className="flex items-center gap-2">
-                                                    <h.icon className="h-4 w-4 opacity-50" />
-                                                    {h.name}
-                                                </div>
-                                            </SelectItem>
-                                        ))}
+                                        {habits.map(h => {
+                                            const Icon = ICON_MAP[h.icon] || Activity;
+                                            return (
+                                                <SelectItem key={h.id} value={h.id}>
+                                                    <div className="flex items-center gap-2">
+                                                        <Icon className="h-4 w-4 opacity-50" />
+                                                        {h.name}
+                                                    </div>
+                                                </SelectItem>
+                                            );
+                                        })}
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -631,7 +636,10 @@ export function HabitTracker() {
                                                 "h-14 w-14 rounded-2xl flex items-center justify-center mr-4 shrink-0 transition-colors",
                                                 isCompleted ? "bg-emerald-100 text-emerald-600" : "bg-gray-50 text-gray-500"
                                             )}>
-                                                <habit.icon className="h-7 w-7" />
+                                                {(() => {
+                                                    const Icon = ICON_MAP[habit.icon] || Activity;
+                                                    return <Icon className="h-7 w-7" />;
+                                                })()}
                                             </div>
                                             <div className="flex-1">
                                                 <h3 className={cn("font-bold text-lg", isCompleted ? "text-gray-500 line-through" : "text-gray-900")}>{habit.name}</h3>
@@ -695,20 +703,23 @@ export function HabitTracker() {
                                 />
                                 {/* Quick Suggestions */}
                                 {!editingHabit && <div className="flex flex-wrap gap-2 pt-1">
-                                    {SUGGESTIONS.map((s) => (
-                                        <button
-                                            key={s.label}
-                                            type="button"
-                                            onClick={() => handleSuggestionClick(s)}
-                                            className={cn(
-                                                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all hover:scale-105 active:scale-95",
-                                                s.color
-                                            )}
-                                        >
-                                            <s.icon className="h-3 w-3" />
-                                            {s.label}
-                                        </button>
-                                    ))}
+                                    {SUGGESTIONS.map((s) => {
+                                        const Icon = ICON_MAP[s.icon] || Activity;
+                                        return (
+                                            <button
+                                                key={s.label}
+                                                type="button"
+                                                onClick={() => handleSuggestionClick(s)}
+                                                className={cn(
+                                                    "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all hover:scale-105 active:scale-95",
+                                                    s.color
+                                                )}
+                                            >
+                                                <Icon className="h-3 w-3" />
+                                                {s.label}
+                                            </button>
+                                        );
+                                    })}
                                 </div>}
                             </div>
 
