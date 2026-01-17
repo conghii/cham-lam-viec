@@ -17,7 +17,7 @@ import {
     arrayUnion,
     orderBy,
     limit,
-    type Timestamp,
+    Timestamp,
     type Unsubscribe,
     arrayRemove,
     deleteField,
@@ -1586,6 +1586,122 @@ export const removeMemberFromGroup = async (groupId: string, userId: string) => 
             memberIds: members.filter((id: string) => id !== userId)
         });
     }
+};
+
+// --- Weekly Pulse (Redesigned) ---
+
+export type WeeklyObjective = {
+    id: string;
+    content: string;
+    status: 'pending' | 'completed' | 'migrated';
+    completedAt?: Timestamp;
+    // Metrics
+    target?: number;
+    current?: number;
+    unit?: string;
+}
+
+export type WeeklyRetrospective = {
+    wins: string;
+    challenges: string;
+    lessons: string;
+}
+
+export type WeeklyPlan = {
+    id: string; // "userId_year_week"
+    userId: string;
+    weekNumber: number;
+    year: number;
+    startDate: Timestamp;
+    endDate: Timestamp;
+    objectives: WeeklyObjective[]; // Fixed size 3
+    retrospective: WeeklyRetrospective;
+    status: 'active' | 'completed';
+    orgId?: string | null;
+    createdAt: Timestamp;
+}
+
+// Get or Create Plan for valid week
+export const ensureWeeklyPlan = async (year: number, weekNumber: number, startDate: Date, endDate: Date) => {
+    const { getCurrentUser } = await import("./auth");
+    const user = await getCurrentUser();
+    if (!user) throw new Error("User not authenticated");
+
+    const id = `${user.uid}_${year}_${weekNumber}`;
+    const docRef = doc(db, "weekly_plans", id);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+        return { id: docSnap.id, ...docSnap.data() } as WeeklyPlan;
+    }
+
+    // Create new
+    const userRef = doc(db, "users", user.uid);
+    const userSnap = await getDoc(userRef);
+    const orgId = userSnap.exists() ? userSnap.data().orgId : null;
+
+    const newPlan = {
+        userId: user.uid,
+        weekNumber,
+        year,
+        startDate: Timestamp.fromDate(startDate),
+        endDate: Timestamp.fromDate(endDate),
+        orgId: orgId || null,
+        objectives: [],
+        retrospective: { wins: "", challenges: "", lessons: "" },
+        status: 'active',
+        createdAt: serverTimestamp()
+    };
+
+    await setDoc(docRef, newPlan);
+    return { id, ...newPlan, createdAt: Timestamp.now() } as WeeklyPlan; // Return aprox with current time
+};
+
+export const updateWeeklyObjective = async (planId: string, objectives: WeeklyObjective[]) => {
+    const planRef = doc(db, "weekly_plans", planId);
+    await updateDoc(planRef, { objectives });
+};
+
+export const updateWeeklyRetrospective = async (planId: string, retrospective: WeeklyRetrospective) => {
+    const planRef = doc(db, "weekly_plans", planId);
+    await updateDoc(planRef, { retrospective });
+};
+
+export const subscribeToWeeklyPlan = (year: number, weekNumber: number, callback: (plan: WeeklyPlan | null) => void) => {
+    const user = auth.currentUser;
+    if (!user) return () => { };
+
+    const id = `${user.uid}_${year}_${weekNumber}`;
+    return onSnapshot(doc(db, "weekly_plans", id), (doc) => {
+        if (doc.exists()) {
+            callback({ id: doc.id, ...doc.data() } as WeeklyPlan);
+        } else {
+            callback(null);
+        }
+    });
+};
+
+export const subscribeToWeeklyHistory = (callback: (plans: WeeklyPlan[]) => void) => {
+    const user = auth.currentUser;
+    if (!user) return () => { };
+
+    const q = query(
+        collection(db, "weekly_plans"),
+        where("userId", "==", user.uid),
+    );
+
+    return onSnapshot(q, (snapshot) => {
+        const plans = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        })) as WeeklyPlan[];
+        // Client sort by year/week descending
+        plans.sort((a, b) => {
+            if (a.year !== b.year) return b.year - a.year;
+            return b.weekNumber - a.weekNumber;
+        });
+        callback(plans);
+    });
 };
 
 

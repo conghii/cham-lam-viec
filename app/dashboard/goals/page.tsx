@@ -33,7 +33,10 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useLanguage } from "@/components/shared/language-context";
 
-import { format } from "date-fns";
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, startOfYear, endOfYear, isWithinInterval, addWeeks, subWeeks, addMonths, subMonths, addQuarters, subQuarters, addYears, subYears } from "date-fns";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useSearchParams } from "next/navigation";
 
 function KeyResultItem({ goalId, kr, onEdit, onDelete }: {
     goalId: string;
@@ -50,50 +53,51 @@ function KeyResultItem({ goalId, kr, onEdit, onDelete }: {
 
     // Ensure max is at least 1 to prevent division by zero or stuck slider
     const maxVal = Math.max(1, kr.target || 100);
+    const progressPercent = Math.min(100, Math.round((localCurrent / maxVal) * 100));
 
     return (
-        <div className="relative group/kr py-3 first:pt-0 last:pb-0 border-b border-gray-100 last:border-0 hover:bg-slate-50/50 -mx-4 px-4 transition-colors">
-            <div className="flex justify-between items-center mb-3">
-                <div className="flex-1">
-                    <div className="flex items-baseline justify-between gap-2">
-                        <span className="font-medium text-gray-700 dark:text-gray-200">{kr.title}</span>
-                        <div className="flex items-center gap-2">
-                            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">
-                                {localCurrent} / {kr.target} {kr.unit}
-                            </span>
-
-                            {/* EDIT / DELETE BUTTONS */}
-                            <div className="flex items-center gap-0.5 opacity-0 group-hover/kr:opacity-100 transition-opacity">
-                                {onEdit && (
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-6 w-6 text-gray-400 hover:text-blue-600"
-                                        onClick={() => onEdit(kr)}
-                                        title="Edit Key Result"
-                                    >
-                                        <Pencil className="h-3 w-3" />
-                                    </Button>
-                                )}
-                                {onDelete && (
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-6 w-6 text-gray-400 hover:text-red-600"
-                                        onClick={() => onDelete(kr.id)}
-                                        title="Delete Key Result"
-                                    >
-                                        <Trash2 className="h-3 w-3" />
-                                    </Button>
-                                )}
-                            </div>
-                        </div>
+        <div className="group/kr py-3 first:pt-0 last:pb-0">
+            <div className="flex justify-between items-start mb-2 gap-3">
+                <div className="flex-1 space-y-1">
+                    <div className="flex items-center justify-between">
+                        <span className="font-medium text-sm text-slate-700 dark:text-slate-200 line-clamp-1" title={kr.title}>{kr.title}</span>
+                        <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full shrink-0 ml-2">
+                            {localCurrent}/{kr.target} {kr.unit}
+                        </span>
                     </div>
                 </div>
+
+                {/* EDIT / DELETE BUTTONS */}
+                {(onEdit || onDelete) && (
+                    <div className="flex items-center opacity-0 group-hover/kr:opacity-100 transition-opacity -mr-2">
+                        {onEdit && (
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6 text-slate-400 hover:text-blue-600"
+                                onClick={() => onEdit(kr)}
+                                title="Edit Key Result"
+                            >
+                                <Pencil className="h-3 w-3" />
+                            </Button>
+                        )}
+                        {onDelete && (
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6 text-slate-400 hover:text-red-600"
+                                onClick={() => onDelete(kr.id)}
+                                title="Delete Key Result"
+                            >
+                                <Trash2 className="h-3 w-3" />
+                            </Button>
+                        )}
+                    </div>
+                )}
             </div>
 
             {/* Slider with z-index to ensure it's clickable */}
-            <div className="relative z-10 px-1" onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
+            <div className="relative z-10 space-y-1.5" onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
                 <Slider
                     value={[localCurrent]}
                     min={0}
@@ -101,7 +105,7 @@ function KeyResultItem({ goalId, kr, onEdit, onDelete }: {
                     step={1}
                     onValueChange={(val) => setLocalCurrent(val[0])}
                     onValueCommit={(val) => updateKeyResultProgress(goalId, kr.id, val[0])}
-                    className="cursor-pointer py-1"
+                    className="cursor-pointer py-1 [&_.bg-primary]:bg-blue-500/80 hover:[&_.bg-primary]:bg-blue-600"
                 />
             </div>
         </div>
@@ -182,6 +186,8 @@ function GoalCommentItem({ comment, goalId }: { comment: Comment; goalId: string
     );
 }
 
+type FilterType = 'all' | 'week' | 'month' | 'quarter' | 'year';
+
 export default function GoalsPage() {
     const [goals, setGoals] = useState<Goal[]>([]);
     const [loading, setLoading] = useState(true);
@@ -222,6 +228,15 @@ export default function GoalsPage() {
 
     // Linked Tasks
     const [linkedTasks, setLinkedTasks] = useState<Task[]>([]);
+
+    // Time Filtering
+    const searchParams = useSearchParams();
+    const viewParam = searchParams.get('view');
+    const validFilters: FilterType[] = ['all', 'week', 'month', 'quarter', 'year'];
+    const initialFilter = validFilters.includes(viewParam as FilterType) ? (viewParam as FilterType) : 'all';
+
+    const [filterType, setFilterType] = useState<FilterType>(initialFilter);
+    const [currentDate, setCurrentDate] = useState(new Date());
 
     useEffect(() => {
         if (selectedGoal && isDetailsOpen) {
@@ -296,26 +311,83 @@ export default function GoalsPage() {
         }
     }, []);
 
+    // Time Navigation Helpers
+    const navigateTime = (direction: 'prev' | 'next') => {
+        if (filterType === 'week') {
+            setCurrentDate(d => direction === 'next' ? addWeeks(d, 1) : subWeeks(d, 1));
+        } else if (filterType === 'month') {
+            setCurrentDate(d => direction === 'next' ? addMonths(d, 1) : subMonths(d, 1));
+        } else if (filterType === 'quarter') {
+            setCurrentDate(d => direction === 'next' ? addQuarters(d, 1) : subQuarters(d, 1));
+        } else if (filterType === 'year') {
+            setCurrentDate(d => direction === 'next' ? addYears(d, 1) : subYears(d, 1));
+        }
+    };
+
+    const getPeriodLabel = () => {
+        if (filterType === 'week') {
+            const start = startOfWeek(currentDate);
+            const end = endOfWeek(currentDate);
+            return `${format(start, 'MMM d')} - ${format(end, 'MMM d, yyyy')}`;
+        } else if (filterType === 'month') {
+            return format(currentDate, 'MMMM yyyy');
+        } else if (filterType === 'quarter') {
+            return `Q${Math.floor(currentDate.getMonth() / 3) + 1} ${format(currentDate, 'yyyy')}`;
+        } else if (filterType === 'year') {
+            return format(currentDate, 'yyyy');
+        }
+        return '';
+    };
+
     // Filter Logic
     const filteredGoals = goals.filter(goal => {
-        if (!currentUser) return false
+        if (!currentUser) return false;
 
         // 1. Author
-        if (goal.userId === currentUser.uid) return true
+        let allow = false;
+        if (goal.userId === currentUser.uid) allow = true;
 
         // 2. Assigned
-        if (goal.assigneeIds?.includes(currentUser.uid)) return true
+        if (goal.assigneeIds?.includes(currentUser.uid)) allow = true;
 
         // 3. Group Assigned
-        const userGroupIds = groups.filter(g => g.memberIds.includes(currentUser.uid)).map(g => g.id)
-        if (goal.groupIds?.some(gid => userGroupIds.includes(gid))) return true
+        const userGroupIds = groups.filter(g => g.memberIds.includes(currentUser.uid)).map(g => g.id);
+        if (goal.groupIds?.some(gid => userGroupIds.includes(gid))) allow = true;
 
         // 4. Unassigned (Visible to all)
-        const hasAssignments = (goal.assigneeIds && goal.assigneeIds.length > 0) || (goal.groupIds && goal.groupIds.length > 0)
-        if (!hasAssignments) return true
+        const hasAssignments = (goal.assigneeIds && goal.assigneeIds.length > 0) || (goal.groupIds && goal.groupIds.length > 0);
+        if (!hasAssignments) allow = true;
 
-        return false
-    })
+        if (!allow) return false;
+
+        // 5. Time Filtering
+        if (filterType === 'all') return true;
+        if (!goal.targetDate) return false; // Hide goals without dates in specific filters
+
+        const target = new Date(goal.targetDate);
+        let start, end;
+
+        if (filterType === 'week') {
+            start = startOfWeek(currentDate);
+            end = endOfWeek(currentDate);
+        } else if (filterType === 'month') {
+            start = startOfWeek(startOfMonth(currentDate)); // To see full weeks in calendar view context essentially, but stick to standard startOfMonth for logic if strict. Let's use strict month boundaries for now.
+            start = startOfMonth(currentDate);
+            end = endOfMonth(currentDate);
+        } else if (filterType === 'quarter') {
+            start = startOfQuarter(currentDate);
+            end = endOfQuarter(currentDate);
+        } else if (filterType === 'year') {
+            start = startOfYear(currentDate);
+            end = endOfYear(currentDate);
+        }
+
+        if (start && end) {
+            return isWithinInterval(target, { start, end });
+        }
+
+        return false;
+    });
 
     // Handlers
 
@@ -545,7 +617,42 @@ export default function GoalsPage() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex justify-end">
+                <div className="flex flex-col md:flex-row justify-between items-end md:items-center gap-4">
+                    {/* Filters */}
+                    <div className="flex items-center gap-4 bg-white dark:bg-slate-900 p-1 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800">
+                        <Tabs value={filterType} onValueChange={(v) => setFilterType(v as FilterType)} className="w-auto">
+                            <TabsList className="bg-transparent h-9 p-0 gap-1">
+                                <TabsTrigger value="all" className="rounded-lg h-9 px-3 data-[state=active]:bg-slate-100 dark:data-[state=active]:bg-slate-800 data-[state=active]:text-foreground data-[state=active]:shadow-none">All</TabsTrigger>
+                                <TabsTrigger value="week" className="rounded-lg h-9 px-3 data-[state=active]:bg-slate-100 dark:data-[state=active]:bg-slate-800 data-[state=active]:text-foreground data-[state=active]:shadow-none">Week</TabsTrigger>
+                                <TabsTrigger value="month" className="rounded-lg h-9 px-3 data-[state=active]:bg-slate-100 dark:data-[state=active]:bg-slate-800 data-[state=active]:text-foreground data-[state=active]:shadow-none">Month</TabsTrigger>
+                                <TabsTrigger value="quarter" className="rounded-lg h-9 px-3 data-[state=active]:bg-slate-100 dark:data-[state=active]:bg-slate-800 data-[state=active]:text-foreground data-[state=active]:shadow-none">Quarter</TabsTrigger>
+                                <TabsTrigger value="year" className="rounded-lg h-9 px-3 data-[state=active]:bg-slate-100 dark:data-[state=active]:bg-slate-800 data-[state=active]:text-foreground data-[state=active]:shadow-none">Year</TabsTrigger>
+                            </TabsList>
+                        </Tabs>
+
+                        {filterType !== 'all' && (
+                            <div className="flex items-center gap-2 pl-4 border-l border-slate-200 dark:border-slate-800">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8"
+                                    onClick={() => navigateTime('prev')}
+                                >
+                                    <ChevronLeft className="h-4 w-4" />
+                                </Button>
+                                <span className="text-sm font-medium w-36 text-center tabular-nums">{getPeriodLabel()}</span>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8"
+                                    onClick={() => navigateTime('next')}
+                                >
+                                    <ChevronRight className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        )}
+                    </div>
+
                     {canEdit && (
                         <Dialog open={isAddGoalOpen} onOpenChange={setIsAddGoalOpen}>
                             <DialogTrigger asChild>
@@ -606,7 +713,7 @@ export default function GoalsPage() {
                 </div>
 
                 {/* Goals Grid */}
-                <div className="grid gap-6 md:grid-cols-2">
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                     {loading ? (
                         <div className="col-span-full flex justify-center py-20"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>
                     ) : filteredGoals.length === 0 ? (
@@ -618,33 +725,24 @@ export default function GoalsPage() {
                         </div>
                     ) : (
                         filteredGoals.map((goal) => (
-                            <Card key={goal.id} onClick={() => openGoalDetails(goal, false)} className="group relative overflow-hidden bg-white dark:bg-slate-900 border-0 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer ring-1 ring-slate-200 dark:ring-slate-800">
-                                <CardHeader className="pb-2 relative z-10">
-                                    <div className="flex justify-between items-start">
-                                        <div className="space-y-1.5">
-                                            <div className="flex items-center gap-2">
-                                                <CardTitle className="text-xl font-bold text-slate-900 dark:text-white leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                                                    {goal.title}
-                                                </CardTitle>
-                                                {goal.progress >= 100 && <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border-0"><CheckCircle2 className="h-3 w-3 mr-1" /> Done</Badge>}
-                                            </div>
-                                            <div className="flex items-center gap-4 text-xs font-medium text-slate-500 dark:text-slate-400">
-                                                <span className="flex items-center gap-1.5">
-                                                    <CalendarIcon className="h-3.5 w-3.5" />
+                            <Card key={goal.id} onClick={() => openGoalDetails(goal, false)} className="group relative overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-blue-200 dark:hover:border-blue-900 transition-all duration-300 cursor-pointer flex flex-col h-full">
+                                <CardHeader className="pb-3 relative z-10 flex-shrink-0">
+                                    <div className="flex justify-between items-start mb-2">
+                                        <div className="space-y-1 flex-1 mr-2">
+                                            <CardTitle className="text-lg font-bold text-slate-900 dark:text-white leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2" title={goal.title}>
+                                                {goal.title}
+                                            </CardTitle>
+                                            <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+                                                <span className="flex items-center gap-1">
+                                                    <CalendarIcon className="h-3.5 w-3.5 opacity-70" />
                                                     {goal.targetDate ? format(new Date(goal.targetDate), "MMM d, yyyy") : "No deadline"}
                                                 </span>
-                                                <AssigneeDisplay
-                                                    assigneeIds={goal.assigneeIds}
-                                                    groupIds={goal.groupIds}
-                                                    members={members}
-                                                    groups={groups}
-                                                />
                                             </div>
                                         </div>
                                         {canEdit && (
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-900" onClick={(e) => e.stopPropagation()}>
+                                                    <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-300 hover:text-slate-900 -mr-2 -mt-1" onClick={(e) => e.stopPropagation()}>
                                                         <MoreVertical className="h-4 w-4" />
                                                     </Button>
                                                 </DropdownMenuTrigger>
@@ -660,36 +758,44 @@ export default function GoalsPage() {
                                         )}
                                     </div>
 
-                                    <div className="mt-5 space-y-2">
-                                        <div className="flex justify-between items-center text-sm font-medium">
-                                            <span className="text-slate-500 dark:text-slate-400">{t("total_progress")}</span>
-                                            <span className={cn("font-bold", goal.progress >= 100 ? "text-emerald-600 dark:text-emerald-400" : "text-blue-600 dark:text-blue-400")}>
+                                    <div className="mt-3 space-y-1.5">
+                                        <div className="flex justify-between items-end text-xs">
+                                            <span className="font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[10px]">{t("total_progress")}</span>
+                                            <span className={cn("font-bold text-sm", goal.progress >= 100 ? "text-emerald-600 dark:text-emerald-400" : "text-blue-600 dark:text-blue-400")}>
                                                 {goal.progress}%
                                             </span>
                                         </div>
-                                        <div className="relative h-3 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                                        <div className="relative h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
                                             <div
-                                                className="h-full bg-gradient-to-r from-blue-400 to-indigo-500 dark:from-blue-500 dark:to-indigo-600 transition-all duration-500 ease-out"
+                                                className={cn(
+                                                    "h-full transition-all duration-500 ease-out",
+                                                    goal.progress >= 100 ? "bg-gradient-to-r from-emerald-400 to-emerald-500" : "bg-gradient-to-r from-blue-400 to-indigo-500"
+                                                )}
                                                 style={{ width: `${goal.progress}%` }}
                                             />
                                         </div>
                                     </div>
                                 </CardHeader>
 
-                                <CardContent className="pt-2 relative z-10">
-                                    <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-                                        <div className="flex items-center justify-between mb-3">
-                                            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">{t("key_results")}</h4>
-                                            {canEdit && (
-                                                <Button variant="ghost" size="sm" className="h-6 text-xs hover:bg-blue-50 hover:text-blue-600 -mr-2" onClick={(e) => { e.stopPropagation(); openAddKR(goal.id); }}>
-                                                    <Plus className="h-3 w-3 mr-1" /> {t("add_task")}
-                                                </Button>
-                                            )}
-                                        </div>
+                                {/* Separator */}
+                                <div className="px-6">
+                                    <div className="h-px bg-slate-100 dark:bg-slate-800 w-full" />
+                                </div>
 
-                                        <div className="space-y-1">
-                                            {(goal.keyResults && goal.keyResults.length > 0) ? (
-                                                goal.keyResults.map((kr) => (
+                                <CardContent className="pt-4 flex-1 flex flex-col relative z-10">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">{t("key_results")}</h4>
+                                        {canEdit && (
+                                            <Button variant="ghost" size="sm" className="h-5 text-[10px] uppercase font-semibold text-slate-400 hover:text-blue-600 hover:bg-blue-50 -mr-2 px-2" onClick={(e) => { e.stopPropagation(); openAddKR(goal.id); }}>
+                                                <Plus className="h-3 w-3 mr-1" /> {t("add_task")}
+                                            </Button>
+                                        )}
+                                    </div>
+
+                                    <div className="space-y-1 flex-1">
+                                        {(goal.keyResults && goal.keyResults.length > 0) ? (
+                                            <div className="space-y-1">
+                                                {goal.keyResults.map((kr) => (
                                                     <KeyResultItem
                                                         key={kr.id}
                                                         goalId={goal.id}
@@ -697,23 +803,33 @@ export default function GoalsPage() {
                                                         onEdit={canEdit ? (kr) => openEditKR(goal.id, kr) : undefined}
                                                         onDelete={canEdit ? (krId) => handleDeleteKeyResult(goal.id, krId) : undefined}
                                                     />
-                                                ))
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            canEdit ? (
+                                                <div className="border border-dashed border-slate-200 dark:border-slate-800 rounded-lg p-4 text-center cursor-pointer hover:border-blue-300 dark:hover:border-blue-800 hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-all group/empty h-full flex flex-col items-center justify-center min-h-[100px]" onClick={(e) => { e.stopPropagation(); openAddKR(goal.id); }}>
+                                                    <Target className="h-5 w-5 text-slate-300 group-hover/empty:text-blue-400 mb-1" />
+                                                    <p className="text-xs text-slate-500 group-hover/empty:text-blue-600 font-medium">{t("add_first_key_result")}</p>
+                                                </div>
                                             ) : (
-                                                canEdit ? (
-                                                    <div className="border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-lg p-6 text-center cursor-pointer hover:border-blue-200 dark:hover:border-blue-900 hover:bg-blue-50/30 dark:hover:bg-blue-900/10 transition-all group/empty" onClick={(e) => { e.stopPropagation(); openAddKR(goal.id); }}>
-                                                        <p className="text-sm text-slate-500 dark:text-slate-400 group-hover/empty:text-blue-600 dark:group-hover/empty:text-blue-400 font-medium">{t("no_key_results")}</p>
-                                                        <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">{t("click_to_add_kr")}</p>
-                                                    </div>
-                                                ) : (
-                                                    <div className="text-sm text-slate-400 italic text-center py-4">{t("no_key_results")}</div>
-                                                )
-                                            )}
+                                                <div className="text-xs text-slate-400 italic text-center py-4">{t("no_key_results")}</div>
+                                            )
+                                        )}
+                                    </div>
+
+                                    <div className="mt-4 flex items-center justify-between">
+                                        <div className="flex -space-x-2">
+                                            {/* Minimal Assignee Display directly here for cleaner look, or re-use refined component if needed. Using AssigneeDisplay for now but maybe wrap it? */}
+                                            <AssigneeDisplay
+                                                assigneeIds={goal.assigneeIds}
+                                                groupIds={goal.groupIds}
+                                                members={members}
+                                                groups={groups}
+                                            // max={3} // removed max as it caused type error
+                                            />
                                         </div>
                                     </div>
                                 </CardContent>
-
-                                {/* Background decoration/illustration */}
-                                <div className="absolute -bottom-6 -right-6 h-32 w-32 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-800/50 rounded-full opacity-50 z-0 pointer-events-none" />
                             </Card>
                         ))
                     )}
