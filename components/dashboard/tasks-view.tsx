@@ -73,7 +73,8 @@ import {
     Settings2,
     Palette,
     AlertCircle,
-    Maximize2
+    Maximize2,
+    Archive
 } from "lucide-react";
 import { Skeleton } from "../ui/skeleton";
 import { TasksMetrics } from "./tasks-metrics";
@@ -354,7 +355,8 @@ function TaskCard({
             <div
                 {...(dragHandleProps || {})}
                 className={cn(
-                    "group flex flex-col gap-1.5 p-3 rounded-xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 transition-all duration-300",
+                    "group flex flex-col rounded-xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 transition-all duration-300",
+                    compact ? "py-2 pr-2 pl-1.5 gap-1" : "p-3 gap-1.5",
                     "hover:shadow-md hover:scale-[1.01] hover:border-primary/20 dark:hover:border-primary/20",
                     isDragging ? "transition-none shadow-xl border-primary/50 z-50 scale-105" : "",
                     "border-l-[4px]",
@@ -364,8 +366,8 @@ function TaskCard({
                     dragHandleProps && "cursor-grab active:cursor-grabbing",
                 )}
             >
-                <div className="flex items-center justify-between mb-0.5 pl-0.5 min-h-[20px]">
-                    <div className="flex items-center gap-2">
+                <div className="flex items-center justify-between mb-0.5 min-h-[20px]">
+                    <div className="flex flex-wrap items-center gap-1.5">
                         {/* Tags */}
                         {(() => {
                             const availableTags = tags.length > 0 ? tags : defaultTags;
@@ -384,12 +386,12 @@ function TaskCard({
                                 <Badge
                                     variant="outline"
                                     className={cn(
-                                        "rounded-md border-0 px-1.5 py-0 font-medium capitalize h-5 text-[10px]",
+                                        "rounded-md border-0 px-1.5 py-0 font-medium capitalize h-5 text-[10px] max-w-[80px] truncate",
                                         currentTag.color || "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400",
                                     )}
                                 >
-                                    <TagIcon className="h-2.5 w-2.5 mr-1 opacity-70" />
-                                    {currentTag.label}
+                                    <TagIcon className="h-2.5 w-2.5 mr-1 opacity-70 shrink-0" />
+                                    <span className="truncate">{currentTag.label}</span>
                                 </Badge>
                             );
                         })()}
@@ -398,7 +400,7 @@ function TaskCard({
                         {task.dueDate && (
                             <span
                                 className={cn(
-                                    "px-1.5 py-0 rounded-full font-medium flex items-center gap-1 transition-colors h-5 text-[10px]",
+                                    "px-1.5 py-0 rounded-full font-medium flex items-center gap-1 transition-colors h-5 text-[10px] whitespace-nowrap shrink-0",
                                     new Date(task.dueDate) < new Date() && !task.completed
                                         ? "text-rose-600 bg-rose-50 border border-rose-100 dark:bg-rose-950/30 dark:border-rose-900"
                                         : "text-slate-500 bg-slate-50 border border-slate-100 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400",
@@ -501,7 +503,8 @@ function TaskCard({
                     <div className="flex-1 min-w-0 pt-0.5 cursor-pointer" onClick={() => openDetails(false)}>
                         <div className="flex items-start justify-between gap-2">
                             <span className={cn(
-                                "font-medium text-sm leading-snug break-words line-clamp-2",
+                                "font-medium leading-snug break-words line-clamp-2",
+                                compact ? "text-xs" : "text-sm",
                                 task.completed && "line-through text-muted-foreground"
                             )}>
                                 {task.title}
@@ -533,7 +536,8 @@ function TaskCard({
                                             {subtask.completed && <Check className="h-3 w-3 stroke-[3]" />}
                                         </div>
                                         <span className={cn(
-                                            "text-xs text-slate-600 dark:text-slate-300 line-clamp-1 flex-1 select-none leading-none",
+                                            "text-slate-600 dark:text-slate-300 line-clamp-1 flex-1 select-none leading-none",
+                                            compact ? "text-[10px]" : "text-xs",
                                             subtask.completed && "line-through text-slate-400"
                                         )}>
                                             {subtask.title}
@@ -1607,971 +1611,983 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
     });
 
     return (
-        <DragDropContext onDragEnd={onDragEnd}>
-            <div className={cn("space-y-6 p-6 bg-slate-50/30 dark:bg-slate-950/30 rounded-2xl", className)}>
-                {/* Tasks Metrics Dashboard */}
-                {!compact && (
-                    <TasksMetrics
-                        tasks={tasks}
-                        goals={goals}
-                    />
-                )}
+        <>
+            <DragDropContext onDragEnd={onDragEnd}>
+                <div className={cn("space-y-6 p-6 bg-slate-50/30 dark:bg-slate-950/30 rounded-2xl", className)}>
+                    {/* Tasks Metrics Dashboard */}
+                    {!compact && (
+                        <TasksMetrics
+                            tasks={tasks}
+                            goals={goals}
+                        />
+                    )}
 
-                {/* Header & Controls */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                        {/* Title removed as per user request */}
+                    {/* Header & Controls */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div className="flex-1 min-w-0">
+                            {/* Title removed as per user request */}
+                        </div>
+
+                        <div className="flex items-center gap-2 w-full sm:w-auto">
+                            <Tabs
+                                value={view}
+                                onValueChange={setView}
+                                className="flex-1 sm:flex-none w-auto overflow-x-auto no-scrollbar"
+                            >
+                                <TabsList className="grid grid-cols-3 w-full sm:w-auto gap-1 bg-slate-100/50 dark:bg-slate-800/50 p-1 rounded-xl">
+                                    <TabsTrigger value="list" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm transition-all duration-200 text-xs py-2 px-1 sm:px-3">
+                                        <LayoutList className="h-3.5 w-3.5 sm:mr-2 shrink-0" /> <span className="hidden sm:inline">{t("list_view")}</span>
+                                    </TabsTrigger>
+                                    <TabsTrigger value="board" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm transition-all duration-200 text-xs py-2 px-1 sm:px-3">
+                                        <Kanban className="h-3.5 w-3.5 sm:mr-2 shrink-0" /> <span className="hidden sm:inline">{t("board_view")}</span>
+                                    </TabsTrigger>
+                                    <TabsTrigger value="matrix" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm transition-all duration-200 text-xs py-2 px-1 sm:px-3">
+                                        <Grid2X2 className="h-3.5 w-3.5 sm:mr-2 shrink-0" /> <span className="hidden sm:inline">{t("matrix_view")}</span>
+                                    </TabsTrigger>
+                                </TabsList>
+                            </Tabs>
+
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="shrink-0 h-10 w-10 sm:w-auto sm:px-4 text-slate-400 hover:text-slate-600 font-bold text-[10px] uppercase tracking-widest gap-2 bg-slate-100/50 dark:bg-slate-800/50 rounded-xl transition-colors"
+                                onClick={() => window.location.href = '/dashboard/tasks/archive'}
+                            >
+                                <Archive className="w-4 h-4" />
+                                <span className="hidden sm:inline">Archive</span>
+                            </Button>
+
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="shrink-0 h-10 w-10 sm:w-auto sm:px-4 text-slate-400 hover:text-slate-600 font-bold text-[10px] uppercase tracking-widest gap-2 bg-slate-100/50 dark:bg-slate-800/50 rounded-xl transition-colors"
+                                onClick={() => window.open('/dashboard/tasks/widget', 'TasksWidget', 'width=380,height=600')}
+                            >
+                                <Maximize2 className="w-4 h-4" />
+                                <span className="hidden sm:inline">Widget</span>
+                            </Button>
+                        </div>
                     </div>
 
-                    <div className="flex items-center gap-2 w-full sm:w-auto">
-                        <Tabs
-                            value={view}
-                            onValueChange={setView}
-                            className="flex-1 sm:flex-none w-auto overflow-x-auto no-scrollbar"
+
+
+                    {/* Add Task Bar */}
+                    <div className="bg-white dark:bg-slate-900 border border-border/40 dark:border-slate-800 shadow-sm hover:shadow-md focus-within:shadow-md focus-within:ring-2 focus-within:ring-primary/10 transition-all rounded-2xl p-2 md:p-3 relative z-10">
+                        <form
+                            onSubmit={handleAddTask}
+                            className="flex flex-col gap-3"
                         >
-                            <TabsList className="grid grid-cols-3 w-full sm:w-auto gap-1 bg-slate-100/50 dark:bg-slate-800/50 p-1 rounded-xl">
-                                <TabsTrigger value="list" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm transition-all duration-200 text-xs py-2 px-1 sm:px-3">
-                                    <LayoutList className="h-3.5 w-3.5 sm:mr-2 shrink-0" /> <span className="hidden sm:inline">{t("list_view")}</span>
-                                </TabsTrigger>
-                                <TabsTrigger value="board" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm transition-all duration-200 text-xs py-2 px-1 sm:px-3">
-                                    <Kanban className="h-3.5 w-3.5 sm:mr-2 shrink-0" /> <span className="hidden sm:inline">{t("board_view")}</span>
-                                </TabsTrigger>
-                                <TabsTrigger value="matrix" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm transition-all duration-200 text-xs py-2 px-1 sm:px-3">
-                                    <Grid2X2 className="h-3.5 w-3.5 sm:mr-2 shrink-0" /> <span className="hidden sm:inline">{t("matrix_view")}</span>
-                                </TabsTrigger>
-                            </TabsList>
-                        </Tabs>
-
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="shrink-0 h-10 w-10 sm:w-auto sm:px-4 text-slate-400 hover:text-slate-600 font-bold text-[10px] uppercase tracking-widest gap-2 bg-slate-100/50 dark:bg-slate-800/50 rounded-xl transition-colors"
-                            onClick={() => window.open('/dashboard/tasks/widget', 'TasksWidget', 'width=380,height=600')}
-                        >
-                            <Maximize2 className="w-4 h-4" />
-                            <span className="hidden sm:inline">Widget</span>
-                        </Button>
-                    </div>
-                </div>
-
-
-
-                {/* Add Task Bar */}
-                <div className="bg-white dark:bg-slate-900 border border-border/40 dark:border-slate-800 shadow-sm hover:shadow-md focus-within:shadow-md focus-within:ring-2 focus-within:ring-primary/10 transition-all rounded-2xl p-2 md:p-3 relative z-10">
-                    <form
-                        onSubmit={handleAddTask}
-                        className="flex flex-col gap-3"
-                    >
-                        <div className="flex flex-col md:flex-row gap-2 md:items-center">
-                            <div className="flex-1 w-full">
-                                <Input
-                                    id="main-task-input"
-                                    placeholder={
-                                        newTaskStatus === "backlog"
-                                            ? t("add_task_placeholder")
-                                            : columns.find(c => c.id === newTaskStatus)?.title
-                                                ? `${t("add_task")} to ${columns.find(c => c.id === newTaskStatus)?.title}...`
-                                                : t("add_task_placeholder")
-                                    }
-                                    value={newTaskTitle}
-                                    onChange={(e) => setNewTaskTitle(e.target.value)}
-                                    className="h-10 md:h-12 border-transparent bg-transparent text-base md:text-lg focus-visible:ring-0 px-2 md:px-4 placeholder:text-muted-foreground/60 dark:text-slate-100 shadow-none"
-                                />
-                            </div>
-
-                            <div className="flex flex-wrap items-center gap-2 w-full md:w-auto px-2 justify-between md:justify-end">
-                                <Popover>
-                                    <PopoverTrigger asChild>
-                                        <Button
-                                            variant={"outline"}
-                                            size="sm"
-                                            className={cn(
-                                                "h-9 w-[130px] justify-start text-left font-normal border-blue-200/50 bg-blue-50/50 hover:bg-blue-100/50 hover:border-blue-300/50 transition-colors dark:bg-blue-900/20 dark:border-blue-800/50 dark:hover:bg-blue-900/30",
-                                                !newTaskDate && "text-muted-foreground",
-                                                newTaskDate && "text-blue-700 border-blue-300/70 bg-blue-100/70 dark:text-blue-400 dark:bg-blue-900/40"
-                                            )}
-                                        >
-                                            <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
-                                            {newTaskDate ? (
-                                                format(newTaskDate, "MMM d")
-                                            ) : (
-                                                <span>{t("no_date")}</span>
-                                            )}
-                                        </Button>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-auto p-0" align="end">
-                                        <Calendar
-                                            mode="single"
-                                            selected={newTaskDate}
-                                            onSelect={setNewTaskDate}
-                                            initialFocus
-                                        />
-                                    </PopoverContent>
-                                </Popover>
-
-                                <Select
-                                    value={newTaskPriority}
-                                    onValueChange={(v: any) => setNewTaskPriority(v)}
-                                >
-                                    <SelectTrigger className={cn(
-                                        "h-9 w-[100px] border transition-colors",
-                                        newTaskPriority === "low" && "border-slate-200/50 bg-slate-50/50 hover:bg-slate-100/50 text-slate-700",
-                                        newTaskPriority === "medium" && "border-amber-200/50 bg-amber-50/50 hover:bg-amber-100/50 text-amber-700",
-                                        newTaskPriority === "high" && "border-rose-200/50 bg-rose-50/50 hover:bg-rose-100/50 text-rose-700"
-                                    )}>
-                                        <SelectValue placeholder="Priority" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="low">Low</SelectItem>
-                                        <SelectItem value="medium">Medium</SelectItem>
-                                        <SelectItem value="high">High</SelectItem>
-                                    </SelectContent>
-                                </Select>
-
-                                <div className="flex items-center gap-2">
-                                    <TagSelector
-                                        value={newTaskTag}
-                                        onChange={setNewTaskTag}
-                                        tags={availableTags}
-                                        role={role}
-                                        onEditTag={(tag) => {
-                                            setEditingTag(tag);
-                                            setNewTagName(tag.label);
-                                            setNewTagColor(tag.color || presetColors[0].value);
-                                            setIsTagManagerOpen(true);
-                                        }}
-                                        onDeleteTag={(tagId) => {
-                                            if (orgId) deleteTagFromOrganization(orgId, tagId);
-                                        }}
-                                        onCreateTag={() => {
-                                            setEditingTag(null);
-                                            setNewTagName("");
-                                            setNewTagColor(presetColors[0].value);
-                                            setIsTagManagerOpen(true);
-                                        }}
+                            <div className="flex flex-col md:flex-row gap-2 md:items-center">
+                                <div className="flex-1 w-full">
+                                    <Input
+                                        id="main-task-input"
+                                        placeholder={
+                                            newTaskStatus === "backlog"
+                                                ? t("add_task_placeholder")
+                                                : columns.find(c => c.id === newTaskStatus)?.title
+                                                    ? `${t("add_task")} to ${columns.find(c => c.id === newTaskStatus)?.title}...`
+                                                    : t("add_task_placeholder")
+                                        }
+                                        value={newTaskTitle}
+                                        onChange={(e) => setNewTaskTitle(e.target.value)}
+                                        className="h-10 md:h-12 border-transparent bg-transparent text-base md:text-lg focus-visible:ring-0 px-2 md:px-4 placeholder:text-muted-foreground/60 dark:text-slate-100 shadow-none"
                                     />
+                                </div>
 
-                                    <Dialog
-                                        open={isTagManagerOpen}
-                                        onOpenChange={setIsTagManagerOpen}
+                                <div className="flex flex-wrap items-center gap-2 w-full md:w-auto px-2 justify-between md:justify-end">
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                                variant={"outline"}
+                                                size="sm"
+                                                className={cn(
+                                                    "h-9 w-[130px] justify-start text-left font-normal border-blue-200/50 bg-blue-50/50 hover:bg-blue-100/50 hover:border-blue-300/50 transition-colors dark:bg-blue-900/20 dark:border-blue-800/50 dark:hover:bg-blue-900/30",
+                                                    !newTaskDate && "text-muted-foreground",
+                                                    newTaskDate && "text-blue-700 border-blue-300/70 bg-blue-100/70 dark:text-blue-400 dark:bg-blue-900/40"
+                                                )}
+                                            >
+                                                <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
+                                                {newTaskDate ? (
+                                                    format(newTaskDate, "MMM d")
+                                                ) : (
+                                                    <span>{t("no_date")}</span>
+                                                )}
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0" align="end">
+                                            <Calendar
+                                                mode="single"
+                                                selected={newTaskDate}
+                                                onSelect={setNewTaskDate}
+                                                initialFocus
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
+
+                                    <Select
+                                        value={newTaskPriority}
+                                        onValueChange={(v: any) => setNewTaskPriority(v)}
                                     >
-                                        <DialogContent>
-                                            <DialogHeader>
-                                                <DialogTitle>Manage Tags</DialogTitle>
-                                                <DialogDescription>
-                                                    Create, edit, and remove tags for your organization.
-                                                </DialogDescription>
-                                            </DialogHeader>
+                                        <SelectTrigger className={cn(
+                                            "h-9 w-[100px] border transition-colors",
+                                            newTaskPriority === "low" && "border-slate-200/50 bg-slate-50/50 hover:bg-slate-100/50 text-slate-700",
+                                            newTaskPriority === "medium" && "border-amber-200/50 bg-amber-50/50 hover:bg-amber-100/50 text-amber-700",
+                                            newTaskPriority === "high" && "border-rose-200/50 bg-rose-50/50 hover:bg-rose-100/50 text-rose-700"
+                                        )}>
+                                            <SelectValue placeholder="Priority" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="low">Low</SelectItem>
+                                            <SelectItem value="medium">Medium</SelectItem>
+                                            <SelectItem value="high">High</SelectItem>
+                                        </SelectContent>
+                                    </Select>
 
-                                            <div className="space-y-4 py-4">
-                                                <div className="flex gap-2 items-end">
-                                                    <div className="space-y-2 flex-1">
-                                                        <Label>
-                                                            {editingTag ? "Edit Tag Name" : "New Tag Name"}
-                                                        </Label>
-                                                        <Input
-                                                            value={newTagName}
-                                                            onChange={(e) => setNewTagName(e.target.value)}
-                                                            placeholder="e.g. Marketing"
-                                                        />
-                                                    </div>
-                                                    <div className="space-y-2">
-                                                        <Label>Color</Label>
-                                                        <Popover>
-                                                            <PopoverTrigger asChild>
-                                                                <Button
-                                                                    variant="outline"
-                                                                    className={cn("w-9 px-0", newTagColor)}
-                                                                >
-                                                                    <div
-                                                                        className={cn(
-                                                                            "h-4 w-4 rounded-full",
-                                                                            newTagColor
-                                                                                .split(" ")[0]
-                                                                                .replace("bg-", "bg-"),
-                                                                        )}
-                                                                    />
-                                                                </Button>
-                                                            </PopoverTrigger>
-                                                            <PopoverContent className="w-[180px] p-2">
-                                                                <div className="grid grid-cols-4 gap-2">
-                                                                    {presetColors.map((c) => (
+                                    <div className="flex items-center gap-2">
+                                        <TagSelector
+                                            value={newTaskTag}
+                                            onChange={setNewTaskTag}
+                                            tags={availableTags}
+                                            role={role}
+                                            onEditTag={(tag) => {
+                                                setEditingTag(tag);
+                                                setNewTagName(tag.label);
+                                                setNewTagColor(tag.color || presetColors[0].value);
+                                                setIsTagManagerOpen(true);
+                                            }}
+                                            onDeleteTag={(tagId) => {
+                                                if (orgId) deleteTagFromOrganization(orgId, tagId);
+                                            }}
+                                            onCreateTag={() => {
+                                                setEditingTag(null);
+                                                setNewTagName("");
+                                                setNewTagColor(presetColors[0].value);
+                                                setIsTagManagerOpen(true);
+                                            }}
+                                        />
+
+                                        <Dialog
+                                            open={isTagManagerOpen}
+                                            onOpenChange={setIsTagManagerOpen}
+                                        >
+                                            <DialogContent>
+                                                <DialogHeader>
+                                                    <DialogTitle>Manage Tags</DialogTitle>
+                                                    <DialogDescription>
+                                                        Create, edit, and remove tags for your organization.
+                                                    </DialogDescription>
+                                                </DialogHeader>
+
+                                                <div className="space-y-4 py-4">
+                                                    <div className="flex gap-2 items-end">
+                                                        <div className="space-y-2 flex-1">
+                                                            <Label>
+                                                                {editingTag ? "Edit Tag Name" : "New Tag Name"}
+                                                            </Label>
+                                                            <Input
+                                                                value={newTagName}
+                                                                onChange={(e) => setNewTagName(e.target.value)}
+                                                                placeholder="e.g. Marketing"
+                                                            />
+                                                        </div>
+                                                        <div className="space-y-2">
+                                                            <Label>Color</Label>
+                                                            <Popover>
+                                                                <PopoverTrigger asChild>
+                                                                    <Button
+                                                                        variant="outline"
+                                                                        className={cn("w-9 px-0", newTagColor)}
+                                                                    >
                                                                         <div
-                                                                            key={c.value}
                                                                             className={cn(
-                                                                                "h-6 w-6 rounded-full cursor-pointer border hover:scale-110 transition-transform",
-                                                                                c.value,
-                                                                                newTagColor === c.value &&
-                                                                                "ring-2 ring-primary ring-offset-2",
+                                                                                "h-4 w-4 rounded-full",
+                                                                                newTagColor
+                                                                                    .split(" ")[0]
+                                                                                    .replace("bg-", "bg-"),
                                                                             )}
-                                                                            onClick={() => setNewTagColor(c.value)}
-                                                                            title={c.label}
                                                                         />
-                                                                    ))}
-                                                                </div>
-                                                            </PopoverContent>
-                                                        </Popover>
-                                                    </div>
-                                                    <Button
-                                                        onClick={async () => {
-                                                            if (!newTagName.trim() || !orgId) return;
-                                                            if (editingTag) {
-                                                                await updateTagInOrganization(
-                                                                    orgId,
-                                                                    editingTag.id,
-                                                                    newTagName,
-                                                                    newTagColor,
-                                                                );
-                                                                setEditingTag(null);
-                                                            } else {
-                                                                await addTagToOrganization(
-                                                                    orgId,
-                                                                    newTagName,
-                                                                    newTagColor,
-                                                                );
-                                                            }
-                                                            setNewTagName("");
-                                                            setNewTagColor(presetColors[0].value);
-                                                        }}
-                                                        className="w-20"
-                                                    >
-                                                        {editingTag ? "Save" : "Add"}
-                                                    </Button>
-                                                    {editingTag && (
+                                                                    </Button>
+                                                                </PopoverTrigger>
+                                                                <PopoverContent className="w-[180px] p-2">
+                                                                    <div className="grid grid-cols-4 gap-2">
+                                                                        {presetColors.map((c) => (
+                                                                            <div
+                                                                                key={c.value}
+                                                                                className={cn(
+                                                                                    "h-6 w-6 rounded-full cursor-pointer border hover:scale-110 transition-transform",
+                                                                                    c.value,
+                                                                                    newTagColor === c.value &&
+                                                                                    "ring-2 ring-primary ring-offset-2",
+                                                                                )}
+                                                                                onClick={() => setNewTagColor(c.value)}
+                                                                                title={c.label}
+                                                                            />
+                                                                        ))}
+                                                                    </div>
+                                                                </PopoverContent>
+                                                            </Popover>
+                                                        </div>
                                                         <Button
-                                                            variant="ghost"
-                                                            onClick={() => {
-                                                                setEditingTag(null);
+                                                            onClick={async () => {
+                                                                if (!newTagName.trim() || !orgId) return;
+                                                                if (editingTag) {
+                                                                    await updateTagInOrganization(
+                                                                        orgId,
+                                                                        editingTag.id,
+                                                                        newTagName,
+                                                                        newTagColor,
+                                                                    );
+                                                                    setEditingTag(null);
+                                                                } else {
+                                                                    await addTagToOrganization(
+                                                                        orgId,
+                                                                        newTagName,
+                                                                        newTagColor,
+                                                                    );
+                                                                }
                                                                 setNewTagName("");
                                                                 setNewTagColor(presetColors[0].value);
                                                             }}
+                                                            className="w-20"
                                                         >
-                                                            <X className="h-4 w-4" />
+                                                            {editingTag ? "Save" : "Add"}
                                                         </Button>
-                                                    )}
-                                                </div>
-
-                                                <ScrollArea className="h-[200px] border rounded-md p-2">
-                                                    <div className="space-y-2">
-                                                        {orgTags.length === 0 ? (
-                                                            <p className="text-sm text-center text-muted-foreground py-8">
-                                                                No custom tags yet.
-                                                            </p>
-                                                        ) : (
-                                                            orgTags.map((tag) => (
-                                                                <div
-                                                                    key={tag.id}
-                                                                    className="flex items-center justify-between p-2 rounded-lg border bg-card hover:bg-muted/30 group"
-                                                                >
-                                                                    <Badge
-                                                                        variant="outline"
-                                                                        className={cn(
-                                                                            "font-normal capitalize",
-                                                                            tag.color,
-                                                                        )}
-                                                                    >
-                                                                        {tag.label}
-                                                                    </Badge>
-                                                                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                                        <Button
-                                                                            variant="ghost"
-                                                                            size="icon"
-                                                                            className="h-7 w-7"
-                                                                            onClick={() => {
-                                                                                setEditingTag(tag);
-                                                                                setNewTagName(tag.label);
-                                                                                setNewTagColor(
-                                                                                    tag.color || presetColors[0].value,
-                                                                                );
-                                                                            }}
-                                                                        >
-                                                                            <Pencil className="h-3.5 w-3.5" />
-                                                                        </Button>
-                                                                        <Button
-                                                                            variant="ghost"
-                                                                            size="icon"
-                                                                            className="h-7 w-7 text-destructive hover:text-destructive"
-                                                                            onClick={() => {
-                                                                                if (orgId)
-                                                                                    deleteTagFromOrganization(
-                                                                                        orgId,
-                                                                                        tag.id,
-                                                                                    );
-                                                                            }}
-                                                                        >
-                                                                            <Trash2 className="h-3.5 w-3.5" />
-                                                                        </Button>
-                                                                    </div>
-                                                                </div>
-                                                            ))
-                                                        )}
-                                                    </div>
-                                                </ScrollArea>
-                                            </div>
-                                        </DialogContent>
-                                    </Dialog>
-                                </div>
-
-                                <Button
-                                    type="submit"
-                                    size="icon"
-                                    className="h-9 w-9 bg-primary text-primary-foreground shrink-0 rounded-lg shadow-md hover:shadow-lg transition-all ml-1"
-                                >
-                                    <Plus className="h-5 w-5" />
-                                </Button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-
-                {/* Views Content */}
-                {loading ? (
-                    <div
-                        className={cn(
-                            "container mx-auto max-w-7xl pt-6 space-y-4",
-                            className,
-                        )}
-                    >
-                        <div className="flex items-center justify-between mb-8">
-                            <Skeleton className="h-8 w-48" />
-                            <div className="flex gap-2">
-                                <Skeleton className="h-9 w-24" />
-                                <Skeleton className="h-9 w-24" />
-                            </div>
-                        </div>
-                        <div className="space-y-4">
-                            {[1, 2, 3].map((i) => (
-                                <Skeleton key={i} className="h-20 w-full rounded-xl" />
-                            ))}
-                        </div>
-                    </div>
-                ) : tasks.length === 0 && columns.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-20 border-2 border-dashed border-primary/20 rounded-2xl bg-gradient-to-br from-primary/5 to-transparent">
-                        <div className="text-6xl mb-4">🎯</div>
-                        <h3 className="text-xl font-bold text-foreground mb-2">Chào mừng đến với Tasks!</h3>
-                        <p className="text-muted-foreground max-w-sm text-center mb-4">
-                            Hãy bắt đầu hành trình quản lý công việc hiệu quả của bạn
-                        </p>
-                        <Button
-                            size="sm"
-                            className="shadow-md"
-                            onClick={() => document.querySelector<HTMLInputElement>('input[placeholder="What needs to be done?"]')?.focus()}
-                        >
-                            <Plus className="h-4 w-4 mr-2" />
-                            Tạo task đầu tiên
-                        </Button>
-                    </div>
-                ) : (
-                    <>
-                        {/* List View */}
-                        {view === "list" && (
-                            <div className="space-y-3">
-                                {sortedTasksForList.map((task) => (
-                                    <TaskCard
-                                        key={task.id}
-                                        task={task}
-                                        columns={columns}
-                                        onMove={updateTaskStatus}
-                                        members={members}
-                                        groups={groups}
-                                        role={role}
-                                        orgId={orgId}
-                                        tags={availableTags}
-                                        onEditTag={(tag) => {
-                                            setEditingTag(tag);
-                                            setNewTagName(tag.label);
-                                            setNewTagColor(tag.color || presetColors[0].value);
-                                            setIsTagManagerOpen(true);
-                                        }}
-                                        onDeleteTag={(tagId) => {
-                                            if (orgId) deleteTagFromOrganization(orgId, tagId);
-                                        }}
-                                        onCreateTag={() => {
-                                            setEditingTag(null);
-                                            setNewTagName("");
-                                            setNewTagColor(presetColors[0].value);
-                                            setIsTagManagerOpen(true);
-                                        }}
-                                    />
-                                ))}
-                            </div>
-                        )}
-
-                        {/* Board View */}
-                        {view === "board" && (
-                            <div className="min-h-[500px] overflow-x-auto">
-                                {columns.length === 0 ? (
-                                    <div className="flex flex-col items-center justify-center w-full py-10 border-2 border-dashed rounded-xl">
-                                        <p className="mb-4 text-muted-foreground">
-                                            No columns configured.
-                                        </p>
-                                        <Button onClick={handleCreateDefaultColumns}>
-                                            Create Default Columns
-                                        </Button>
-                                    </div>
-                                ) : (
-                                    <Droppable
-                                        droppableId="board"
-                                        direction="horizontal"
-                                        type="COLUMN"
-                                    >
-                                        {(provided) => (
-                                            <div
-                                                ref={provided.innerRef}
-                                                {...provided.droppableProps}
-                                                className="flex gap-3 md:gap-6 pb-6 items-start h-full board-container overflow-x-auto snap-x snap-mandatory px-4 md:px-0 scroll-pl-4"
-                                            >
-                                                {columns.map((col, index) => (
-                                                    <Draggable
-                                                        key={col.id}
-                                                        draggableId={col.id}
-                                                        index={index}
-                                                    >
-                                                        {(provided, snapshot) => (
-                                                            <div
-                                                                ref={provided.innerRef}
-                                                                {...provided.draggableProps}
-                                                                className="flex flex-col gap-2 bg-white dark:bg-slate-900 rounded-3xl p-4 shadow-sm border border-slate-100 dark:border-slate-800 h-full max-h-[calc(100vh-220px)] border-t-[6px] relative snap-center shrink-0"
-                                                                style={{
-                                                                    ...provided.draggableProps.style,
-                                                                    width: (columnWidths[col.id] || col.width || 0) <= 1
-                                                                        ? `${(columnWidths[col.id] || col.width || 0) * 100}%`
-                                                                        : (columnWidths[col.id] || col.width || 300),
-                                                                    minWidth: "min(85vw, 300px)",
-                                                                    flexShrink: 0,
-                                                                    borderColor: col.title === "Backlog" ? "#9ca3af" :
-                                                                        col.title === "This Week" ? "#3b82f6" :
-                                                                            col.title === "Today" ? "#f97316" :
-                                                                                col.title === "Done" ? "#a855f7" : "#10b981"
+                                                        {editingTag && (
+                                                            <Button
+                                                                variant="ghost"
+                                                                onClick={() => {
+                                                                    setEditingTag(null);
+                                                                    setNewTagName("");
+                                                                    setNewTagColor(presetColors[0].value);
                                                                 }}
                                                             >
-                                                                <div
-                                                                    {...provided.dragHandleProps}
-                                                                    className="flex items-center justify-between px-2 cursor-grab active:cursor-grabbing group mb-2"
-                                                                >
-                                                                    <div className="flex items-center gap-2">
-                                                                        <h3 className="font-bold text-base text-foreground">
-                                                                            {col.title}
-                                                                        </h3>
-                                                                        <span className="text-xs font-medium text-muted-foreground bg-secondary/50 px-2 py-0.5 rounded-full">
-                                                                            {
-                                                                                getTasksByColumn(col.id, col.title)
-                                                                                    .length
-                                                                            }
-                                                                        </span>
-                                                                    </div>
-                                                                    <DropdownMenu>
-                                                                        <DropdownMenuTrigger asChild>
+                                                                <X className="h-4 w-4" />
+                                                            </Button>
+                                                        )}
+                                                    </div>
+
+                                                    <ScrollArea className="h-[200px] border rounded-md p-2">
+                                                        <div className="space-y-2">
+                                                            {orgTags.length === 0 ? (
+                                                                <p className="text-sm text-center text-muted-foreground py-8">
+                                                                    No custom tags yet.
+                                                                </p>
+                                                            ) : (
+                                                                orgTags.map((tag) => (
+                                                                    <div
+                                                                        key={tag.id}
+                                                                        className="flex items-center justify-between p-2 rounded-lg border bg-card hover:bg-muted/30 group"
+                                                                    >
+                                                                        <Badge
+                                                                            variant="outline"
+                                                                            className={cn(
+                                                                                "font-normal capitalize",
+                                                                                tag.color,
+                                                                            )}
+                                                                        >
+                                                                            {tag.label}
+                                                                        </Badge>
+                                                                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                                                             <Button
                                                                                 variant="ghost"
                                                                                 size="icon"
-                                                                                className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity rounded-full hover:bg-secondary"
+                                                                                className="h-7 w-7"
+                                                                                onClick={() => {
+                                                                                    setEditingTag(tag);
+                                                                                    setNewTagName(tag.label);
+                                                                                    setNewTagColor(
+                                                                                        tag.color || presetColors[0].value,
+                                                                                    );
+                                                                                }}
                                                                             >
-                                                                                <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
+                                                                                <Pencil className="h-3.5 w-3.5" />
                                                                             </Button>
-                                                                        </DropdownMenuTrigger>
-                                                                        <DropdownMenuContent>
-                                                                            <DropdownMenuItem
-                                                                                className="text-destructive"
-                                                                                onClick={() =>
-                                                                                    deleteTaskColumn(col.id)
-                                                                                }
+                                                                            <Button
+                                                                                variant="ghost"
+                                                                                size="icon"
+                                                                                className="h-7 w-7 text-destructive hover:text-destructive"
+                                                                                onClick={() => {
+                                                                                    if (orgId)
+                                                                                        deleteTagFromOrganization(
+                                                                                            orgId,
+                                                                                            tag.id,
+                                                                                        );
+                                                                                }}
                                                                             >
-                                                                                Delete Column
-                                                                            </DropdownMenuItem>
-                                                                        </DropdownMenuContent>
-                                                                    </DropdownMenu>
-                                                                </div>
+                                                                                <Trash2 className="h-3.5 w-3.5" />
+                                                                            </Button>
+                                                                        </div>
+                                                                    </div>
+                                                                ))
+                                                            )}
+                                                        </div>
+                                                    </ScrollArea>
+                                                </div>
+                                            </DialogContent>
+                                        </Dialog>
+                                    </div>
 
-                                                                {/* Resize Handle */}
+                                    <Button
+                                        type="submit"
+                                        size="icon"
+                                        className="h-9 w-9 bg-primary text-primary-foreground shrink-0 rounded-lg shadow-md hover:shadow-lg transition-all ml-1"
+                                    >
+                                        <Plus className="h-5 w-5" />
+                                    </Button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    {/* Views Content */}
+                    {loading ? (
+                        <div
+                            className={cn(
+                                "container mx-auto max-w-7xl pt-6 space-y-4",
+                                className,
+                            )}
+                        >
+                            <div className="flex items-center justify-between mb-8">
+                                <Skeleton className="h-8 w-48" />
+                                <div className="flex gap-2">
+                                    <Skeleton className="h-9 w-24" />
+                                    <Skeleton className="h-9 w-24" />
+                                </div>
+                            </div>
+                            <div className="space-y-4">
+                                {[1, 2, 3].map((i) => (
+                                    <Skeleton key={i} className="h-20 w-full rounded-xl" />
+                                ))}
+                            </div>
+                        </div>
+                    ) : tasks.length === 0 && columns.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-20 border-2 border-dashed border-primary/20 rounded-2xl bg-gradient-to-br from-primary/5 to-transparent">
+                            <div className="text-6xl mb-4">🎯</div>
+                            <h3 className="text-xl font-bold text-foreground mb-2">Chào mừng đến với Tasks!</h3>
+                            <p className="text-muted-foreground max-w-sm text-center mb-4">
+                                Hãy bắt đầu hành trình quản lý công việc hiệu quả của bạn
+                            </p>
+                            <Button
+                                size="sm"
+                                className="shadow-md"
+                                onClick={() => document.querySelector<HTMLInputElement>('input[placeholder="What needs to be done?"]')?.focus()}
+                            >
+                                <Plus className="h-4 w-4 mr-2" />
+                                Tạo task đầu tiên
+                            </Button>
+                        </div>
+                    ) : (
+                        <>
+                            {/* List View */}
+                            {view === "list" && (
+                                <div className="space-y-3">
+                                    {sortedTasksForList.map((task) => (
+                                        <TaskCard
+                                            key={task.id}
+                                            task={task}
+                                            columns={columns}
+                                            onMove={updateTaskStatus}
+                                            members={members}
+                                            groups={groups}
+                                            role={role}
+                                            orgId={orgId}
+                                            tags={availableTags}
+                                            onEditTag={(tag) => {
+                                                setEditingTag(tag);
+                                                setNewTagName(tag.label);
+                                                setNewTagColor(tag.color || presetColors[0].value);
+                                                setIsTagManagerOpen(true);
+                                            }}
+                                            onDeleteTag={(tagId) => {
+                                                if (orgId) deleteTagFromOrganization(orgId, tagId);
+                                            }}
+                                            onCreateTag={() => {
+                                                setEditingTag(null);
+                                                setNewTagName("");
+                                                setNewTagColor(presetColors[0].value);
+                                                setIsTagManagerOpen(true);
+                                            }}
+                                        />
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Board View */}
+                            {view === "board" && (
+                                <div className="min-h-[500px] overflow-x-auto">
+                                    {columns.length === 0 ? (
+                                        <div className="flex flex-col items-center justify-center w-full py-10 border-2 border-dashed rounded-xl">
+                                            <p className="mb-4 text-muted-foreground">
+                                                No columns configured.
+                                            </p>
+                                            <Button onClick={handleCreateDefaultColumns}>
+                                                Create Default Columns
+                                            </Button>
+                                        </div>
+                                    ) : (
+                                        <Droppable
+                                            droppableId="board"
+                                            direction="horizontal"
+                                            type="COLUMN"
+                                        >
+                                            {(provided) => (
+                                                <div
+                                                    ref={provided.innerRef}
+                                                    {...provided.droppableProps}
+                                                    className="flex gap-3 md:gap-3 pb-6 items-start h-full board-container overflow-x-auto snap-x snap-mandatory px-4 md:px-0 scroll-pl-4 flex-nowrap"
+                                                >
+                                                    {columns.map((col, index) => (
+                                                        <Draggable
+                                                            key={col.id}
+                                                            draggableId={col.id}
+                                                            index={index}
+                                                        >
+                                                            {(provided, snapshot) => (
                                                                 <div
-                                                                    className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-primary/50 transition-colors z-10"
-                                                                    onMouseDown={(e) => startResize(e, col)}
-                                                                />
-
-                                                                <Droppable droppableId={col.id} type="TASK">
-                                                                    {(provided, snapshot) => {
-                                                                        const columnTasks = getTasksByColumn(col.id, col.title);
-                                                                        return (
-                                                                            <div
-                                                                                ref={provided.innerRef}
-                                                                                {...provided.droppableProps}
-                                                                                className={cn(
-                                                                                    "flex-1 overflow-y-auto min-h-[150px] space-y-3 px-1 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-transparent scrollbar-thumb-muted/20 hover:scrollbar-thumb-muted/50 flex flex-col",
-                                                                                    snapshot.isDraggingOver && "bg-secondary/20 rounded-xl ring-2 ring-primary/10",
-                                                                                    columnTasks.length === 0 && "justify-center"
-                                                                                )}
-                                                                            >
-                                                                                {columnTasks.length === 0 && !snapshot.isDraggingOver ? (
-                                                                                    <div className="text-center py-10 px-4 border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-xl mx-2">
-                                                                                        <p className="text-sm text-muted-foreground font-medium">No tasks</p>
-                                                                                    </div>
-                                                                                ) : (
-                                                                                    columnTasks.map((task, index) => (
-                                                                                        <Draggable
-                                                                                            key={task.id}
-                                                                                            draggableId={task.id}
-                                                                                            index={index}
-                                                                                        >
-                                                                                            {(provided, snapshot) => {
-                                                                                                const child = (
-                                                                                                    <div
-                                                                                                        ref={provided.innerRef}
-                                                                                                        {...provided.draggableProps}
-                                                                                                        {...provided.dragHandleProps}
-                                                                                                        style={{
-                                                                                                            ...provided.draggableProps.style,
-                                                                                                        }}
-                                                                                                    >
-                                                                                                        <TaskCard
-                                                                                                            task={task}
-                                                                                                            columns={columns}
-                                                                                                            onMove={updateTaskStatus}
-                                                                                                            members={members}
-                                                                                                            groups={groups}
-                                                                                                            role={role}
-                                                                                                            orgId={orgId}
-                                                                                                            tags={availableTags}
-                                                                                                            onEditTag={(tag) => {
-                                                                                                                setEditingTag(tag);
-                                                                                                                setNewTagName(tag.label);
-                                                                                                                setNewTagColor(tag.color || presetColors[0].value);
-                                                                                                                setIsTagManagerOpen(true);
-                                                                                                            }}
-                                                                                                            onDeleteTag={(tagId) => {
-                                                                                                                if (orgId) deleteTagFromOrganization(orgId, tagId);
-                                                                                                            }}
-                                                                                                            onCreateTag={() => {
-                                                                                                                setEditingTag(null);
-                                                                                                                setNewTagName("");
-                                                                                                                setNewTagColor(presetColors[0].value);
-                                                                                                                setIsTagManagerOpen(true);
-                                                                                                            }}
-                                                                                                            compact={true}
-                                                                                                        />
-                                                                                                    </div>
-                                                                                                );
-                                                                                                return child;
-                                                                                            }}
-                                                                                        </Draggable>
-                                                                                    ))
-                                                                                )}
-                                                                                {provided.placeholder}
-                                                                            </div>
-                                                                        );
+                                                                    ref={provided.innerRef}
+                                                                    {...provided.draggableProps}
+                                                                    className="flex flex-col gap-2 bg-white dark:bg-slate-900 rounded-3xl p-2 shadow-sm border border-slate-100 dark:border-slate-800 h-full max-h-[calc(100vh-220px)] border-t-[6px] relative snap-start shrink-0 min-w-[300px]"
+                                                                    style={{
+                                                                        ...provided.draggableProps.style,
+                                                                        width: (columnWidths[col.id] || col.width || 0) <= 1
+                                                                            ? `${(columnWidths[col.id] || col.width || 0) * 100}%`
+                                                                            : (columnWidths[col.id] || col.width || 300),
+                                                                        flexShrink: 0,
+                                                                        borderColor: col.title === "Backlog" ? "#9ca3af" :
+                                                                            col.title === "This Week" ? "#3b82f6" :
+                                                                                col.title === "Today" ? "#f97316" :
+                                                                                    col.title === "Done" ? "#a855f7" : "#10b981"
                                                                     }}
-                                                                </Droppable>
-
-                                                                <div className="mt-2 pt-2">
-                                                                    <Button
-                                                                        variant="ghost"
-                                                                        className="w-full justify-center text-muted-foreground hover:text-primary hover:bg-secondary/50 h-9"
-                                                                        onClick={() => {
-                                                                            setCreateTaskStatus(col.id);
-                                                                            setIsCreateTaskOpen(true);
-                                                                        }}
+                                                                >
+                                                                    <div
+                                                                        {...provided.dragHandleProps}
+                                                                        className="flex items-center justify-between px-2 cursor-grab active:cursor-grabbing group mb-2"
                                                                     >
-                                                                        <Plus className="h-4 w-4 mr-2" />
-                                                                        Add Task
+                                                                        <div className="flex items-center gap-2">
+                                                                            <h3 className="font-bold text-base text-foreground">
+                                                                                {col.title}
+                                                                            </h3>
+                                                                            <span className="text-xs font-medium text-muted-foreground bg-secondary/50 px-2 py-0.5 rounded-full">
+                                                                                {
+                                                                                    getTasksByColumn(col.id, col.title)
+                                                                                        .length
+                                                                                }
+                                                                            </span>
+                                                                        </div>
+                                                                        <DropdownMenu>
+                                                                            <DropdownMenuTrigger asChild>
+                                                                                <Button
+                                                                                    variant="ghost"
+                                                                                    size="icon"
+                                                                                    className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity rounded-full hover:bg-secondary"
+                                                                                >
+                                                                                    <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
+                                                                                </Button>
+                                                                            </DropdownMenuTrigger>
+                                                                            <DropdownMenuContent>
+                                                                                <DropdownMenuItem
+                                                                                    className="text-destructive"
+                                                                                    onClick={() =>
+                                                                                        deleteTaskColumn(col.id)
+                                                                                    }
+                                                                                >
+                                                                                    Delete Column
+                                                                                </DropdownMenuItem>
+                                                                            </DropdownMenuContent>
+                                                                        </DropdownMenu>
+                                                                    </div>
+
+                                                                    {/* Resize Handle */}
+                                                                    <div
+                                                                        className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-primary/50 transition-colors z-10"
+                                                                        onMouseDown={(e) => startResize(e, col)}
+                                                                    />
+
+                                                                    <Droppable droppableId={col.id} type="TASK">
+                                                                        {(provided, snapshot) => {
+                                                                            const columnTasks = getTasksByColumn(col.id, col.title);
+                                                                            return (
+                                                                                <div
+                                                                                    ref={provided.innerRef}
+                                                                                    {...provided.droppableProps}
+                                                                                    className={cn(
+                                                                                        "flex-1 overflow-y-auto min-h-[150px] space-y-3 px-1 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-transparent scrollbar-thumb-muted/20 hover:scrollbar-thumb-muted/50 flex flex-col",
+                                                                                        snapshot.isDraggingOver && "bg-secondary/20 rounded-xl ring-2 ring-primary/10",
+                                                                                        columnTasks.length === 0 && "justify-center"
+                                                                                    )}
+                                                                                >
+                                                                                    {columnTasks.length === 0 && !snapshot.isDraggingOver ? (
+                                                                                        <div className="text-center py-10 px-4 border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-xl mx-2">
+                                                                                            <p className="text-sm text-muted-foreground font-medium">No tasks</p>
+                                                                                        </div>
+                                                                                    ) : (
+                                                                                        columnTasks.map((task, index) => (
+                                                                                            <Draggable
+                                                                                                key={task.id}
+                                                                                                draggableId={task.id}
+                                                                                                index={index}
+                                                                                            >
+                                                                                                {(provided, snapshot) => {
+                                                                                                    const child = (
+                                                                                                        <div
+                                                                                                            ref={provided.innerRef}
+                                                                                                            {...provided.draggableProps}
+                                                                                                            {...provided.dragHandleProps}
+                                                                                                            style={{
+                                                                                                                ...provided.draggableProps.style,
+                                                                                                            }}
+                                                                                                        >
+                                                                                                            <TaskCard
+                                                                                                                task={task}
+                                                                                                                columns={columns}
+                                                                                                                onMove={updateTaskStatus}
+                                                                                                                members={members}
+                                                                                                                groups={groups}
+                                                                                                                role={role}
+                                                                                                                orgId={orgId}
+                                                                                                                tags={availableTags}
+                                                                                                                onEditTag={(tag) => {
+                                                                                                                    setEditingTag(tag);
+                                                                                                                    setNewTagName(tag.label);
+                                                                                                                    setNewTagColor(tag.color || presetColors[0].value);
+                                                                                                                    setIsTagManagerOpen(true);
+                                                                                                                }}
+                                                                                                                onDeleteTag={(tagId) => {
+                                                                                                                    if (orgId) deleteTagFromOrganization(orgId, tagId);
+                                                                                                                }}
+                                                                                                                onCreateTag={() => {
+                                                                                                                    setEditingTag(null);
+                                                                                                                    setNewTagName("");
+                                                                                                                    setNewTagColor(presetColors[0].value);
+                                                                                                                    setIsTagManagerOpen(true);
+                                                                                                                }}
+                                                                                                                compact={true}
+                                                                                                            />
+                                                                                                        </div>
+                                                                                                    );
+                                                                                                    return child;
+                                                                                                }}
+                                                                                            </Draggable>
+                                                                                        ))
+                                                                                    )}
+                                                                                    {provided.placeholder}
+                                                                                </div>
+                                                                            );
+                                                                        }}
+                                                                    </Droppable>
+
+                                                                    <div className="mt-2 pt-2">
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            className="w-full justify-center text-muted-foreground hover:text-primary hover:bg-secondary/50 h-9"
+                                                                            onClick={() => {
+                                                                                setCreateTaskStatus(col.id);
+                                                                                setIsCreateTaskOpen(true);
+                                                                            }}
+                                                                        >
+                                                                            <Plus className="h-4 w-4 mr-2" />
+                                                                            Add Task
+                                                                        </Button>
+                                                                    </div>
+
+
+                                                                    {/* Add Task Button - Stick to Bottom */}
+
+                                                                </div>
+                                                            )}
+                                                        </Draggable>
+                                                    ))
+                                                    }
+                                                    {provided.placeholder}
+
+                                                    {/* Add Column Button (Icon Only) */}
+                                                    <div className="min-w-[50px] pt-1">
+                                                        {isAddingColumn ? (
+                                                            <div className="bg-background border rounded-lg p-2 space-y-2 shadow-sm w-[200px]">
+                                                                <Input
+                                                                    autoFocus
+                                                                    placeholder="Column Title"
+                                                                    value={newColumnTitle}
+                                                                    onChange={(e) =>
+                                                                        setNewColumnTitle(e.target.value)
+                                                                    }
+                                                                    className="h-8 text-sm"
+                                                                />
+                                                                <div className="flex justify-end gap-2">
+                                                                    <Button
+                                                                        size="icon"
+                                                                        variant="ghost"
+                                                                        className="h-6 w-6"
+                                                                        onClick={() => setIsAddingColumn(false)}
+                                                                    >
+                                                                        <X className="h-3 w-3" />
+                                                                    </Button>
+                                                                    <Button
+                                                                        size="icon"
+                                                                        variant="ghost"
+                                                                        className="h-6 w-6 text-primary"
+                                                                        onClick={handleAddColumn}
+                                                                    >
+                                                                        <ArrowRight className="h-3 w-3" />
                                                                     </Button>
                                                                 </div>
-
-
-                                                                {/* Add Task Button - Stick to Bottom */}
-
                                                             </div>
+                                                        ) : (
+                                                            <Button
+                                                                variant="ghost"
+                                                                className="h-[50px] w-[50px] rounded-xl border-2 border-dashed border-muted hover:border-primary/50 hover:bg-secondary/50 text-muted-foreground"
+                                                                onClick={() => setIsAddingColumn(true)}
+                                                            >
+                                                                <Plus className="h-6 w-6" />
+                                                            </Button>
                                                         )}
-                                                    </Draggable>
-                                                ))
-                                                }
-                                                {provided.placeholder}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </Droppable>
+                                    )
+                                    }
+                                </div >
+                            )}
 
-                                                {/* Add Column Button (Icon Only) */}
-                                                <div className="min-w-[50px] pt-1">
-                                                    {isAddingColumn ? (
-                                                        <div className="bg-background border rounded-lg p-2 space-y-2 shadow-sm w-[200px]">
-                                                            <Input
-                                                                autoFocus
-                                                                placeholder="Column Title"
-                                                                value={newColumnTitle}
-                                                                onChange={(e) =>
-                                                                    setNewColumnTitle(e.target.value)
-                                                                }
-                                                                className="h-8 text-sm"
-                                                            />
-                                                            <div className="flex justify-end gap-2">
-                                                                <Button
-                                                                    size="icon"
-                                                                    variant="ghost"
-                                                                    className="h-6 w-6"
-                                                                    onClick={() => setIsAddingColumn(false)}
-                                                                >
-                                                                    <X className="h-3 w-3" />
-                                                                </Button>
-                                                                <Button
-                                                                    size="icon"
-                                                                    variant="ghost"
-                                                                    className="h-6 w-6 text-primary"
-                                                                    onClick={handleAddColumn}
-                                                                >
-                                                                    <ArrowRight className="h-3 w-3" />
-                                                                </Button>
-                                                            </div>
-                                                        </div>
-                                                    ) : (
-                                                        <Button
-                                                            variant="ghost"
-                                                            className="h-[50px] w-[50px] rounded-xl border-2 border-dashed border-muted hover:border-primary/50 hover:bg-secondary/50 text-muted-foreground"
-                                                            onClick={() => setIsAddingColumn(true)}
-                                                        >
-                                                            <Plus className="h-6 w-6" />
-                                                        </Button>
+                            {/* Matrix View */}
+                            {
+                                view === "matrix" && (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-auto min-h-[600px]">
+                                        {/* Q1: Do First (Urgent & Important) */}
+                                        <Droppable droppableId="matrix-q1" type="MATRIX_TASK">
+                                            {(provided, snapshot) => (
+                                                <div
+                                                    className={cn(
+                                                        "bg-rose-50/50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/50 rounded-2xl p-4",
+                                                        snapshot.isDraggingOver &&
+                                                        "bg-rose-100/50 ring-2 ring-rose-500/20",
                                                     )}
+                                                >
+                                                    <h3 className="text-rose-700 dark:text-rose-400 font-bold mb-4 flex items-center gap-2">
+                                                        <span className="bg-rose-100 dark:bg-rose-900/50 w-6 h-6 rounded-full flex items-center justify-center text-xs">
+                                                            1
+                                                        </span>
+                                                        Do First{" "}
+                                                        <span className="text-xs font-normal opacity-70">
+                                                            (Urgent & Important)
+                                                        </span>
+                                                    </h3>
+                                                    <div
+                                                        className="space-y-2 min-h-[100px]"
+                                                        ref={provided.innerRef}
+                                                        {...provided.droppableProps}
+                                                    >
+                                                        {getTasksForMatrix(true, true).map((task, index) => (
+                                                            <Draggable
+                                                                key={task.id}
+                                                                draggableId={task.id}
+                                                                index={index}
+                                                            >
+                                                                {(provided, snapshot) => {
+                                                                    const child = (
+                                                                        <div
+                                                                            ref={provided.innerRef}
+                                                                            {...provided.draggableProps}
+                                                                            style={provided.draggableProps.style}
+                                                                        >
+                                                                            <TaskCard
+                                                                                task={task}
+                                                                                compact
+                                                                                dragHandleProps={
+                                                                                    role !== "viewer"
+                                                                                        ? provided.dragHandleProps
+                                                                                        : undefined
+                                                                                }
+                                                                                members={members}
+                                                                                groups={groups}
+                                                                                role={role}
+                                                                                orgId={orgId}
+                                                                                tags={availableTags}
+                                                                                onEditTag={(tag) => {
+                                                                                    setEditingTag(tag);
+                                                                                    setNewTagName(tag.label);
+                                                                                    setNewTagColor(
+                                                                                        tag.color || presetColors[0].value,
+                                                                                    );
+                                                                                    setIsTagManagerOpen(true);
+                                                                                }}
+                                                                                onDeleteTag={(tagId) => {
+                                                                                    if (orgId)
+                                                                                        deleteTagFromOrganization(orgId, tagId);
+                                                                                }}
+                                                                                onCreateTag={() => {
+                                                                                    setEditingTag(null);
+                                                                                    setNewTagName("");
+                                                                                    setNewTagColor(presetColors[0].value);
+                                                                                    setIsTagManagerOpen(true);
+                                                                                }}
+                                                                                isDragging={snapshot.isDragging}
+                                                                            />
+                                                                        </div>
+                                                                    );
+                                                                    return child;
+                                                                }}
+                                                            </Draggable>
+                                                        ))}
+                                                        {provided.placeholder}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        )}
-                                    </Droppable>
+                                            )}
+                                        </Droppable>
+
+                                        {/* Q2: Schedule (Not Urgent & Important) */}
+                                        <Droppable droppableId="matrix-q2" type="MATRIX_TASK">
+                                            {(provided, snapshot) => (
+                                                <div
+                                                    className={cn(
+                                                        "bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/50 rounded-2xl p-4",
+                                                        snapshot.isDraggingOver &&
+                                                        "bg-blue-100/50 ring-2 ring-blue-500/20",
+                                                    )}
+                                                >
+                                                    <h3 className="text-blue-700 dark:text-blue-400 font-bold mb-4 flex items-center gap-2">
+                                                        <span className="bg-blue-100 dark:bg-blue-900/50 w-6 h-6 rounded-full flex items-center justify-center text-xs">
+                                                            2
+                                                        </span>
+                                                        Schedule{" "}
+                                                        <span className="text-xs font-normal opacity-70">
+                                                            (Not Urgent & Important)
+                                                        </span>
+                                                    </h3>
+                                                    <div
+                                                        className="space-y-2 min-h-[100px]"
+                                                        ref={provided.innerRef}
+                                                        {...provided.droppableProps}
+                                                    >
+                                                        {getTasksForMatrix(false, true).map((task, index) => (
+                                                            <Draggable
+                                                                key={task.id}
+                                                                draggableId={task.id}
+                                                                index={index}
+                                                            >
+                                                                {(provided, snapshot) => {
+                                                                    const child = (
+                                                                        <div
+                                                                            ref={provided.innerRef}
+                                                                            {...provided.draggableProps}
+                                                                            style={provided.draggableProps.style}
+                                                                        >
+                                                                            <TaskCard
+                                                                                task={task}
+                                                                                compact
+                                                                                dragHandleProps={
+                                                                                    role !== "viewer"
+                                                                                        ? provided.dragHandleProps
+                                                                                        : undefined
+                                                                                }
+                                                                                members={members}
+                                                                                groups={groups}
+                                                                                role={role}
+                                                                                orgId={orgId}
+                                                                                tags={availableTags}
+                                                                                onEditTag={(tag) => {
+                                                                                    setEditingTag(tag);
+                                                                                    setNewTagName(tag.label);
+                                                                                    setNewTagColor(
+                                                                                        tag.color || presetColors[0].value,
+                                                                                    );
+                                                                                    setIsTagManagerOpen(true);
+                                                                                }}
+                                                                                onDeleteTag={(tagId) => {
+                                                                                    if (orgId)
+                                                                                        deleteTagFromOrganization(orgId, tagId);
+                                                                                }}
+                                                                                onCreateTag={() => {
+                                                                                    setEditingTag(null);
+                                                                                    setNewTagName("");
+                                                                                    setNewTagColor(presetColors[0].value);
+                                                                                    setIsTagManagerOpen(true);
+                                                                                }}
+                                                                            />
+                                                                        </div>
+                                                                    );
+                                                                    return child;
+                                                                }}
+                                                            </Draggable>
+                                                        ))}
+                                                        {provided.placeholder}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </Droppable>
+
+                                        {/* Q3: Delegate (Urgent & Not Important) */}
+                                        <Droppable droppableId="matrix-q3" type="MATRIX_TASK">
+                                            {(provided, snapshot) => (
+                                                <div
+                                                    className={cn(
+                                                        "bg-amber-50/50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/50 rounded-2xl p-4",
+                                                        snapshot.isDraggingOver &&
+                                                        "bg-amber-100/50 ring-2 ring-amber-500/20",
+                                                    )}
+                                                >
+                                                    <h3 className="text-amber-700 dark:text-amber-400 font-bold mb-4 flex items-center gap-2">
+                                                        <span className="bg-amber-100 dark:bg-amber-900/50 w-6 h-6 rounded-full flex items-center justify-center text-xs">
+                                                            3
+                                                        </span>
+                                                        Delegate{" "}
+                                                        <span className="text-xs font-normal opacity-70">
+                                                            (Urgent & Not Important)
+                                                        </span>
+                                                    </h3>
+                                                    <div
+                                                        className="space-y-2 min-h-[100px]"
+                                                        ref={provided.innerRef}
+                                                        {...provided.droppableProps}
+                                                    >
+                                                        {getTasksForMatrix(true, false).map((task, index) => (
+                                                            <Draggable
+                                                                key={task.id}
+                                                                draggableId={task.id}
+                                                                index={index}
+                                                            >
+                                                                {(provided, snapshot) => {
+                                                                    const child = (
+                                                                        <div
+                                                                            ref={provided.innerRef}
+                                                                            {...provided.draggableProps}
+                                                                            style={provided.draggableProps.style}
+                                                                        >
+                                                                            <TaskCard
+                                                                                task={task}
+                                                                                compact
+                                                                                dragHandleProps={
+                                                                                    role !== "viewer"
+                                                                                        ? provided.dragHandleProps
+                                                                                        : undefined
+                                                                                }
+                                                                                members={members}
+                                                                                groups={groups}
+                                                                                role={role}
+                                                                                orgId={orgId}
+                                                                                tags={availableTags}
+                                                                                onEditTag={(tag) => {
+                                                                                    setEditingTag(tag);
+                                                                                    setNewTagName(tag.label);
+                                                                                    setNewTagColor(
+                                                                                        tag.color || presetColors[0].value,
+                                                                                    );
+                                                                                    setIsTagManagerOpen(true);
+                                                                                }}
+                                                                                onDeleteTag={(tagId) => {
+                                                                                    if (orgId)
+                                                                                        deleteTagFromOrganization(orgId, tagId);
+                                                                                }}
+                                                                                onCreateTag={() => {
+                                                                                    setEditingTag(null);
+                                                                                    setNewTagName("");
+                                                                                    setNewTagColor(presetColors[0].value);
+                                                                                    setIsTagManagerOpen(true);
+                                                                                }}
+                                                                            />
+                                                                        </div>
+                                                                    );
+                                                                    return child;
+                                                                }}
+                                                            </Draggable>
+                                                        ))}
+                                                        {provided.placeholder}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </Droppable>
+
+                                        {/* Q4: Eliminate (Not Urgent & Not Important) */}
+                                        <Droppable droppableId="matrix-q4" type="MATRIX_TASK">
+                                            {(provided, snapshot) => (
+                                                <div
+                                                    className={cn(
+                                                        "bg-slate-50/50 dark:bg-slate-900/20 border border-slate-100 dark:border-slate-800 rounded-2xl p-4",
+                                                        snapshot.isDraggingOver &&
+                                                        "bg-slate-100/50 ring-2 ring-slate-500/20",
+                                                    )}
+                                                >
+                                                    <h3 className="text-slate-700 dark:text-slate-400 font-bold mb-4 flex items-center gap-2">
+                                                        <span className="bg-slate-100 dark:bg-slate-800 w-6 h-6 rounded-full flex items-center justify-center text-xs">
+                                                            4
+                                                        </span>
+                                                        Eliminate{" "}
+                                                        <span className="text-xs font-normal opacity-70">
+                                                            (Not Urgent & Not Important)
+                                                        </span>
+                                                    </h3>
+                                                    <div
+                                                        className="space-y-2 min-h-[100px]"
+                                                        ref={provided.innerRef}
+                                                        {...provided.droppableProps}
+                                                    >
+                                                        {getTasksForMatrix(false, false).map((task, index) => (
+                                                            <Draggable
+                                                                key={task.id}
+                                                                draggableId={task.id}
+                                                                index={index}
+                                                            >
+                                                                {(provided, snapshot) => {
+                                                                    const child = (
+                                                                        <div
+                                                                            ref={provided.innerRef}
+                                                                            {...provided.draggableProps}
+                                                                            style={provided.draggableProps.style}
+                                                                        >
+                                                                            <TaskCard
+                                                                                task={task}
+                                                                                compact
+                                                                                dragHandleProps={
+                                                                                    role !== "viewer"
+                                                                                        ? provided.dragHandleProps
+                                                                                        : undefined
+                                                                                }
+                                                                                members={members}
+                                                                                groups={groups}
+                                                                                role={role}
+                                                                                orgId={orgId}
+                                                                                tags={availableTags}
+                                                                                onEditTag={(tag) => {
+                                                                                    setEditingTag(tag);
+                                                                                    setNewTagName(tag.label);
+                                                                                    setNewTagColor(
+                                                                                        tag.color || presetColors[0].value,
+                                                                                    );
+                                                                                    setIsTagManagerOpen(true);
+                                                                                }}
+                                                                                onDeleteTag={(tagId) => {
+                                                                                    if (orgId)
+                                                                                        deleteTagFromOrganization(orgId, tagId);
+                                                                                }}
+                                                                                onCreateTag={() => {
+                                                                                    setEditingTag(null);
+                                                                                    setNewTagName("");
+                                                                                    setNewTagColor(presetColors[0].value);
+                                                                                    setIsTagManagerOpen(true);
+                                                                                }}
+                                                                                isDragging={snapshot.isDragging}
+                                                                            />
+                                                                        </div>
+                                                                    );
+                                                                    return child;
+                                                                }}
+                                                            </Draggable>
+                                                        ))}
+                                                        {provided.placeholder}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </Droppable>
+                                    </div>
                                 )
-                                }
-                            </div >
-                        )}
+                            }
+                        </>
+                    )
+                    }
+                </div >
+            </DragDropContext>
 
-                        {/* Matrix View */}
-                        {
-                            view === "matrix" && (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-auto min-h-[600px]">
-                                    {/* Q1: Do First (Urgent & Important) */}
-                                    <Droppable droppableId="matrix-q1" type="MATRIX_TASK">
-                                        {(provided, snapshot) => (
-                                            <div
-                                                className={cn(
-                                                    "bg-rose-50/50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/50 rounded-2xl p-4",
-                                                    snapshot.isDraggingOver &&
-                                                    "bg-rose-100/50 ring-2 ring-rose-500/20",
-                                                )}
-                                            >
-                                                <h3 className="text-rose-700 dark:text-rose-400 font-bold mb-4 flex items-center gap-2">
-                                                    <span className="bg-rose-100 dark:bg-rose-900/50 w-6 h-6 rounded-full flex items-center justify-center text-xs">
-                                                        1
-                                                    </span>
-                                                    Do First{" "}
-                                                    <span className="text-xs font-normal opacity-70">
-                                                        (Urgent & Important)
-                                                    </span>
-                                                </h3>
-                                                <div
-                                                    className="space-y-2 min-h-[100px]"
-                                                    ref={provided.innerRef}
-                                                    {...provided.droppableProps}
-                                                >
-                                                    {getTasksForMatrix(true, true).map((task, index) => (
-                                                        <Draggable
-                                                            key={task.id}
-                                                            draggableId={task.id}
-                                                            index={index}
-                                                        >
-                                                            {(provided, snapshot) => {
-                                                                const child = (
-                                                                    <div
-                                                                        ref={provided.innerRef}
-                                                                        {...provided.draggableProps}
-                                                                        style={provided.draggableProps.style}
-                                                                    >
-                                                                        <TaskCard
-                                                                            task={task}
-                                                                            compact
-                                                                            dragHandleProps={
-                                                                                role !== "viewer"
-                                                                                    ? provided.dragHandleProps
-                                                                                    : undefined
-                                                                            }
-                                                                            members={members}
-                                                                            groups={groups}
-                                                                            role={role}
-                                                                            orgId={orgId}
-                                                                            tags={availableTags}
-                                                                            onEditTag={(tag) => {
-                                                                                setEditingTag(tag);
-                                                                                setNewTagName(tag.label);
-                                                                                setNewTagColor(
-                                                                                    tag.color || presetColors[0].value,
-                                                                                );
-                                                                                setIsTagManagerOpen(true);
-                                                                            }}
-                                                                            onDeleteTag={(tagId) => {
-                                                                                if (orgId)
-                                                                                    deleteTagFromOrganization(orgId, tagId);
-                                                                            }}
-                                                                            onCreateTag={() => {
-                                                                                setEditingTag(null);
-                                                                                setNewTagName("");
-                                                                                setNewTagColor(presetColors[0].value);
-                                                                                setIsTagManagerOpen(true);
-                                                                            }}
-                                                                            isDragging={snapshot.isDragging}
-                                                                        />
-                                                                    </div>
-                                                                );
-                                                                return child;
-                                                            }}
-                                                        </Draggable>
-                                                    ))}
-                                                    {provided.placeholder}
-                                                </div>
-                                            </div>
-                                        )}
-                                    </Droppable>
-
-                                    {/* Q2: Schedule (Not Urgent & Important) */}
-                                    <Droppable droppableId="matrix-q2" type="MATRIX_TASK">
-                                        {(provided, snapshot) => (
-                                            <div
-                                                className={cn(
-                                                    "bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/50 rounded-2xl p-4",
-                                                    snapshot.isDraggingOver &&
-                                                    "bg-blue-100/50 ring-2 ring-blue-500/20",
-                                                )}
-                                            >
-                                                <h3 className="text-blue-700 dark:text-blue-400 font-bold mb-4 flex items-center gap-2">
-                                                    <span className="bg-blue-100 dark:bg-blue-900/50 w-6 h-6 rounded-full flex items-center justify-center text-xs">
-                                                        2
-                                                    </span>
-                                                    Schedule{" "}
-                                                    <span className="text-xs font-normal opacity-70">
-                                                        (Not Urgent & Important)
-                                                    </span>
-                                                </h3>
-                                                <div
-                                                    className="space-y-2 min-h-[100px]"
-                                                    ref={provided.innerRef}
-                                                    {...provided.droppableProps}
-                                                >
-                                                    {getTasksForMatrix(false, true).map((task, index) => (
-                                                        <Draggable
-                                                            key={task.id}
-                                                            draggableId={task.id}
-                                                            index={index}
-                                                        >
-                                                            {(provided, snapshot) => {
-                                                                const child = (
-                                                                    <div
-                                                                        ref={provided.innerRef}
-                                                                        {...provided.draggableProps}
-                                                                        style={provided.draggableProps.style}
-                                                                    >
-                                                                        <TaskCard
-                                                                            task={task}
-                                                                            compact
-                                                                            dragHandleProps={
-                                                                                role !== "viewer"
-                                                                                    ? provided.dragHandleProps
-                                                                                    : undefined
-                                                                            }
-                                                                            members={members}
-                                                                            groups={groups}
-                                                                            role={role}
-                                                                            orgId={orgId}
-                                                                            tags={availableTags}
-                                                                            onEditTag={(tag) => {
-                                                                                setEditingTag(tag);
-                                                                                setNewTagName(tag.label);
-                                                                                setNewTagColor(
-                                                                                    tag.color || presetColors[0].value,
-                                                                                );
-                                                                                setIsTagManagerOpen(true);
-                                                                            }}
-                                                                            onDeleteTag={(tagId) => {
-                                                                                if (orgId)
-                                                                                    deleteTagFromOrganization(orgId, tagId);
-                                                                            }}
-                                                                            onCreateTag={() => {
-                                                                                setEditingTag(null);
-                                                                                setNewTagName("");
-                                                                                setNewTagColor(presetColors[0].value);
-                                                                                setIsTagManagerOpen(true);
-                                                                            }}
-                                                                        />
-                                                                    </div>
-                                                                );
-                                                                return child;
-                                                            }}
-                                                        </Draggable>
-                                                    ))}
-                                                    {provided.placeholder}
-                                                </div>
-                                            </div>
-                                        )}
-                                    </Droppable>
-
-                                    {/* Q3: Delegate (Urgent & Not Important) */}
-                                    <Droppable droppableId="matrix-q3" type="MATRIX_TASK">
-                                        {(provided, snapshot) => (
-                                            <div
-                                                className={cn(
-                                                    "bg-amber-50/50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/50 rounded-2xl p-4",
-                                                    snapshot.isDraggingOver &&
-                                                    "bg-amber-100/50 ring-2 ring-amber-500/20",
-                                                )}
-                                            >
-                                                <h3 className="text-amber-700 dark:text-amber-400 font-bold mb-4 flex items-center gap-2">
-                                                    <span className="bg-amber-100 dark:bg-amber-900/50 w-6 h-6 rounded-full flex items-center justify-center text-xs">
-                                                        3
-                                                    </span>
-                                                    Delegate{" "}
-                                                    <span className="text-xs font-normal opacity-70">
-                                                        (Urgent & Not Important)
-                                                    </span>
-                                                </h3>
-                                                <div
-                                                    className="space-y-2 min-h-[100px]"
-                                                    ref={provided.innerRef}
-                                                    {...provided.droppableProps}
-                                                >
-                                                    {getTasksForMatrix(true, false).map((task, index) => (
-                                                        <Draggable
-                                                            key={task.id}
-                                                            draggableId={task.id}
-                                                            index={index}
-                                                        >
-                                                            {(provided, snapshot) => {
-                                                                const child = (
-                                                                    <div
-                                                                        ref={provided.innerRef}
-                                                                        {...provided.draggableProps}
-                                                                        style={provided.draggableProps.style}
-                                                                    >
-                                                                        <TaskCard
-                                                                            task={task}
-                                                                            compact
-                                                                            dragHandleProps={
-                                                                                role !== "viewer"
-                                                                                    ? provided.dragHandleProps
-                                                                                    : undefined
-                                                                            }
-                                                                            members={members}
-                                                                            groups={groups}
-                                                                            role={role}
-                                                                            orgId={orgId}
-                                                                            tags={availableTags}
-                                                                            onEditTag={(tag) => {
-                                                                                setEditingTag(tag);
-                                                                                setNewTagName(tag.label);
-                                                                                setNewTagColor(
-                                                                                    tag.color || presetColors[0].value,
-                                                                                );
-                                                                                setIsTagManagerOpen(true);
-                                                                            }}
-                                                                            onDeleteTag={(tagId) => {
-                                                                                if (orgId)
-                                                                                    deleteTagFromOrganization(orgId, tagId);
-                                                                            }}
-                                                                            onCreateTag={() => {
-                                                                                setEditingTag(null);
-                                                                                setNewTagName("");
-                                                                                setNewTagColor(presetColors[0].value);
-                                                                                setIsTagManagerOpen(true);
-                                                                            }}
-                                                                        />
-                                                                    </div>
-                                                                );
-                                                                return child;
-                                                            }}
-                                                        </Draggable>
-                                                    ))}
-                                                    {provided.placeholder}
-                                                </div>
-                                            </div>
-                                        )}
-                                    </Droppable>
-
-                                    {/* Q4: Eliminate (Not Urgent & Not Important) */}
-                                    <Droppable droppableId="matrix-q4" type="MATRIX_TASK">
-                                        {(provided, snapshot) => (
-                                            <div
-                                                className={cn(
-                                                    "bg-slate-50/50 dark:bg-slate-900/20 border border-slate-100 dark:border-slate-800 rounded-2xl p-4",
-                                                    snapshot.isDraggingOver &&
-                                                    "bg-slate-100/50 ring-2 ring-slate-500/20",
-                                                )}
-                                            >
-                                                <h3 className="text-slate-700 dark:text-slate-400 font-bold mb-4 flex items-center gap-2">
-                                                    <span className="bg-slate-100 dark:bg-slate-800 w-6 h-6 rounded-full flex items-center justify-center text-xs">
-                                                        4
-                                                    </span>
-                                                    Eliminate{" "}
-                                                    <span className="text-xs font-normal opacity-70">
-                                                        (Not Urgent & Not Important)
-                                                    </span>
-                                                </h3>
-                                                <div
-                                                    className="space-y-2 min-h-[100px]"
-                                                    ref={provided.innerRef}
-                                                    {...provided.droppableProps}
-                                                >
-                                                    {getTasksForMatrix(false, false).map((task, index) => (
-                                                        <Draggable
-                                                            key={task.id}
-                                                            draggableId={task.id}
-                                                            index={index}
-                                                        >
-                                                            {(provided, snapshot) => {
-                                                                const child = (
-                                                                    <div
-                                                                        ref={provided.innerRef}
-                                                                        {...provided.draggableProps}
-                                                                        style={provided.draggableProps.style}
-                                                                    >
-                                                                        <TaskCard
-                                                                            task={task}
-                                                                            compact
-                                                                            dragHandleProps={
-                                                                                role !== "viewer"
-                                                                                    ? provided.dragHandleProps
-                                                                                    : undefined
-                                                                            }
-                                                                            members={members}
-                                                                            groups={groups}
-                                                                            role={role}
-                                                                            orgId={orgId}
-                                                                            tags={availableTags}
-                                                                            onEditTag={(tag) => {
-                                                                                setEditingTag(tag);
-                                                                                setNewTagName(tag.label);
-                                                                                setNewTagColor(
-                                                                                    tag.color || presetColors[0].value,
-                                                                                );
-                                                                                setIsTagManagerOpen(true);
-                                                                            }}
-                                                                            onDeleteTag={(tagId) => {
-                                                                                if (orgId)
-                                                                                    deleteTagFromOrganization(orgId, tagId);
-                                                                            }}
-                                                                            onCreateTag={() => {
-                                                                                setEditingTag(null);
-                                                                                setNewTagName("");
-                                                                                setNewTagColor(presetColors[0].value);
-                                                                                setIsTagManagerOpen(true);
-                                                                            }}
-                                                                            isDragging={snapshot.isDragging}
-                                                                        />
-                                                                    </div>
-                                                                );
-                                                                return child;
-                                                            }}
-                                                        </Draggable>
-                                                    ))}
-                                                    {provided.placeholder}
-                                                </div>
-                                            </div>
-                                        )}
-                                    </Droppable>
-                                </div>
-                            )
-                        }
-                    </>
-                )
-                }
-            </div >
             {/* Create Task Dialog */}
             <CreateTaskDialog
                 open={isCreateTaskOpen}
@@ -2583,7 +2599,7 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
                 tags={availableTags}
                 members={members}
             />
-        </DragDropContext>
+        </>
     );
 }
 

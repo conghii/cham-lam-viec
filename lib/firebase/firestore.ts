@@ -43,6 +43,7 @@ export type Task = {
     userId: string;
     orgId: string | null;
     createdAt: Timestamp;
+    updatedAt?: Timestamp | null;
     completedAt?: Timestamp | null;
     tag?: string;
     dueDate?: string | null;
@@ -1023,6 +1024,43 @@ export const subscribeToTasks = (callback: (tasks: Task[]) => void) => {
             });
 
             callback(validTasks);
+        });
+    });
+
+    return () => {
+        if (unsubscribe) unsubscribe();
+    };
+};
+
+export const subscribeToCompletedTasks = (callback: (tasks: Task[]) => void) => {
+    let unsubscribe: Unsubscribe | undefined;
+
+    import("./auth").then(async ({ getCurrentUser }) => {
+        const user = await getCurrentUser();
+        if (!user) return;
+
+        const userRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userRef);
+        const orgId = userSnap.exists() ? userSnap.data().orgId : null;
+
+        const q = orgId
+            ? query(collection(db, "tasks"), where("orgId", "==", orgId), where("completed", "==", true))
+            : query(collection(db, "tasks"), where("userId", "==", user.uid), where("completed", "==", true));
+
+        unsubscribe = onSnapshot(q, (snapshot) => {
+            const tasks = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            })) as Task[];
+
+            // Client-side sort: Recent completedAt first, then fall back to recent createdAt
+            tasks.sort((a, b) => {
+                const timeA = a.completedAt ? (typeof a.completedAt.toMillis === 'function' ? a.completedAt.toMillis() : new Date(a.completedAt as any).getTime()) : (a.createdAt?.toMillis ? a.createdAt.toMillis() : 0);
+                const timeB = b.completedAt ? (typeof b.completedAt.toMillis === 'function' ? b.completedAt.toMillis() : new Date(b.completedAt as any).getTime()) : (b.createdAt?.toMillis ? b.createdAt.toMillis() : 0);
+                return timeB - timeA;
+            });
+
+            callback(tasks);
         });
     });
 

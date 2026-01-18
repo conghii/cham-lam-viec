@@ -1,5 +1,6 @@
 import { app } from "./config";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, updateProfile } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, updateProfile, onAuthStateChanged, User } from "firebase/auth";
+import { useEffect, useState } from "react";
 
 export const updateUserProfile = async (displayName?: string, photoURL?: string) => {
     if (auth.currentUser) {
@@ -63,4 +64,20 @@ export const getCurrentUser = (): Promise<any> => {
             resolve(user);
         }, reject);
     });
+};
+
+export const useAuth = () => {
+    const [user, setUser] = useState<User | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            setUser(user);
+            setLoading(false);
+        });
+
+        return () => unsubscribe();
+    }, []);
+
+    return { user, loading };
 };
