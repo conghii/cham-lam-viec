@@ -73,6 +73,7 @@ import {
     Settings2,
     Palette,
     AlertCircle,
+    Maximize2
 } from "lucide-react";
 import { Skeleton } from "../ui/skeleton";
 import { TasksMetrics } from "./tasks-metrics";
@@ -1617,28 +1618,40 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
                 )}
 
                 {/* Header & Controls */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-                    <div>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex-1 min-w-0">
                         {/* Title removed as per user request */}
                     </div>
 
-                    <Tabs
-                        value={view}
-                        onValueChange={setView}
-                        className="w-full md:w-auto"
-                    >
-                        <TabsList className="grid w-full md:w-auto grid-cols-3 gap-1 bg-slate-100/50 dark:bg-slate-800/50 p-1 rounded-xl">
-                            <TabsTrigger value="list" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm transition-all duration-200">
-                                <LayoutList className="h-4 w-4 mr-2" /> {t("list_view")}
-                            </TabsTrigger>
-                            <TabsTrigger value="board" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm transition-all duration-200">
-                                <Kanban className="h-4 w-4 mr-2" /> {t("board_view")}
-                            </TabsTrigger>
-                            <TabsTrigger value="matrix" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm transition-all duration-200">
-                                <Grid2X2 className="h-4 w-4 mr-2" /> {t("matrix_view")}
-                            </TabsTrigger>
-                        </TabsList>
-                    </Tabs>
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                        <Tabs
+                            value={view}
+                            onValueChange={setView}
+                            className="flex-1 sm:flex-none w-auto overflow-x-auto no-scrollbar"
+                        >
+                            <TabsList className="grid grid-cols-3 w-full sm:w-auto gap-1 bg-slate-100/50 dark:bg-slate-800/50 p-1 rounded-xl">
+                                <TabsTrigger value="list" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm transition-all duration-200 text-xs py-2 px-1 sm:px-3">
+                                    <LayoutList className="h-3.5 w-3.5 sm:mr-2 shrink-0" /> <span className="hidden sm:inline">{t("list_view")}</span>
+                                </TabsTrigger>
+                                <TabsTrigger value="board" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm transition-all duration-200 text-xs py-2 px-1 sm:px-3">
+                                    <Kanban className="h-3.5 w-3.5 sm:mr-2 shrink-0" /> <span className="hidden sm:inline">{t("board_view")}</span>
+                                </TabsTrigger>
+                                <TabsTrigger value="matrix" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm transition-all duration-200 text-xs py-2 px-1 sm:px-3">
+                                    <Grid2X2 className="h-3.5 w-3.5 sm:mr-2 shrink-0" /> <span className="hidden sm:inline">{t("matrix_view")}</span>
+                                </TabsTrigger>
+                            </TabsList>
+                        </Tabs>
+
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="shrink-0 h-10 w-10 sm:w-auto sm:px-4 text-slate-400 hover:text-slate-600 font-bold text-[10px] uppercase tracking-widest gap-2 bg-slate-100/50 dark:bg-slate-800/50 rounded-xl transition-colors"
+                            onClick={() => window.open('/dashboard/tasks/widget', 'TasksWidget', 'width=380,height=600')}
+                        >
+                            <Maximize2 className="w-4 h-4" />
+                            <span className="hidden sm:inline">Widget</span>
+                        </Button>
+                    </div>
                 </div>
 
 
@@ -1647,264 +1660,266 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
                 <div className="bg-white dark:bg-slate-900 border border-border/40 dark:border-slate-800 shadow-sm hover:shadow-md focus-within:shadow-md focus-within:ring-2 focus-within:ring-primary/10 transition-all rounded-2xl p-2 md:p-3 relative z-10">
                     <form
                         onSubmit={handleAddTask}
-                        className="flex flex-col md:flex-row gap-2 items-center"
+                        className="flex flex-col gap-3"
                     >
-                        <div className="flex-1 w-full">
-                            <Input
-                                id="main-task-input"
-                                placeholder={
-                                    newTaskStatus === "backlog"
-                                        ? t("add_task_placeholder")
-                                        : columns.find(c => c.id === newTaskStatus)?.title
-                                            ? `${t("add_task")} to ${columns.find(c => c.id === newTaskStatus)?.title}...`
-                                            : t("add_task_placeholder")
-                                }
-                                value={newTaskTitle}
-                                onChange={(e) => setNewTaskTitle(e.target.value)}
-                                className="h-12 border-transparent bg-transparent text-lg focus-visible:ring-0 px-4 placeholder:text-muted-foreground/60 dark:text-slate-100 shadow-none"
-                            />
-                        </div>
-
-                        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto px-2">
-                            <Popover>
-                                <PopoverTrigger asChild>
-                                    <Button
-                                        variant={"outline"}
-                                        size="sm"
-                                        className={cn(
-                                            "h-9 w-[130px] justify-start text-left font-normal border-blue-200/50 bg-blue-50/50 hover:bg-blue-100/50 hover:border-blue-300/50 transition-colors dark:bg-blue-900/20 dark:border-blue-800/50 dark:hover:bg-blue-900/30",
-                                            !newTaskDate && "text-muted-foreground",
-                                            newTaskDate && "text-blue-700 border-blue-300/70 bg-blue-100/70 dark:text-blue-400 dark:bg-blue-900/40"
-                                        )}
-                                    >
-                                        <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
-                                        {newTaskDate ? (
-                                            format(newTaskDate, "MMM d")
-                                        ) : (
-                                            <span>{t("no_date")}</span>
-                                        )}
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0" align="end">
-                                    <Calendar
-                                        mode="single"
-                                        selected={newTaskDate}
-                                        onSelect={setNewTaskDate}
-                                        initialFocus
-                                    />
-                                </PopoverContent>
-                            </Popover>
-
-                            <Select
-                                value={newTaskPriority}
-                                onValueChange={(v: any) => setNewTaskPriority(v)}
-                            >
-                                <SelectTrigger className={cn(
-                                    "h-9 w-[100px] border transition-colors",
-                                    newTaskPriority === "low" && "border-slate-200/50 bg-slate-50/50 hover:bg-slate-100/50 text-slate-700",
-                                    newTaskPriority === "medium" && "border-amber-200/50 bg-amber-50/50 hover:bg-amber-100/50 text-amber-700",
-                                    newTaskPriority === "high" && "border-rose-200/50 bg-rose-50/50 hover:bg-rose-100/50 text-rose-700"
-                                )}>
-                                    <SelectValue placeholder="Priority" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="low">Low</SelectItem>
-                                    <SelectItem value="medium">Medium</SelectItem>
-                                    <SelectItem value="high">High</SelectItem>
-                                </SelectContent>
-                            </Select>
-
-                            <div className="flex items-center gap-2">
-                                <TagSelector
-                                    value={newTaskTag}
-                                    onChange={setNewTaskTag}
-                                    tags={availableTags}
-                                    role={role}
-                                    onEditTag={(tag) => {
-                                        setEditingTag(tag);
-                                        setNewTagName(tag.label);
-                                        setNewTagColor(tag.color || presetColors[0].value);
-                                        setIsTagManagerOpen(true);
-                                    }}
-                                    onDeleteTag={(tagId) => {
-                                        if (orgId) deleteTagFromOrganization(orgId, tagId);
-                                    }}
-                                    onCreateTag={() => {
-                                        setEditingTag(null);
-                                        setNewTagName("");
-                                        setNewTagColor(presetColors[0].value);
-                                        setIsTagManagerOpen(true);
-                                    }}
+                        <div className="flex flex-col md:flex-row gap-2 md:items-center">
+                            <div className="flex-1 w-full">
+                                <Input
+                                    id="main-task-input"
+                                    placeholder={
+                                        newTaskStatus === "backlog"
+                                            ? t("add_task_placeholder")
+                                            : columns.find(c => c.id === newTaskStatus)?.title
+                                                ? `${t("add_task")} to ${columns.find(c => c.id === newTaskStatus)?.title}...`
+                                                : t("add_task_placeholder")
+                                    }
+                                    value={newTaskTitle}
+                                    onChange={(e) => setNewTaskTitle(e.target.value)}
+                                    className="h-10 md:h-12 border-transparent bg-transparent text-base md:text-lg focus-visible:ring-0 px-2 md:px-4 placeholder:text-muted-foreground/60 dark:text-slate-100 shadow-none"
                                 />
+                            </div>
 
-                                <Dialog
-                                    open={isTagManagerOpen}
-                                    onOpenChange={setIsTagManagerOpen}
+                            <div className="flex flex-wrap items-center gap-2 w-full md:w-auto px-2 justify-between md:justify-end">
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant={"outline"}
+                                            size="sm"
+                                            className={cn(
+                                                "h-9 w-[130px] justify-start text-left font-normal border-blue-200/50 bg-blue-50/50 hover:bg-blue-100/50 hover:border-blue-300/50 transition-colors dark:bg-blue-900/20 dark:border-blue-800/50 dark:hover:bg-blue-900/30",
+                                                !newTaskDate && "text-muted-foreground",
+                                                newTaskDate && "text-blue-700 border-blue-300/70 bg-blue-100/70 dark:text-blue-400 dark:bg-blue-900/40"
+                                            )}
+                                        >
+                                            <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
+                                            {newTaskDate ? (
+                                                format(newTaskDate, "MMM d")
+                                            ) : (
+                                                <span>{t("no_date")}</span>
+                                            )}
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0" align="end">
+                                        <Calendar
+                                            mode="single"
+                                            selected={newTaskDate}
+                                            onSelect={setNewTaskDate}
+                                            initialFocus
+                                        />
+                                    </PopoverContent>
+                                </Popover>
+
+                                <Select
+                                    value={newTaskPriority}
+                                    onValueChange={(v: any) => setNewTaskPriority(v)}
                                 >
-                                    <DialogContent>
-                                        <DialogHeader>
-                                            <DialogTitle>Manage Tags</DialogTitle>
-                                            <DialogDescription>
-                                                Create, edit, and remove tags for your organization.
-                                            </DialogDescription>
-                                        </DialogHeader>
+                                    <SelectTrigger className={cn(
+                                        "h-9 w-[100px] border transition-colors",
+                                        newTaskPriority === "low" && "border-slate-200/50 bg-slate-50/50 hover:bg-slate-100/50 text-slate-700",
+                                        newTaskPriority === "medium" && "border-amber-200/50 bg-amber-50/50 hover:bg-amber-100/50 text-amber-700",
+                                        newTaskPriority === "high" && "border-rose-200/50 bg-rose-50/50 hover:bg-rose-100/50 text-rose-700"
+                                    )}>
+                                        <SelectValue placeholder="Priority" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="low">Low</SelectItem>
+                                        <SelectItem value="medium">Medium</SelectItem>
+                                        <SelectItem value="high">High</SelectItem>
+                                    </SelectContent>
+                                </Select>
 
-                                        <div className="space-y-4 py-4">
-                                            <div className="flex gap-2 items-end">
-                                                <div className="space-y-2 flex-1">
-                                                    <Label>
-                                                        {editingTag ? "Edit Tag Name" : "New Tag Name"}
-                                                    </Label>
-                                                    <Input
-                                                        value={newTagName}
-                                                        onChange={(e) => setNewTagName(e.target.value)}
-                                                        placeholder="e.g. Marketing"
-                                                    />
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <Label>Color</Label>
-                                                    <Popover>
-                                                        <PopoverTrigger asChild>
-                                                            <Button
-                                                                variant="outline"
-                                                                className={cn("w-9 px-0", newTagColor)}
-                                                            >
-                                                                <div
-                                                                    className={cn(
-                                                                        "h-4 w-4 rounded-full",
-                                                                        newTagColor
-                                                                            .split(" ")[0]
-                                                                            .replace("bg-", "bg-"),
-                                                                    )}
-                                                                />
-                                                            </Button>
-                                                        </PopoverTrigger>
-                                                        <PopoverContent className="w-[180px] p-2">
-                                                            <div className="grid grid-cols-4 gap-2">
-                                                                {presetColors.map((c) => (
+                                <div className="flex items-center gap-2">
+                                    <TagSelector
+                                        value={newTaskTag}
+                                        onChange={setNewTaskTag}
+                                        tags={availableTags}
+                                        role={role}
+                                        onEditTag={(tag) => {
+                                            setEditingTag(tag);
+                                            setNewTagName(tag.label);
+                                            setNewTagColor(tag.color || presetColors[0].value);
+                                            setIsTagManagerOpen(true);
+                                        }}
+                                        onDeleteTag={(tagId) => {
+                                            if (orgId) deleteTagFromOrganization(orgId, tagId);
+                                        }}
+                                        onCreateTag={() => {
+                                            setEditingTag(null);
+                                            setNewTagName("");
+                                            setNewTagColor(presetColors[0].value);
+                                            setIsTagManagerOpen(true);
+                                        }}
+                                    />
+
+                                    <Dialog
+                                        open={isTagManagerOpen}
+                                        onOpenChange={setIsTagManagerOpen}
+                                    >
+                                        <DialogContent>
+                                            <DialogHeader>
+                                                <DialogTitle>Manage Tags</DialogTitle>
+                                                <DialogDescription>
+                                                    Create, edit, and remove tags for your organization.
+                                                </DialogDescription>
+                                            </DialogHeader>
+
+                                            <div className="space-y-4 py-4">
+                                                <div className="flex gap-2 items-end">
+                                                    <div className="space-y-2 flex-1">
+                                                        <Label>
+                                                            {editingTag ? "Edit Tag Name" : "New Tag Name"}
+                                                        </Label>
+                                                        <Input
+                                                            value={newTagName}
+                                                            onChange={(e) => setNewTagName(e.target.value)}
+                                                            placeholder="e.g. Marketing"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <Label>Color</Label>
+                                                        <Popover>
+                                                            <PopoverTrigger asChild>
+                                                                <Button
+                                                                    variant="outline"
+                                                                    className={cn("w-9 px-0", newTagColor)}
+                                                                >
                                                                     <div
-                                                                        key={c.value}
                                                                         className={cn(
-                                                                            "h-6 w-6 rounded-full cursor-pointer border hover:scale-110 transition-transform",
-                                                                            c.value,
-                                                                            newTagColor === c.value &&
-                                                                            "ring-2 ring-primary ring-offset-2",
+                                                                            "h-4 w-4 rounded-full",
+                                                                            newTagColor
+                                                                                .split(" ")[0]
+                                                                                .replace("bg-", "bg-"),
                                                                         )}
-                                                                        onClick={() => setNewTagColor(c.value)}
-                                                                        title={c.label}
                                                                     />
-                                                                ))}
-                                                            </div>
-                                                        </PopoverContent>
-                                                    </Popover>
-                                                </div>
-                                                <Button
-                                                    onClick={async () => {
-                                                        if (!newTagName.trim() || !orgId) return;
-                                                        if (editingTag) {
-                                                            await updateTagInOrganization(
-                                                                orgId,
-                                                                editingTag.id,
-                                                                newTagName,
-                                                                newTagColor,
-                                                            );
-                                                            setEditingTag(null);
-                                                        } else {
-                                                            await addTagToOrganization(
-                                                                orgId,
-                                                                newTagName,
-                                                                newTagColor,
-                                                            );
-                                                        }
-                                                        setNewTagName("");
-                                                        setNewTagColor(presetColors[0].value);
-                                                    }}
-                                                    className="w-20"
-                                                >
-                                                    {editingTag ? "Save" : "Add"}
-                                                </Button>
-                                                {editingTag && (
+                                                                </Button>
+                                                            </PopoverTrigger>
+                                                            <PopoverContent className="w-[180px] p-2">
+                                                                <div className="grid grid-cols-4 gap-2">
+                                                                    {presetColors.map((c) => (
+                                                                        <div
+                                                                            key={c.value}
+                                                                            className={cn(
+                                                                                "h-6 w-6 rounded-full cursor-pointer border hover:scale-110 transition-transform",
+                                                                                c.value,
+                                                                                newTagColor === c.value &&
+                                                                                "ring-2 ring-primary ring-offset-2",
+                                                                            )}
+                                                                            onClick={() => setNewTagColor(c.value)}
+                                                                            title={c.label}
+                                                                        />
+                                                                    ))}
+                                                                </div>
+                                                            </PopoverContent>
+                                                        </Popover>
+                                                    </div>
                                                     <Button
-                                                        variant="ghost"
-                                                        onClick={() => {
-                                                            setEditingTag(null);
+                                                        onClick={async () => {
+                                                            if (!newTagName.trim() || !orgId) return;
+                                                            if (editingTag) {
+                                                                await updateTagInOrganization(
+                                                                    orgId,
+                                                                    editingTag.id,
+                                                                    newTagName,
+                                                                    newTagColor,
+                                                                );
+                                                                setEditingTag(null);
+                                                            } else {
+                                                                await addTagToOrganization(
+                                                                    orgId,
+                                                                    newTagName,
+                                                                    newTagColor,
+                                                                );
+                                                            }
                                                             setNewTagName("");
                                                             setNewTagColor(presetColors[0].value);
                                                         }}
+                                                        className="w-20"
                                                     >
-                                                        <X className="h-4 w-4" />
+                                                        {editingTag ? "Save" : "Add"}
                                                     </Button>
-                                                )}
-                                            </div>
-
-                                            <ScrollArea className="h-[200px] border rounded-md p-2">
-                                                <div className="space-y-2">
-                                                    {orgTags.length === 0 ? (
-                                                        <p className="text-sm text-center text-muted-foreground py-8">
-                                                            No custom tags yet.
-                                                        </p>
-                                                    ) : (
-                                                        orgTags.map((tag) => (
-                                                            <div
-                                                                key={tag.id}
-                                                                className="flex items-center justify-between p-2 rounded-lg border bg-card hover:bg-muted/30 group"
-                                                            >
-                                                                <Badge
-                                                                    variant="outline"
-                                                                    className={cn(
-                                                                        "font-normal capitalize",
-                                                                        tag.color,
-                                                                    )}
-                                                                >
-                                                                    {tag.label}
-                                                                </Badge>
-                                                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                                    <Button
-                                                                        variant="ghost"
-                                                                        size="icon"
-                                                                        className="h-7 w-7"
-                                                                        onClick={() => {
-                                                                            setEditingTag(tag);
-                                                                            setNewTagName(tag.label);
-                                                                            setNewTagColor(
-                                                                                tag.color || presetColors[0].value,
-                                                                            );
-                                                                        }}
-                                                                    >
-                                                                        <Pencil className="h-3.5 w-3.5" />
-                                                                    </Button>
-                                                                    <Button
-                                                                        variant="ghost"
-                                                                        size="icon"
-                                                                        className="h-7 w-7 text-destructive hover:text-destructive"
-                                                                        onClick={() => {
-                                                                            if (orgId)
-                                                                                deleteTagFromOrganization(
-                                                                                    orgId,
-                                                                                    tag.id,
-                                                                                );
-                                                                        }}
-                                                                    >
-                                                                        <Trash2 className="h-3.5 w-3.5" />
-                                                                    </Button>
-                                                                </div>
-                                                            </div>
-                                                        ))
+                                                    {editingTag && (
+                                                        <Button
+                                                            variant="ghost"
+                                                            onClick={() => {
+                                                                setEditingTag(null);
+                                                                setNewTagName("");
+                                                                setNewTagColor(presetColors[0].value);
+                                                            }}
+                                                        >
+                                                            <X className="h-4 w-4" />
+                                                        </Button>
                                                     )}
                                                 </div>
-                                            </ScrollArea>
-                                        </div>
-                                    </DialogContent>
-                                </Dialog>
-                            </div>
 
-                            <Button
-                                type="submit"
-                                size="icon"
-                                className="h-9 w-9 bg-primary text-primary-foreground shrink-0 rounded-lg shadow-md hover:shadow-lg transition-all ml-1"
-                            >
-                                <Plus className="h-5 w-5" />
-                            </Button>
+                                                <ScrollArea className="h-[200px] border rounded-md p-2">
+                                                    <div className="space-y-2">
+                                                        {orgTags.length === 0 ? (
+                                                            <p className="text-sm text-center text-muted-foreground py-8">
+                                                                No custom tags yet.
+                                                            </p>
+                                                        ) : (
+                                                            orgTags.map((tag) => (
+                                                                <div
+                                                                    key={tag.id}
+                                                                    className="flex items-center justify-between p-2 rounded-lg border bg-card hover:bg-muted/30 group"
+                                                                >
+                                                                    <Badge
+                                                                        variant="outline"
+                                                                        className={cn(
+                                                                            "font-normal capitalize",
+                                                                            tag.color,
+                                                                        )}
+                                                                    >
+                                                                        {tag.label}
+                                                                    </Badge>
+                                                                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="icon"
+                                                                            className="h-7 w-7"
+                                                                            onClick={() => {
+                                                                                setEditingTag(tag);
+                                                                                setNewTagName(tag.label);
+                                                                                setNewTagColor(
+                                                                                    tag.color || presetColors[0].value,
+                                                                                );
+                                                                            }}
+                                                                        >
+                                                                            <Pencil className="h-3.5 w-3.5" />
+                                                                        </Button>
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="icon"
+                                                                            className="h-7 w-7 text-destructive hover:text-destructive"
+                                                                            onClick={() => {
+                                                                                if (orgId)
+                                                                                    deleteTagFromOrganization(
+                                                                                        orgId,
+                                                                                        tag.id,
+                                                                                    );
+                                                                            }}
+                                                                        >
+                                                                            <Trash2 className="h-3.5 w-3.5" />
+                                                                        </Button>
+                                                                    </div>
+                                                                </div>
+                                                            ))
+                                                        )}
+                                                    </div>
+                                                </ScrollArea>
+                                            </div>
+                                        </DialogContent>
+                                    </Dialog>
+                                </div>
+
+                                <Button
+                                    type="submit"
+                                    size="icon"
+                                    className="h-9 w-9 bg-primary text-primary-foreground shrink-0 rounded-lg shadow-md hover:shadow-lg transition-all ml-1"
+                                >
+                                    <Plus className="h-5 w-5" />
+                                </Button>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -2004,7 +2019,7 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
                                             <div
                                                 ref={provided.innerRef}
                                                 {...provided.droppableProps}
-                                                className="flex gap-6 pb-6 items-start h-full board-container"
+                                                className="flex gap-3 md:gap-6 pb-6 items-start h-full board-container overflow-x-auto snap-x snap-mandatory px-4 md:px-0 scroll-pl-4"
                                             >
                                                 {columns.map((col, index) => (
                                                     <Draggable
@@ -2016,13 +2031,13 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
                                                             <div
                                                                 ref={provided.innerRef}
                                                                 {...provided.draggableProps}
-                                                                className="flex flex-col gap-2 bg-white dark:bg-slate-900 rounded-3xl p-4 shadow-md border border-slate-100 dark:border-slate-800 h-full max-h-[calc(100vh-220px)] border-t-[6px] relative"
+                                                                className="flex flex-col gap-2 bg-white dark:bg-slate-900 rounded-3xl p-4 shadow-sm border border-slate-100 dark:border-slate-800 h-full max-h-[calc(100vh-220px)] border-t-[6px] relative snap-center shrink-0"
                                                                 style={{
                                                                     ...provided.draggableProps.style,
                                                                     width: (columnWidths[col.id] || col.width || 0) <= 1
                                                                         ? `${(columnWidths[col.id] || col.width || 0) * 100}%`
                                                                         : (columnWidths[col.id] || col.width || 300),
-                                                                    minWidth: 250,
+                                                                    minWidth: "min(85vw, 300px)",
                                                                     flexShrink: 0,
                                                                     borderColor: col.title === "Backlog" ? "#9ca3af" :
                                                                         col.title === "This Week" ? "#3b82f6" :

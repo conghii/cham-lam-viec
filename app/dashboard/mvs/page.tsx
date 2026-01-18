@@ -156,47 +156,48 @@ export default function MVSPage() {
     return (
         <div className="min-h-screen bg-slate-50/50 dark:bg-transparent pb-20">
             {/* Top Toolbar */}
-            <div className="sticky top-0 z-50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-gray-100 dark:border-slate-800 px-6 py-4 flex justify-between items-center">
+            <div className="sticky top-0 z-50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-gray-100 dark:border-slate-800 px-4 py-3 md:px-6 md:py-4 flex justify-between items-center">
                 <div>
-                    <span className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">{t("org_dna")}</span>
-                    <h1 className="text-xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400 bg-clip-text text-transparent">{t("mvs_title")}</h1>
+                    <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">{t("org_dna")}</span>
+                    <h1 className="text-lg md:text-xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400 bg-clip-text text-transparent">{t("mvs_title")}</h1>
                 </div>
                 {canEdit && (
-                    <div className="flex gap-3">
+                    <div className="flex gap-2 md:gap-3">
                         {isEditing ? (
                             <>
-                                <Button variant="ghost" size="sm" onClick={handleCancel} disabled={isSaving} className="text-slate-500 hover:text-slate-900">
-                                    <X className="h-4 w-4 mr-2" /> {t("cancel")}
+                                <Button variant="ghost" size="sm" onClick={handleCancel} disabled={isSaving} className="text-slate-500 hover:text-slate-900 h-8 px-2 md:h-9 md:px-4">
+                                    <X className="h-4 w-4 md:mr-2" /> <span className="hidden md:inline">{t("cancel")}</span>
                                 </Button>
-                                <Button size="sm" onClick={handleSave} disabled={isSaving} className="bg-slate-900 text-white hover:bg-slate-800 shadow-md">
-                                    {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
-                                    {t("save_changes")}
+                                <Button size="sm" onClick={handleSave} disabled={isSaving} className="bg-slate-900 text-white hover:bg-slate-800 shadow-md h-8 px-3 md:h-9 md:px-4">
+                                    {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin md:mr-2" /> : <Save className="h-3.5 w-3.5 md:mr-2" />}
+                                    <span className="hidden md:inline">{t("save_changes")}</span>
+                                    <span className="md:hidden">Save</span>
                                 </Button>
                             </>
                         ) : (
-                            <Button size="sm" variant="outline" onClick={handleEdit} className="hover:bg-slate-100 dark:hover:bg-slate-800 border-dashed border-slate-300 dark:border-slate-700 dark:text-slate-300">
-                                <Pencil className="h-3.5 w-3.5 mr-2" /> {t("edit_mvs")}
+                            <Button size="sm" variant="outline" onClick={handleEdit} className="hover:bg-slate-100 dark:hover:bg-slate-800 border-dashed border-slate-300 dark:border-slate-700 dark:text-slate-300 h-8 px-3 md:h-9 md:px-4">
+                                <Pencil className="h-3.5 w-3.5 md:mr-2" /> <span>{t("edit_mvs")}</span>
                             </Button>
                         )}
                     </div>
                 )}
             </div>
 
-            <div className="max-w-7xl mx-auto px-6 py-10 space-y-16">
+            <div className="max-w-7xl mx-auto px-4 py-6 md:p-10 space-y-8 md:space-y-16">
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 items-stretch">
                     {/* HERO SECTION: MISSION */}
                     <section className="relative group h-full">
                         <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/10 via-purple-500/5 to-white dark:to-slate-900/50 rounded-3xl blur-3xl -z-10 opacity-50" />
                         <div className={cn(
-                            "relative rounded-3xl p-8 md:p-10 transition-all duration-300 border border-white/50 dark:border-slate-800 shadow-sm h-full flex flex-col",
+                            "relative rounded-3xl p-5 md:p-10 transition-all duration-300 border border-white/50 dark:border-slate-800 shadow-sm h-full flex flex-col",
                             isEditing ? "bg-white/80 dark:bg-slate-900/80 ring-2 ring-indigo-500/20" : "bg-white/60 dark:bg-slate-900/40 backdrop-blur-sm"
                         )}>
-                            <div className="flex items-center gap-4 mb-6">
-                                <div className="h-12 w-12 rounded-2xl bg-indigo-500 text-white flex items-center justify-center shadow-lg shadow-indigo-500/30 shrink-0">
-                                    <Rocket className="h-6 w-6" />
+                            <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6">
+                                <div className="h-10 w-10 md:h-12 md:w-12 rounded-2xl bg-indigo-500 text-white flex items-center justify-center shadow-lg shadow-indigo-500/30 shrink-0">
+                                    <Rocket className="h-5 w-5 md:h-6 md:w-6" />
                                 </div>
-                                <h2 className="text-sm font-bold uppercase tracking-widest text-indigo-600">{t("our_mission")}</h2>
+                                <h2 className="text-xs md:text-sm font-bold uppercase tracking-widest text-indigo-600">{t("our_mission")}</h2>
                             </div>
 
                             <div className="flex-1 flex flex-col">
@@ -205,18 +206,18 @@ export default function MVSPage() {
                                         value={editMission}
                                         onChange={(e) => setEditMission(e.target.value)}
                                         placeholder={t("mission_placeholder")}
-                                        className="text-2xl md:text-3xl font-black tracking-tight leading-tight min-h-[140px] bg-transparent border-none p-0 focus-visible:ring-0 placeholder:text-slate-300 resize-none flex-1"
+                                        className="text-xl md:text-3xl font-black tracking-tight leading-tight min-h-[140px] bg-transparent border-none p-0 focus-visible:ring-0 placeholder:text-slate-300 resize-none flex-1"
                                     />
                                 ) : (
                                     <h2 className={cn(
-                                        "text-2xl md:text-3xl font-black tracking-tight leading-tight text-slate-900 dark:text-white flex-1",
+                                        "text-xl md:text-3xl font-black tracking-tight leading-tight text-slate-900 dark:text-white flex-1",
                                         !mvs?.mission && "text-slate-300 dark:text-slate-600 italic"
                                     )}>
                                         {mvs?.mission || t("mission_fallback")}
                                     </h2>
                                 )}
 
-                                <p className="mt-8 text-slate-500 dark:text-slate-400 font-medium text-sm border-t border-slate-100 dark:border-slate-800 pt-6">
+                                <p className="mt-6 md:mt-8 text-slate-500 dark:text-slate-400 font-medium text-xs md:text-sm border-t border-slate-100 dark:border-slate-800 pt-4 md:pt-6">
                                     {t("mission_why")}
                                 </p>
                             </div>
@@ -226,14 +227,14 @@ export default function MVSPage() {
                     {/* VISION SECTION */}
                     <section className="relative h-full">
                         <div className={cn(
-                            "relative rounded-3xl p-8 md:p-10 transition-all duration-300 border border-slate-100 dark:border-slate-800 h-full flex flex-col",
+                            "relative rounded-3xl p-5 md:p-10 transition-all duration-300 border border-slate-100 dark:border-slate-800 h-full flex flex-col",
                             isEditing ? "bg-white dark:bg-slate-900 ring-2 ring-cyan-500/20" : "bg-gradient-to-br from-white to-cyan-50/30 dark:from-slate-900 dark:to-cyan-950/10 hover:shadow-md"
                         )}>
-                            <div className="flex items-center gap-4 mb-6">
-                                <div className="h-12 w-12 rounded-2xl bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 flex items-center justify-center shrink-0">
-                                    <Telescope className="h-6 w-6" />
+                            <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6">
+                                <div className="h-10 w-10 md:h-12 md:w-12 rounded-2xl bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 flex items-center justify-center shrink-0">
+                                    <Telescope className="h-5 w-5 md:h-6 md:w-6" />
                                 </div>
-                                <h3 className="text-sm font-bold uppercase tracking-widest text-cyan-600">{t("our_vision")}</h3>
+                                <h3 className="text-xs md:text-sm font-bold uppercase tracking-widest text-cyan-600">{t("our_vision")}</h3>
                             </div>
 
                             <div className="flex-1 flex flex-col">
@@ -242,18 +243,18 @@ export default function MVSPage() {
                                         value={editVision}
                                         onChange={(e) => setEditVision(e.target.value)}
                                         placeholder={t("vision_placeholder")}
-                                        className="text-xl md:text-2xl font-medium leading-relaxed min-h-[140px] bg-transparent border-none p-0 focus-visible:ring-0 placeholder:text-slate-300 resize-none flex-1"
+                                        className="text-lg md:text-2xl font-medium leading-relaxed min-h-[140px] bg-transparent border-none p-0 focus-visible:ring-0 placeholder:text-slate-300 resize-none flex-1"
                                     />
                                 ) : (
                                     <p className={cn(
-                                        "text-xl md:text-2xl font-medium leading-relaxed text-slate-700 dark:text-slate-200 flex-1",
+                                        "text-lg md:text-2xl font-medium leading-relaxed text-slate-700 dark:text-slate-200 flex-1",
                                         !mvs?.vision && "text-slate-300 dark:text-slate-600 italic"
                                     )}>
                                         {mvs?.vision || t("vision_fallback")}
                                     </p>
                                 )}
 
-                                <p className="mt-8 text-slate-400 dark:text-slate-500 font-medium text-sm border-t border-slate-100 dark:border-slate-800 pt-6 italic">
+                                <p className="mt-6 md:mt-8 text-slate-400 dark:text-slate-500 font-medium text-xs md:text-sm border-t border-slate-100 dark:border-slate-800 pt-4 md:pt-6 italic">
                                     {t("vision_why") || "Painting the picture of the future we are building."}
                                 </p>
                             </div>
@@ -263,13 +264,13 @@ export default function MVSPage() {
 
                 {/* STRATEGIES SECTION */}
                 <section>
-                    <div className="flex items-center gap-4 mb-8">
+                    <div className="flex items-center gap-4 mb-6 md:mb-8">
                         <div className="h-px bg-slate-200 dark:bg-slate-800 flex-1" />
-                        <span className="text-sm font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">{t("core_strategies")}</span>
+                        <span className="text-xs md:text-sm font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">{t("core_strategies")}</span>
                         <div className="h-px bg-slate-200 dark:bg-slate-800 flex-1" />
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                         <AnimatePresence mode="popLayout">
                             {(isEditing ? editStrategies : (mvs?.strategies || [])).map((strategy, index) => (
                                 <motion.div
@@ -281,7 +282,7 @@ export default function MVSPage() {
                                     transition={{ duration: 0.2, delay: index * 0.05 }}
                                 >
                                     <div className={cn(
-                                        "relative h-full rounded-2xl p-6 border transition-all duration-300 flex flex-col group",
+                                        "relative h-full rounded-2xl p-5 md:p-6 border transition-all duration-300 flex flex-col group",
                                         isEditing ? "bg-white dark:bg-slate-900 border-dashed border-slate-300 dark:border-slate-700" : "bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 hover:shadow-lg dark:hover:shadow-slate-900/50 hover:-translate-y-1 shadow-sm"
                                     )}>
                                         {isEditing && (
@@ -294,7 +295,7 @@ export default function MVSPage() {
                                         )}
 
                                         <div className="mb-4 flex items-center justify-between">
-                                            <div className="text-4xl font-black text-slate-100 dark:text-slate-800 select-none">
+                                            <div className="text-3xl md:text-4xl font-black text-slate-100 dark:text-slate-800 select-none">
                                                 0{index + 1}
                                             </div>
                                             <div className="h-8 w-8 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
@@ -308,21 +309,21 @@ export default function MVSPage() {
                                                     value={strategy.title}
                                                     onChange={(e) => updateStrategy(strategy.id, 'title', e.target.value)}
                                                     placeholder={t("strategy_title_placeholder")}
-                                                    className="font-bold text-lg border-none px-0 focus-visible:ring-0 p-0 h-auto"
+                                                    className="font-bold text-base md:text-lg border-none px-0 focus-visible:ring-0 p-0 h-auto"
                                                 />
                                                 <Textarea
                                                     value={strategy.description}
                                                     onChange={(e) => updateStrategy(strategy.id, 'description', e.target.value)}
                                                     placeholder={t("strategy_desc_placeholder")}
-                                                    className="mt-2 text-sm text-slate-500 border-none px-0 focus-visible:ring-0 min-h-[80px] resize-none"
+                                                    className="mt-2 text-xs md:text-sm text-slate-500 border-none px-0 focus-visible:ring-0 min-h-[80px] resize-none"
                                                 />
                                             </>
                                         ) : (
                                             <>
-                                                <h3 className="font-bold text-lg text-slate-800 dark:text-slate-200 mb-2">
+                                                <h3 className="font-bold text-base md:text-lg text-slate-800 dark:text-slate-200 mb-2">
                                                     {strategy.title || t("untitled_strategy")}
                                                 </h3>
-                                                <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                                                <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
                                                     {strategy.description || t("no_strategy_desc")}
                                                 </p>
                                             </>
@@ -336,10 +337,10 @@ export default function MVSPage() {
                                 <motion.button
                                     layout
                                     onClick={addStrategy}
-                                    className="h-full min-h-[200px] rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col items-center justify-center gap-2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-900 transition-all"
+                                    className="h-full min-h-[160px] md:min-h-[200px] rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col items-center justify-center gap-2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-900 transition-all"
                                 >
-                                    <Plus className="h-8 w-8" />
-                                    <span className="font-medium text-sm">{t("add_strategy")}</span>
+                                    <Plus className="h-6 w-6 md:h-8 md:w-8" />
+                                    <span className="font-medium text-xs md:text-sm">{t("add_strategy")}</span>
                                 </motion.button>
                             )}
                         </AnimatePresence>

@@ -5,7 +5,7 @@ import { format } from "date-fns";
 import {
     Play, Pause, RotateCcw, Plus, Coffee,
     Layout, Calendar as CalendarIcon, Clock,
-    MoreHorizontal, CheckCircle2, ChevronDown
+    MoreHorizontal, CheckCircle2, ChevronDown, Maximize2
 } from "lucide-react";
 import { subscribeToTasks, Task, addTask, deleteTask, updateTaskTime } from "@/lib/firebase/firestore";
 import { Button } from "@/components/ui/button";
@@ -272,28 +272,28 @@ export default function FocusPage() {
                                     key={task.id}
                                     onClick={() => setActiveTaskId(task.id)}
                                     className={cn(
-                                        "p-3 rounded-xl border transition-all cursor-pointer group relative overflow-hidden",
+                                        "p-2.5 rounded-lg border transition-all cursor-pointer group relative overflow-hidden",
                                         activeTaskId === task.id
                                             ? "bg-blue-50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800/50 shadow-sm border-l-4 border-l-blue-500 dark:border-l-blue-500"
                                             : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-sm dark:hover:bg-slate-800/50"
                                     )}
                                 >
-                                    <div className="flex justify-between items-start mb-1">
+                                    <div className="flex justify-between items-start mb-1.5 gap-2">
                                         <span className={cn(
-                                            "text-sm font-semibold truncate pr-2",
+                                            "text-xs font-medium line-clamp-2 leading-snug",
                                             activeTaskId === task.id ? "text-blue-900 dark:text-blue-100" : "text-slate-700 dark:text-slate-300"
                                         )}>
                                             {typeof task.title === 'string' ? task.title : "Invalid Task Data"}
                                         </span>
                                         {activeTaskId === task.id && (
-                                            <span className="text-[10px] items-center flex font-bold text-blue-600 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/50 px-1.5 py-0.5 rounded-full whitespace-nowrap">
+                                            <span className="text-[9px] items-center flex font-bold text-blue-600 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/50 px-1.5 py-0.5 rounded-full whitespace-nowrap shrink-0 ml-auto">
                                                 Active
                                             </span>
                                         )}
                                     </div>
-                                    <div className="flex items-center gap-2 text-xs text-slate-400">
+                                    <div className="flex items-center gap-2 text-[10px] text-slate-400">
                                         <div className="flex items-center gap-1">
-                                            <Clock className="w-3 h-3" />
+                                            <Clock className="w-2.5 h-2.5" />
                                             <span>25m</span>
                                         </div>
                                         {task.tag && (
@@ -357,6 +357,19 @@ export default function FocusPage() {
                             <Layout className="w-5 h-5" />
                         </Button>
                     )}
+                </div>
+
+                {/* Widget Launcher */}
+                <div className="absolute top-4 right-4 z-30">
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-slate-400 hover:text-slate-600 font-bold text-[10px] uppercase tracking-widest gap-2"
+                        onClick={() => window.open('/dashboard/focus/widget', 'FocusWidget', 'width=350,height=550')}
+                    >
+                        <Maximize2 className="w-4 h-4" />
+                        <span className="hidden sm:inline">Mini Widget</span>
+                    </Button>
                 </div>
 
                 {/* Scrollable Content Area */}

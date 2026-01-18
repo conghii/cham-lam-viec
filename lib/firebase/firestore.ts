@@ -1657,9 +1657,20 @@ export const ensureWeeklyPlan = async (year: number, weekNumber: number, startDa
     return { id, ...newPlan, createdAt: Timestamp.now() } as WeeklyPlan; // Return aprox with current time
 };
 
+const sanitizeObjective = (obj: WeeklyObjective) => {
+    const safe: any = { ...obj };
+    Object.keys(safe).forEach(key => {
+        if (safe[key] === undefined) {
+            delete safe[key];
+        }
+    });
+    return safe;
+};
+
 export const updateWeeklyObjective = async (planId: string, objectives: WeeklyObjective[]) => {
     const planRef = doc(db, "weekly_plans", planId);
-    await updateDoc(planRef, { objectives });
+    const sanitized = objectives.map(sanitizeObjective);
+    await updateDoc(planRef, { objectives: sanitized });
 };
 
 export const updateWeeklyRetrospective = async (planId: string, retrospective: WeeklyRetrospective) => {

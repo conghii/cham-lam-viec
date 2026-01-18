@@ -24,7 +24,8 @@ import {
     Apple,
     Calendar as CalendarIcon,
     LayoutGrid,
-    List
+    List,
+    Maximize2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -241,8 +242,8 @@ export function HabitTracker() {
                 </div>
                 {/* Re-rendering header properly */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-4 px-4">
-                    <div>
-                        <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">
+                    <div className="w-full md:w-auto">
+                        <div className="flex items-center justify-between md:justify-start gap-2 text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">
                             <button
                                 className="hover:text-gray-600 p-1 hover:bg-gray-100 rounded-full transition-colors"
                                 onClick={() => setSelectedDate(curr => addDays(curr, viewMode === 'monthly' ? -30 : -7))}
@@ -257,80 +258,100 @@ export function HabitTracker() {
                                 &gt;
                             </button>
                         </div>
-                        <h1 className="text-3xl font-extrabold text-gray-900">
+                        <h1 className="text-xl md:text-3xl font-extrabold text-gray-900 truncate">
                             {viewMode === 'weekly' && `${format(startOfCurrentWeek, "MMM d")} — ${format(addDays(startOfCurrentWeek, 6), "MMM d")}`}
                             {viewMode === 'monthly' && format(selectedDate, "MMMM yyyy")}
                             {viewMode === 'annual' && t("past_365_days")}
                             {viewMode === 'today' && t("todays_focus")}
                         </h1>
-                        <p className="text-sm text-gray-500 mt-1 font-medium">{t("visualization_desc")}</p>
+                        <p className="text-xs md:text-sm text-gray-500 mt-1 font-medium hidden md:block">{t("visualization_desc")}</p>
                     </div>
 
-                    <div className="bg-white rounded-full p-1 shadow-sm border border-gray-100 flex items-center">
-                        <button
-                            onClick={() => setViewMode('weekly')}
-                            className={cn("px-4 py-2 rounded-full text-xs font-bold transition-all", viewMode === 'weekly' ? "bg-emerald-400 text-white shadow-md shadow-emerald-200" : "text-gray-500 hover:bg-gray-50")}
+                    <div className="flex items-center gap-2 w-full md:w-auto overflow-hidden">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="shrink-0 text-gray-400 hover:text-gray-600 font-bold text-[10px] uppercase tracking-widest gap-2 bg-white rounded-full shadow-sm border border-gray-100 px-3 md:px-4 h-9 md:h-11"
+                            onClick={() => window.open('/dashboard/habits/widget', 'HabitsWidget', 'width=380,height=600')}
                         >
-                            {t("weekly_matrix")}
-                        </button>
-                        <button
-                            onClick={() => setViewMode('monthly')}
-                            className={cn("px-4 py-2 rounded-full text-xs font-semibold transition-all", viewMode === 'monthly' ? "bg-emerald-400 text-white shadow-md shadow-emerald-200" : "text-gray-500 hover:bg-gray-50")}
-                        >
-                            {t("monthly_view")}
-                        </button>
-                        <button
-                            onClick={() => setViewMode('annual')}
-                            className={cn("px-4 py-2 rounded-full text-xs font-semibold transition-all", viewMode === 'annual' ? "bg-emerald-400 text-white shadow-md shadow-emerald-200" : "text-gray-500 hover:bg-gray-50")}
-                        >
-                            {t("annual_heatmap")}
-                        </button>
-                        <div className="w-px h-4 bg-gray-200 mx-1"></div>
-                        <button
-                            onClick={() => setViewMode('today')}
-                            className={cn("px-4 py-2 rounded-full text-xs font-semibold transition-all", viewMode === 'today' ? "bg-emerald-400 text-white shadow-md shadow-emerald-200" : "text-gray-500 hover:bg-gray-50")}
-                        >
-                            {t("today")}
-                        </button>
+                            <Maximize2 className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                            <span className="hidden sm:inline">Mini Widget</span>
+                        </Button>
+
+                        <div className="bg-white rounded-full p-1 shadow-sm border border-gray-100 flex items-center overflow-x-auto no-scrollbar flex-1 md:flex-none">
+                            <button
+                                onClick={() => setViewMode('weekly')}
+                                className={cn("px-3 md:px-4 py-1.5 md:py-2 rounded-full text-[10px] md:text-xs font-bold transition-all whitespace-nowrap", viewMode === 'weekly' ? "bg-emerald-400 text-white shadow-md shadow-emerald-200" : "text-gray-500 hover:bg-gray-50")}
+                            >
+                                {t("weekly_matrix")}
+                            </button>
+                            <button
+                                onClick={() => setViewMode('monthly')}
+                                className={cn("px-3 md:px-4 py-1.5 md:py-2 rounded-full text-[10px] md:text-xs font-semibold transition-all whitespace-nowrap", viewMode === 'monthly' ? "bg-emerald-400 text-white shadow-md shadow-emerald-200" : "text-gray-500 hover:bg-gray-50")}
+                            >
+                                {t("monthly_view")}
+                            </button>
+                            <button
+                                onClick={() => setViewMode('annual')}
+                                className={cn("px-3 md:px-4 py-1.5 md:py-2 rounded-full text-[10px] md:text-xs font-semibold transition-all whitespace-nowrap", viewMode === 'annual' ? "bg-emerald-400 text-white shadow-md shadow-emerald-200" : "text-gray-500 hover:bg-gray-50")}
+                            >
+                                {t("annual_heatmap")}
+                            </button>
+                            <div className="w-px h-3 md:h-4 bg-gray-200 mx-1 shrink-0"></div>
+                            <button
+                                onClick={() => setViewMode('today')}
+                                className={cn("px-3 md:px-4 py-1.5 md:py-2 rounded-full text-[10px] md:text-xs font-semibold transition-all whitespace-nowrap", viewMode === 'today' ? "bg-emerald-400 text-white shadow-md shadow-emerald-200" : "text-gray-500 hover:bg-gray-50")}
+                            >
+                                {t("today")}
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                {/* Stats Row */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-4">
+                {/* Stats Row - Compacted */}
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 px-4">
                     {/* Completion Rate */}
-                    <div className="bg-white rounded-[32px] p-8 shadow-sm flex items-center justify-between relative overflow-hidden group">
-                        <div>
-                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">{t("completion_rate")}</p>
-                            <div className="flex items-baseline gap-3">
-                                <span className="text-4xl font-extrabold text-gray-900">{completionRate}%</span>
-                                <span className="text-sm font-bold text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-full">~12%</span>
+                    <div className="bg-white rounded-2xl md:rounded-[32px] p-4 md:p-8 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between relative overflow-hidden group">
+                        <div className="w-full">
+                            <div className="flex justify-between w-full md:block mb-2 md:mb-0">
+                                <p className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider mb-0 md:mb-2">{t("completion_rate")}</p>
+                                <div className="md:hidden h-8 w-8 rounded-full border-[3px] border-emerald-400 border-t-emerald-100 flex-shrink-0"></div>
+                            </div>
+                            <div className="flex items-baseline gap-2 md:gap-3">
+                                <span className="text-2xl md:text-4xl font-extrabold text-gray-900">{completionRate}%</span>
+                                <span className="text-[10px] md:text-sm font-bold text-emerald-500 bg-emerald-50 px-1.5 md:px-2 py-0.5 rounded-full whitespace-nowrap">~12%</span>
                             </div>
                         </div>
-                        <div className="h-12 w-12 rounded-full border-[6px] border-emerald-400 border-t-emerald-100 animate-spin-slow"></div>
+                        <div className="hidden md:block h-12 w-12 rounded-full border-[6px] border-emerald-400 border-t-emerald-100 animate-spin-slow"></div>
                     </div>
 
                     {/* Longest Streak */}
-                    <div className="bg-white rounded-[32px] p-8 shadow-sm flex items-center justify-between">
-                        <div>
-                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">{t("longest_streak")}</p>
-                            <div className="flex items-baseline gap-3">
-                                <span className="text-4xl font-extrabold text-gray-900">{bestStreak} {t("days")}</span>
-                                <span className="text-sm font-bold text-rose-500 bg-rose-50 px-2 py-0.5 rounded-full">~2%</span>
+                    <div className="bg-white rounded-2xl md:rounded-[32px] p-4 md:p-8 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between">
+                        <div className="w-full">
+                            <div className="flex justify-between w-full md:block mb-2 md:mb-0">
+                                <p className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider mb-0 md:mb-2">{t("longest_streak")}</p>
+                                <Flame className="h-5 w-5 text-orange-500 fill-orange-500 md:hidden" />
+                            </div>
+                            <div className="flex items-baseline gap-2 md:gap-3">
+                                <span className="text-2xl md:text-4xl font-extrabold text-gray-900 whitespace-nowrap">{bestStreak} <span className="text-sm md:text-xl font-medium text-gray-400">{t("days")}</span></span>
                             </div>
                         </div>
-                        <Flame className="h-8 w-8 text-orange-500 fill-orange-500" />
+                        <Flame className="hidden md:block h-8 w-8 text-orange-500 fill-orange-500" />
                     </div>
 
-                    {/* Daily Average */}
-                    <div className="bg-white rounded-[32px] p-8 shadow-sm flex items-center justify-between">
-                        <div>
-                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">{t("daily_average")}</p>
-                            <div className="flex items-baseline gap-3">
-                                <span className="text-4xl font-extrabold text-gray-900">{dailyAverage} {t("habits_count")}</span>
-                                <span className="text-sm font-bold text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-full">~5%</span>
+                    {/* Daily Average - Spans 2 cols on mobile if we have 3 items in a 2-col grid, but wait, grid-cols-2 means last one is alone. That's fine or let's make it col-span-2 on mobile */}
+                    <div className="bg-white rounded-2xl md:rounded-[32px] p-4 md:p-8 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between col-span-2 md:col-span-1">
+                        <div className="w-full">
+                            <div className="flex justify-between w-full md:block mb-2 md:mb-0">
+                                <p className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider mb-0 md:mb-2">{t("daily_average")}</p>
+                                <Activity className="h-5 w-5 text-blue-500 md:hidden" />
+                            </div>
+                            <div className="flex items-baseline gap-2 md:gap-3">
+                                <span className="text-2xl md:text-4xl font-extrabold text-gray-900">{dailyAverage}</span>
+                                <span className="text-[10px] md:text-sm font-medium text-gray-400 truncate max-w-[80px] md:max-w-none">{t("habits_count")}</span>
                             </div>
                         </div>
-                        <Activity className="h-8 w-8 text-blue-500" />
+                        <Activity className="hidden md:block h-8 w-8 text-blue-500" />
                     </div>
                 </div>
 
@@ -338,26 +359,30 @@ export function HabitTracker() {
                 {viewMode === 'weekly' && (
                     <div className="bg-white rounded-[40px] shadow-sm p-4 overflow-hidden mx-4 pb-8">
                         <div className="overflow-x-auto">
-                            <table className="w-full min-w-[800px]">
+                            <table className="w-full min-w-[600px] md:min-w-[800px]">
                                 <thead>
                                     <tr className="border-b border-gray-50">
-                                        <th className="text-left py-6 px-4 text-xs font-bold text-gray-400 uppercase tracking-wider w-[250px]">{t("habit_name")}</th>
+                                        <th className="text-left py-3 px-2 md:py-6 md:px-4 text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider w-[140px] md:w-[250px]">{t("habit_name")}</th>
                                         {weekDays.map((date, i) => {
                                             const isToday = isSameDay(date, new Date());
                                             return (
-                                                <th key={i} className="text-center py-6 px-2">
+                                                <th key={i} className="text-center py-3 px-1 md:py-6 md:px-2">
                                                     <div className={cn(
                                                         "flex flex-col items-center gap-1",
                                                         isToday ? "text-emerald-500" : "text-gray-400"
                                                     )}>
-                                                        <span className="text-[10px] font-bold uppercase">{format(date, "EEE")} {format(date, "d")}</span>
-                                                        {isToday && <span className="text-[9px] font-extrabold bg-emerald-100 px-1.5 rounded text-emerald-600">{t("today").toUpperCase()}</span>}
+                                                        {/* Desktop Date */}
+                                                        <span className="hidden md:inline text-[10px] font-bold uppercase">{format(date, "EEE")} {format(date, "d")}</span>
+                                                        {/* Mobile Compact Date */}
+                                                        <span className="md:hidden text-[10px] font-bold uppercase">{format(date, "EEE")[0]} {format(date, "d")}</span>
+
+                                                        {isToday && <span className="text-[8px] md:text-[9px] font-extrabold bg-emerald-100 px-1 md:px-1.5 rounded text-emerald-600">{t("today").toUpperCase()}</span>}
                                                     </div>
                                                 </th>
                                             );
                                         })}
-                                        <th className="text-right py-6 px-4 text-xs font-bold text-gray-400 uppercase tracking-wider w-[100px]">{t("score")}</th>
-                                        <th className="py-6 px-4 w-[50px]" />
+                                        <th className="text-right py-3 px-2 md:py-6 md:px-4 text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider w-[80px] md:w-[100px]">{t("score")}</th>
+                                        <th className="py-3 px-1 md:py-6 md:px-4 w-[40px] md:w-[50px]" />
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -370,17 +395,17 @@ export function HabitTracker() {
 
                                         return (
                                             <tr key={habit.id} className="group hover:bg-gray-50/50 transition-colors border-b border-gray-50 last:border-0 border-dashed">
-                                                <td className="py-6 px-4">
-                                                    <div className="flex items-center gap-4">
-                                                        <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center bg-gray-50", habit.iconColor && "bg-opacity-20")}>
+                                                <td className="py-3 px-2 md:py-6 md:px-4">
+                                                    <div className="flex items-center gap-2 md:gap-4">
+                                                        <div className={cn("h-8 w-8 md:h-10 md:w-10 rounded-xl flex items-center justify-center bg-gray-50 shrink-0", habit.iconColor && "bg-opacity-20")}>
                                                             {(() => {
                                                                 const IconComponent = ICON_MAP[habit.icon] || Activity;
-                                                                return <IconComponent className={cn("h-5 w-5", habit.color.split(' ')[1] || "text-gray-500")} />;
+                                                                return <IconComponent className={cn("h-4 w-4 md:h-5 md:w-5", habit.color.split(' ')[1] || "text-gray-500")} />;
                                                             })()}
                                                         </div>
-                                                        <div>
-                                                            <p className="font-bold text-gray-800 text-sm">{habit.name}</p>
-                                                            {habit.goal > 0 && <p className="text-xs text-gray-400 font-medium">{habit.goal} {habit.unit}</p>}
+                                                        <div className="min-w-0">
+                                                            <p className="font-bold text-gray-800 text-xs md:text-sm truncate max-w-[100px] md:max-w-none">{habit.name}</p>
+                                                            {habit.goal > 0 && <p className="text-[10px] md:text-xs text-gray-400 font-medium truncate">{habit.goal} {habit.unit}</p>}
                                                         </div>
                                                     </div>
                                                 </td>
@@ -393,15 +418,15 @@ export function HabitTracker() {
                                                     const isScheduled = habit.frequency.includes(dayOfWeek);
 
                                                     return (
-                                                        <td key={i} className="py-4 px-2 text-center">
+                                                        <td key={i} className="py-3 px-1 md:py-4 md:px-2 text-center">
                                                             <div className="flex justify-center">
                                                                 {!isScheduled ? (
-                                                                    <span className="text-gray-200 text-2xl font-light">-</span>
+                                                                    <span className="text-gray-200 text-sm md:text-2xl font-light">-</span>
                                                                 ) : (
                                                                     <button
                                                                         onClick={() => toggleHabit(habit.id, date)}
                                                                         className={cn(
-                                                                            "h-10 w-10 rounded-full flex items-center justify-center transition-all duration-300",
+                                                                            "h-7 w-7 md:h-10 md:w-10 rounded-full flex items-center justify-center transition-all duration-300",
                                                                             isCompleted
                                                                                 ? "bg-emerald-400 shadow-lg shadow-emerald-200 scale-100"
                                                                                 : isToday
@@ -409,7 +434,7 @@ export function HabitTracker() {
                                                                                     : "border border-gray-200 hover:border-emerald-200"
                                                                         )}
                                                                     >
-                                                                        {isCompleted && <Check className="h-5 w-5 text-white" strokeWidth={3} />}
+                                                                        {isCompleted && <Check className="h-4 w-4 md:h-5 md:w-5 text-white" strokeWidth={3} />}
                                                                     </button>
                                                                 )}
                                                             </div>
@@ -417,10 +442,10 @@ export function HabitTracker() {
                                                     );
                                                 })}
 
-                                                <td className="py-6 px-4">
+                                                <td className="py-3 px-2 md:py-6 md:px-4">
                                                     <div className="flex flex-col items-end gap-1">
-                                                        <span className="text-xs font-bold text-gray-900">{weeklyCompleted}/{weeklyTarget}</span>
-                                                        <div className="h-1.5 w-24 bg-gray-100 rounded-full overflow-hidden">
+                                                        <span className="text-[10px] md:text-xs font-bold text-gray-900">{weeklyCompleted}/{weeklyTarget}</span>
+                                                        <div className="h-1 md:h-1.5 w-16 md:w-24 bg-gray-100 rounded-full overflow-hidden">
                                                             <div
                                                                 className={cn("h-full rounded-full transition-all duration-500", scoreColor)}
                                                                 style={{ width: `${Math.min(100, (weeklyCompleted / weeklyTarget) * 100)}%` }}
@@ -429,11 +454,11 @@ export function HabitTracker() {
                                                     </div>
                                                 </td>
 
-                                                <td className="py-6 px-4 text-right">
+                                                <td className="py-3 px-2 md:py-6 md:px-4 text-right">
                                                     <DropdownMenu>
                                                         <DropdownMenuTrigger asChild>
-                                                            <Button variant="ghost" className="h-8 w-8 p-0 rounded-full hover:bg-gray-100 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                                <MoreVertical className="h-4 w-4 text-gray-400" />
+                                                            <Button variant="ghost" className="h-6 w-6 md:h-8 md:w-8 p-0 rounded-full hover:bg-gray-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                <MoreVertical className="h-3 w-3 md:h-4 md:w-4 text-gray-400" />
                                                             </Button>
                                                         </DropdownMenuTrigger>
                                                         <DropdownMenuContent align="end">

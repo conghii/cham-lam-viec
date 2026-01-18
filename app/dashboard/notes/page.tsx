@@ -214,16 +214,16 @@ export default function NotesPage() {
     return (
         <div className="space-y-8 h-[calc(100vh-4rem)] flex flex-col pb-6 bg-[#FAFBFC] dark:bg-slate-950/20 transition-colors duration-500">
             {/* Header & Quick Note Toolbar */}
-            <div className="flex flex-col items-center gap-6 pt-4 sticky top-0 z-30 bg-background/80 dark:bg-slate-950/80 backdrop-blur-md pb-4 border-b dark:border-slate-800">
+            <div className="flex flex-col items-center gap-4 md:gap-6 pt-2 md:pt-4 sticky top-0 z-30 bg-background/80 dark:bg-slate-950/80 backdrop-blur-md pb-4 border-b dark:border-slate-800">
 
                 {/* Filter Pills */}
-                <div className="flex gap-2 overflow-x-auto w-full justify-center pb-2 no-scrollbar">
+                <div className="flex gap-2 overflow-x-auto w-full justify-start md:justify-center px-4 pb-2 no-scrollbar snap-x">
                     {CATEGORIES.map(cat => (
                         <button
                             key={cat}
                             onClick={() => setSelectedCategory(cat)}
                             className={cn(
-                                "px-4 py-1.5 rounded-full text-sm font-medium transition-all border",
+                                "px-4 py-1.5 rounded-full text-xs md:text-sm font-medium transition-all border whitespace-nowrap snap-center",
                                 selectedCategory === cat
                                     ? "bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 border-slate-900 dark:border-slate-100 shadow-md transform scale-105"
                                     : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800"
@@ -238,7 +238,7 @@ export default function NotesPage() {
                 <div
                     ref={quickNoteRef}
                     className={cn(
-                        "w-full max-w-2xl bg-white dark:bg-slate-950/50 backdrop-blur-xl rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm transition-all duration-300 overflow-hidden relative",
+                        "w-[calc(100%-2rem)] md:w-full max-w-2xl bg-white dark:bg-slate-950/50 backdrop-blur-xl rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm transition-all duration-300 overflow-hidden relative",
                         isQuickNoteExpanded ? "shadow-xl ring-1 ring-slate-200 dark:ring-slate-700 dark:shadow-blue-900/10" : "hover:shadow-md cursor-text hover:border-slate-300 dark:hover:border-slate-700"
                     )}
                     onClick={() => !isQuickNoteExpanded && setIsQuickNoteExpanded(true)}
@@ -258,7 +258,7 @@ export default function NotesPage() {
                             placeholder={t("take_a_note")}
                             className={cn(
                                 "border-none shadow-none focus-visible:ring-0 resize-none bg-transparent placeholder:text-slate-500 dark:placeholder:text-slate-500 dark:text-slate-300",
-                                isQuickNoteExpanded ? "min-h-[120px] px-4 py-2 text-base leading-relaxed" : "h-14 py-4 px-6 truncate font-medium text-slate-500 dark:text-slate-400"
+                                isQuickNoteExpanded ? "min-h-[120px] px-4 py-2 text-base leading-relaxed" : "h-12 md:h-14 py-3 md:py-4 px-4 md:px-6 truncate font-medium text-slate-500 dark:text-slate-400 text-sm md:text-base"
                             )}
                         />
 
@@ -319,15 +319,15 @@ export default function NotesPage() {
                 </div>
             ) : filteredNotes.length === 0 ? (
                 <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
-                    <div className="w-64 h-64 bg-slate-50 dark:bg-slate-900 rounded-full flex items-center justify-center mb-6 shadow-inner relative overflow-hidden transition-colors">
+                    <div className="w-48 h-48 md:w-64 md:h-64 bg-slate-50 dark:bg-slate-900 rounded-full flex items-center justify-center mb-6 shadow-inner relative overflow-hidden transition-colors">
                         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-slate-50 to-slate-100 dark:from-slate-800 dark:via-slate-900 dark:to-slate-950 opacity-50"></div>
                         <StickyNote
-                            className="w-32 h-32 text-slate-200 dark:text-slate-800 relative z-10"
+                            className="w-24 h-24 md:w-32 md:h-32 text-slate-200 dark:text-slate-800 relative z-10"
                             strokeWidth={1}
                         />
                     </div>
                     <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-200">{t("mind_clear")}</h3>
-                    <p className="text-slate-500 dark:text-slate-400 max-w-sm mt-2 mb-8 text-lg">{t("mind_clear_desc")}</p>
+                    <p className="text-slate-500 dark:text-slate-400 max-w-sm mt-2 mb-8 text-base md:text-lg">{t("mind_clear_desc")}</p>
                 </div>
             ) : (
                 <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 space-y-4 px-4 pb-12">

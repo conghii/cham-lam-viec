@@ -323,48 +323,56 @@ export default function PlannerPage() {
                             <div className="relative bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl border border-white/50 dark:border-slate-800/50 rounded-3xl p-8 md:p-10 shadow-2xl shadow-indigo-100/50 dark:shadow-none">
                                 <div className="space-y-8">
                                     <div className="space-y-6">
-                                        <p className="text-2xl md:text-3xl font-light leading-relaxed text-slate-600 dark:text-slate-400">
-                                            {t("i_want_to")}{" "}
-                                            <span className="relative inline-block min-w-[200px]">
-                                                <input
-                                                    type="text"
-                                                    placeholder="learn React Native..."
-                                                    value={goalInput}
-                                                    onChange={e => setGoalInput(e.target.value)}
-                                                    className="w-full bg-transparent border-b-2 border-slate-200 dark:border-slate-700 focus:border-indigo-500 dark:focus:border-indigo-400 outline-none text-slate-900 dark:text-white placeholder:text-slate-300 dark:placeholder:text-slate-600 font-medium transition-colors pb-1 text-center md:text-left"
-                                                />
-                                            </span>
-                                            {" "}{t("by_date")}{" "}
-                                            <Popover>
-                                                <PopoverTrigger asChild>
-                                                    <button className={cn(
-                                                        "inline-flex items-center border-b-2 border-slate-200 dark:border-slate-700 focus:border-indigo-500 dark:focus:border-indigo-400 outline-none text-slate-900 dark:text-white font-medium pb-1 min-w-[140px] justify-center md:justify-start hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors",
-                                                        !dateInput && "text-slate-400"
-                                                    )}>
-                                                        {dateInput ? format(dateInput, "PPP") : <span>{t("pick_date")}</span>}
-                                                    </button>
-                                                </PopoverTrigger>
-                                                <PopoverContent className="w-auto p-0 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white">
-                                                    <Calendar
-                                                        mode="single"
-                                                        selected={dateInput}
-                                                        onSelect={setDateInput}
-                                                        initialFocus
-                                                        className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
+                                        <div className="space-y-6">
+                                            <div className="text-xl md:text-3xl font-light leading-relaxed text-slate-600 dark:text-slate-400 flex flex-col md:block gap-4 md:gap-2">
+                                                <div className="inline-flex flex-col md:inline md:flex-row gap-2 md:gap-0">
+                                                    <span>{t("i_want_to")}{" "}</span>
+                                                    <input
+                                                        type="text"
+                                                        placeholder="learn React Native..."
+                                                        value={goalInput}
+                                                        onChange={e => setGoalInput(e.target.value)}
+                                                        className="w-full md:w-auto md:min-w-[200px] bg-transparent border-b-2 border-slate-200 dark:border-slate-700 focus:border-indigo-500 dark:focus:border-indigo-400 outline-none text-slate-900 dark:text-white placeholder:text-slate-300 dark:placeholder:text-slate-600 font-medium transition-colors pb-1 md:text-center text-left"
                                                     />
-                                                </PopoverContent>
-                                            </Popover>
-                                            , {t("spending")}{" "}
-                                            <span className="relative inline-block w-[60px]">
-                                                <input
-                                                    type="number"
-                                                    value={hoursInput}
-                                                    onChange={e => setHoursInput(e.target.value)}
-                                                    className="w-full bg-transparent border-b-2 border-slate-200 dark:border-slate-700 focus:border-indigo-500 dark:focus:border-indigo-400 outline-none text-slate-900 dark:text-white font-medium transition-colors pb-1 text-center"
-                                                />
-                                            </span>
-                                            {" "}{t("hours_day")}.
-                                        </p>
+                                                </div>
+
+                                                <div className="inline-flex flex-col md:inline md:flex-row gap-2 md:gap-0 mt-4 md:mt-0">
+                                                    <span>{" "}{t("by_date")}{" "}</span>
+                                                    <Popover>
+                                                        <PopoverTrigger asChild>
+                                                            <button className={cn(
+                                                                "inline-flex items-center border-b-2 border-slate-200 dark:border-slate-700 focus:border-indigo-500 dark:focus:border-indigo-400 outline-none text-slate-900 dark:text-white font-medium pb-1 w-full md:w-auto md:min-w-[140px] justify-start md:justify-center hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors text-left",
+                                                                !dateInput && "text-slate-400"
+                                                            )}>
+                                                                {dateInput ? format(dateInput, "PPP") : <span>{t("pick_date")}</span>}
+                                                            </button>
+                                                        </PopoverTrigger>
+                                                        <PopoverContent className="w-auto p-0 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white">
+                                                            <Calendar
+                                                                mode="single"
+                                                                selected={dateInput}
+                                                                onSelect={setDateInput}
+                                                                initialFocus
+                                                                className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
+                                                            />
+                                                        </PopoverContent>
+                                                    </Popover>
+                                                </div>
+
+                                                <div className="inline-flex flex-col md:inline md:flex-row gap-2 md:gap-0 mt-4 md:mt-0">
+                                                    <span>{", "}{t("spending")}{" "}</span>
+                                                    <div className="inline-flex items-center gap-2">
+                                                        <input
+                                                            type="number"
+                                                            value={hoursInput}
+                                                            onChange={e => setHoursInput(e.target.value)}
+                                                            className="w-20 md:w-[60px] bg-transparent border-b-2 border-slate-200 dark:border-slate-700 focus:border-indigo-500 dark:focus:border-indigo-400 outline-none text-slate-900 dark:text-white font-medium transition-colors pb-1 text-center"
+                                                        />
+                                                        <span>{" "}{t("hours_day")}.</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     {/* Inspiration Chips */}

@@ -11,6 +11,13 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "ChamLam. | Personal Productivity System",
   description: "A minimalist, goal-oriented system to help you win every day.",
+  manifest: "/manifest.json",
+  themeColor: "#064e3b",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "ChamLam",
+  },
 };
 
 export default function RootLayout({

@@ -155,7 +155,7 @@ export function Header() {
     const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || "U"
 
     return (
-        <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b dark:border-slate-800 bg-background/95 dark:bg-slate-950/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 md:px-6 transition-colors duration-300">
+        <header className="sticky top-0 z-30 flex min-h-16 h-auto items-center gap-4 border-b dark:border-slate-800 bg-background/95 dark:bg-slate-950/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 md:px-6 transition-colors duration-300 py-2">
             {/* Mobile Sidebar Trigger */}
             <div className="md:hidden">
                 <Sheet>
@@ -170,14 +170,14 @@ export function Header() {
                 </Sheet>
             </div>
 
-            <div className="flex flex-1 flex-col justify-center py-2">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
-                    <span>{greeting}, {displayName}</span>
-                    <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />
-                    <span>{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</span>
+            <div className="flex flex-1 flex-col justify-center py-1 min-w-0">
+                <div className="flex items-center gap-2 text-[10px] md:text-xs text-muted-foreground font-medium truncate">
+                    <span className="truncate">{greeting}, {displayName}</span>
+                    <span className="w-1 h-1 rounded-full bg-muted-foreground/30 shrink-0" />
+                    <span className="shrink-0">{new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
                 </div>
-                <h1 className="text-sm md:text-base font-serif italic text-foreground/90 dark:text-white mt-0.5">
-                    "{quote.text}" <span className="text-muted-foreground dark:text-slate-400 not-italic text-xs ml-1 font-sans">- {quote.author}</span>
+                <h1 className="text-xs md:text-sm font-serif italic text-foreground/90 dark:text-white mt-0.5 line-clamp-1 md:line-clamp-2">
+                    "{quote.text}" <span className="text-muted-foreground dark:text-slate-400 not-italic text-[10px] ml-1 font-sans">- {quote.author}</span>
                 </h1>
             </div>
             <div className="flex items-center gap-4">

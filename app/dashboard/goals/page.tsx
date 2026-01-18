@@ -550,101 +550,81 @@ export default function GoalsPage() {
         <div className="min-h-screen bg-slate-50/50 dark:bg-transparent">
             <div className="space-y-8 max-w-7xl mx-auto p-6 md:p-8 pb-32">
                 {/* Stats Overview */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Stats Overview */}
+                <div className="grid grid-cols-3 gap-2 md:gap-6">
                     <Card className="border-none shadow-sm bg-white dark:bg-slate-900 ring-1 ring-slate-100 dark:ring-slate-800 hover:shadow-md transition-all duration-200">
-                        <CardHeader className="pb-2">
-                            <div className="flex items-center gap-4">
-                                <div className="h-12 w-12 rounded-full bg-emerald-100 dark:bg-emerald-900/20 flex items-center justify-center">
-                                    <TrendingUp className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
-                                </div>
-                                <div>
-                                    <CardDescription className="text-sm font-medium text-slate-500 dark:text-slate-400">{t("total_progress")}</CardDescription>
-                                    <CardTitle className="text-4xl font-black text-slate-900 dark:text-white mt-1">
-                                        {overallProgress}%
-                                    </CardTitle>
-                                </div>
+                        <CardContent className="p-3 md:p-6 flex flex-col items-center justify-center text-center h-full">
+                            <div className="h-8 w-8 md:h-12 md:w-12 rounded-full bg-emerald-100 dark:bg-emerald-900/20 flex items-center justify-center mb-2 shrink-0">
+                                <TrendingUp className="h-4 w-4 md:h-6 md:w-6 text-emerald-600 dark:text-emerald-400" />
                             </div>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="flex items-center gap-2 text-sm font-medium text-emerald-600">
-                                <span>↑ 12%</span>
-                                <span className="text-slate-400 font-normal">{t("vs_last_month")}</span>
+                            <div className="space-y-0.5">
+                                <div className="text-[10px] md:text-sm font-medium text-slate-500 dark:text-slate-400 line-clamp-1">{t("total_progress")}</div>
+                                <div className="text-lg md:text-4xl font-black text-slate-900 dark:text-white leading-tight">
+                                    {overallProgress}%
+                                </div>
+                                <div className="text-[10px] font-medium text-emerald-600 md:hidden">↑ 12%</div>
                             </div>
                         </CardContent>
                     </Card>
 
                     <Card className="border-none shadow-sm bg-white dark:bg-slate-900 ring-1 ring-slate-100 dark:ring-slate-800 hover:shadow-md transition-all duration-200">
-                        <CardHeader className="pb-2">
-                            <div className="flex items-center gap-4">
-                                <div className="h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
-                                    <Target className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                                </div>
-                                <div>
-                                    <CardDescription className="text-sm font-medium text-slate-500 dark:text-slate-400">{t("active_goals")}</CardDescription>
-                                    <CardTitle className="text-4xl font-black text-slate-900 dark:text-white mt-1">
-                                        {activeGoals}
-                                    </CardTitle>
-                                </div>
+                        <CardContent className="p-3 md:p-6 flex flex-col items-center justify-center text-center h-full">
+                            <div className="h-8 w-8 md:h-12 md:w-12 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center mb-2 shrink-0">
+                                <Target className="h-4 w-4 md:h-6 md:w-6 text-blue-600 dark:text-blue-400" />
                             </div>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-sm text-slate-500 font-medium">
-                                {t("keep_it_up")}
+                            <div className="space-y-0.5">
+                                <div className="text-[10px] md:text-sm font-medium text-slate-500 dark:text-slate-400 line-clamp-1">{t("active_goals")}</div>
+                                <div className="text-lg md:text-4xl font-black text-slate-900 dark:text-white leading-tight">
+                                    {activeGoals}
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
 
                     <Card className="border-none shadow-sm bg-white dark:bg-slate-900 ring-1 ring-slate-100 dark:ring-slate-800 hover:shadow-md transition-all duration-200">
-                        <CardHeader className="pb-2">
-                            <div className="flex items-center gap-4">
-                                <div className="h-12 w-12 rounded-full bg-yellow-100 dark:bg-yellow-900/20 flex items-center justify-center">
-                                    <Trophy className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
-                                </div>
-                                <div>
-                                    <CardDescription className="text-sm font-medium text-slate-500 dark:text-slate-400">{t("completed_goals")}</CardDescription>
-                                    <CardTitle className="text-4xl font-black text-slate-900 dark:text-white mt-1">
-                                        {completedGoals}
-                                    </CardTitle>
-                                </div>
+                        <CardContent className="p-3 md:p-6 flex flex-col items-center justify-center text-center h-full">
+                            <div className="h-8 w-8 md:h-12 md:w-12 rounded-full bg-yellow-100 dark:bg-yellow-900/20 flex items-center justify-center mb-2 shrink-0">
+                                <Trophy className="h-4 w-4 md:h-6 md:w-6 text-yellow-600 dark:text-yellow-400" />
                             </div>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-sm text-slate-500 font-medium">
-                                {t("keep_it_up")}
+                            <div className="space-y-0.5">
+                                <div className="text-[10px] md:text-sm font-medium text-slate-500 dark:text-slate-400 line-clamp-1">{t("completed_goals")}</div>
+                                <div className="text-lg md:text-4xl font-black text-slate-900 dark:text-white leading-tight">
+                                    {completedGoals}
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
                 </div>
 
                 {/* Actions */}
-                <div className="flex flex-col md:flex-row justify-between items-end md:items-center gap-4">
+                <div className="flex flex-col-reverse md:flex-row justify-between items-stretch md:items-center gap-4">
                     {/* Filters */}
-                    <div className="flex items-center gap-4 bg-white dark:bg-slate-900 p-1 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800">
-                        <Tabs value={filterType} onValueChange={(v) => setFilterType(v as FilterType)} className="w-auto">
+                    <div className="flex items-center gap-2 md:gap-4 bg-white dark:bg-slate-900 p-1 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-x-auto no-scrollbar">
+                        <Tabs value={filterType} onValueChange={(v) => setFilterType(v as FilterType)} className="w-auto shrink-0">
                             <TabsList className="bg-transparent h-9 p-0 gap-1">
-                                <TabsTrigger value="all" className="rounded-lg h-9 px-3 data-[state=active]:bg-slate-100 dark:data-[state=active]:bg-slate-800 data-[state=active]:text-foreground data-[state=active]:shadow-none">All</TabsTrigger>
-                                <TabsTrigger value="week" className="rounded-lg h-9 px-3 data-[state=active]:bg-slate-100 dark:data-[state=active]:bg-slate-800 data-[state=active]:text-foreground data-[state=active]:shadow-none">Week</TabsTrigger>
-                                <TabsTrigger value="month" className="rounded-lg h-9 px-3 data-[state=active]:bg-slate-100 dark:data-[state=active]:bg-slate-800 data-[state=active]:text-foreground data-[state=active]:shadow-none">Month</TabsTrigger>
-                                <TabsTrigger value="quarter" className="rounded-lg h-9 px-3 data-[state=active]:bg-slate-100 dark:data-[state=active]:bg-slate-800 data-[state=active]:text-foreground data-[state=active]:shadow-none">Quarter</TabsTrigger>
-                                <TabsTrigger value="year" className="rounded-lg h-9 px-3 data-[state=active]:bg-slate-100 dark:data-[state=active]:bg-slate-800 data-[state=active]:text-foreground data-[state=active]:shadow-none">Year</TabsTrigger>
+                                <TabsTrigger value="all" className="rounded-lg h-9 px-3 text-xs md:text-sm data-[state=active]:bg-slate-100 dark:data-[state=active]:bg-slate-800 data-[state=active]:text-foreground data-[state=active]:shadow-none">All</TabsTrigger>
+                                <TabsTrigger value="week" className="rounded-lg h-9 px-3 text-xs md:text-sm data-[state=active]:bg-slate-100 dark:data-[state=active]:bg-slate-800 data-[state=active]:text-foreground data-[state=active]:shadow-none">Week</TabsTrigger>
+                                <TabsTrigger value="month" className="rounded-lg h-9 px-3 text-xs md:text-sm data-[state=active]:bg-slate-100 dark:data-[state=active]:bg-slate-800 data-[state=active]:text-foreground data-[state=active]:shadow-none">Month</TabsTrigger>
+                                <TabsTrigger value="quarter" className="rounded-lg h-9 px-3 text-xs md:text-sm data-[state=active]:bg-slate-100 dark:data-[state=active]:bg-slate-800 data-[state=active]:text-foreground data-[state=active]:shadow-none">Quarter</TabsTrigger>
+                                <TabsTrigger value="year" className="rounded-lg h-9 px-3 text-xs md:text-sm data-[state=active]:bg-slate-100 dark:data-[state=active]:bg-slate-800 data-[state=active]:text-foreground data-[state=active]:shadow-none">Year</TabsTrigger>
                             </TabsList>
                         </Tabs>
 
                         {filterType !== 'all' && (
-                            <div className="flex items-center gap-2 pl-4 border-l border-slate-200 dark:border-slate-800">
+                            <div className="flex items-center gap-1 md:gap-2 pl-2 md:pl-4 border-l border-slate-200 dark:border-slate-800 ml-auto md:ml-0">
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-8 w-8"
+                                    className="h-8 w-8 shrink-0"
                                     onClick={() => navigateTime('prev')}
                                 >
                                     <ChevronLeft className="h-4 w-4" />
                                 </Button>
-                                <span className="text-sm font-medium w-36 text-center tabular-nums">{getPeriodLabel()}</span>
+                                <span className="text-xs md:text-sm font-medium w-24 md:w-36 text-center tabular-nums truncate">{getPeriodLabel()}</span>
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-8 w-8"
+                                    className="h-8 w-8 shrink-0"
                                     onClick={() => navigateTime('next')}
                                 >
                                     <ChevronRight className="h-4 w-4" />
@@ -656,11 +636,11 @@ export default function GoalsPage() {
                     {canEdit && (
                         <Dialog open={isAddGoalOpen} onOpenChange={setIsAddGoalOpen}>
                             <DialogTrigger asChild>
-                                <Button size="lg" className="shadow-lg hover:shadow-primary/20 transition-all">
+                                <Button size="lg" className="shadow-lg hover:shadow-primary/20 transition-all w-full md:w-auto">
                                     <Plus className="h-5 w-5 mr-2" /> {t("create_objective")}
                                 </Button>
                             </DialogTrigger>
-                            <DialogContent>
+                            <DialogContent className="sm:max-w-[500px]">
                                 <DialogHeader>
                                     <DialogTitle>{t("create_objective")}</DialogTitle>
                                 </DialogHeader>
@@ -704,7 +684,7 @@ export default function GoalsPage() {
                                         </div>
                                     )}
                                     <DialogFooter>
-                                        <Button type="submit">{t("create_goal_button")}</Button>
+                                        <Button type="submit" className="w-full sm:w-auto">{t("create_goal_button")}</Button>
                                     </DialogFooter>
                                 </form>
                             </DialogContent>
@@ -713,7 +693,7 @@ export default function GoalsPage() {
                 </div>
 
                 {/* Goals Grid */}
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                     {loading ? (
                         <div className="col-span-full flex justify-center py-20"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>
                     ) : filteredGoals.length === 0 ? (
@@ -726,14 +706,14 @@ export default function GoalsPage() {
                     ) : (
                         filteredGoals.map((goal) => (
                             <Card key={goal.id} onClick={() => openGoalDetails(goal, false)} className="group relative overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-blue-200 dark:hover:border-blue-900 transition-all duration-300 cursor-pointer flex flex-col h-full">
-                                <CardHeader className="pb-3 relative z-10 flex-shrink-0">
+                                <CardHeader className="pb-3 md:pb-3 p-4 md:p-6 relative z-10 flex-shrink-0">
                                     <div className="flex justify-between items-start mb-2">
-                                        <div className="space-y-1 flex-1 mr-2">
-                                            <CardTitle className="text-lg font-bold text-slate-900 dark:text-white leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2" title={goal.title}>
+                                        <div className="space-y-1 flex-1 mr-2 min-w-0">
+                                            <CardTitle className="text-base md:text-lg font-bold text-slate-900 dark:text-white leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2" title={goal.title}>
                                                 {goal.title}
                                             </CardTitle>
                                             <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
-                                                <span className="flex items-center gap-1">
+                                                <span className="flex items-center gap-1 shrink-0">
                                                     <CalendarIcon className="h-3.5 w-3.5 opacity-70" />
                                                     {goal.targetDate ? format(new Date(goal.targetDate), "MMM d, yyyy") : "No deadline"}
                                                 </span>
@@ -742,7 +722,7 @@ export default function GoalsPage() {
                                         {canEdit && (
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-300 hover:text-slate-900 -mr-2 -mt-1" onClick={(e) => e.stopPropagation()}>
+                                                    <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-300 hover:text-slate-900 -mr-2 -mt-1 shrink-0" onClick={(e) => e.stopPropagation()}>
                                                         <MoreVertical className="h-4 w-4" />
                                                     </Button>
                                                 </DropdownMenuTrigger>

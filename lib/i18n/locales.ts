@@ -152,6 +152,8 @@ export const dictionaries = {
         "keep_it_up": "Keep it up!",
         "start_streak": "Start a new streak!",
         "focus_time": "Focus Time",
+        "focus_mode": "Focus Mode",
+        "select_task_to_begin": "Select a task to begin",
         "task_created": "Task created successfully",
 
         // Tasks
@@ -257,6 +259,8 @@ export const dictionaries = {
         "target_label": "Target",
         "current_label": "Current",
         "unit_placeholder": "e.g. pages, sessions",
+        "open_widget": "Open Mini Widget",
+        "empty": "Empty",
 
         // Common
         "loading": "Loading...",
@@ -534,6 +538,8 @@ export const dictionaries = {
         "keep_it_up": "Tiếp tục phát huy!",
         "start_streak": "Bắt đầu streak mới!",
         "focus_time": "Thời gian tập trung",
+        "focus_mode": "Chế độ tập trung",
+        "select_task_to_begin": "Hãy chọn nhiệm vụ để bắt đầu",
         "task_created": "Đã tạo nhiệm vụ thành công",
 
         // Tasks
@@ -658,6 +664,8 @@ export const dictionaries = {
         "target_label": "Mục tiêu",
         "current_label": "Hiện tại",
         "unit_placeholder": "ví dụ: trang, buổi, bài",
+        "open_widget": "Mở Giao diện Mini",
+        "empty": "Trống",
 
         // Blog
         "blog_title": "Vườn Tri Thức",
