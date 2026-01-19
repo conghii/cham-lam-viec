@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Home, Users } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { NotificationsToggle } from "@/components/dashboard/notifications-toggle"
 
 interface LeftSidebarProps {
     viewMode: 'global' | 'circle'
@@ -90,6 +91,9 @@ export function LeftSidebar({ viewMode, setViewMode }: LeftSidebarProps) {
                         )
                     })}
                 </nav>
+                <div className="pt-2 mt-2 border-t border-slate-100 dark:border-slate-800">
+                    <NotificationsToggle />
+                </div>
             </div>
 
         </div>

@@ -34,6 +34,7 @@ import { createOrganization } from "@/lib/firebase/firestore"
 import { useLanguage } from "@/components/shared/language-context"
 import { useHabits } from "@/components/dashboard/habit-context"
 import { isSameDay } from "date-fns"
+import { NotificationsToggle } from "@/components/dashboard/notifications-toggle"
 
 
 export function Sidebar({ isCollapsed = false, className }: { isCollapsed?: boolean, className?: string }) {

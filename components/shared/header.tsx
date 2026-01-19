@@ -10,11 +10,14 @@ import { ModeToggle } from "@/components/theme-toggle"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Sidebar } from "@/components/shared/sidebar"
 import { NotificationsPopover } from "@/components/shared/notifications-popover"
+import { NotificationsToggle } from "@/components/dashboard/notifications-toggle"
 
 import { auth, logOut } from "@/lib/firebase/auth"
 import { subscribeToUserProfile, subscribeToChats, subscribeToFriendships, acceptFriendRequest, rejectFriendRequest, type Chat, type Friendship } from "@/lib/firebase/firestore"
 import { useLanguage } from "@/components/shared/language-context"
 import { Label } from "@/components/ui/label"
+import { Switch } from "@/components/ui/switch"
+import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
@@ -30,6 +33,8 @@ export function Header() {
     const [invitations, setInvitations] = useState<any[]>([])
     const [friendRequests, setFriendRequests] = useState<Friendship[]>([])
     const [showSettings, setShowSettings] = useState(false)
+    const [reminderTime, setReminderTime] = useState("09:00")
+    const [reminderEnabled, setReminderEnabled] = useState(false)
     const { language, setLanguage, t } = useLanguage()
 
     useEffect(() => {
@@ -43,9 +48,15 @@ export function Header() {
 
         const unsubAuth = auth.onAuthStateChanged((u) => {
             setUser(u)
+            setUser(u)
             if (u) {
                 const unsubProfile = subscribeToUserProfile(u.uid, (data) => {
                     setUserData(data)
+                    // Sync local state
+                    if (data) {
+                        setReminderTime(data.dailyReminderTime || "09:00")
+                        setReminderEnabled(data.dailyRemindersEnabled || false)
+                    }
                 })
                 return () => unsubProfile()
             } else {
@@ -257,6 +268,61 @@ export function Header() {
                                 >
                                     {t("vietnamese") || "Vietnamese"}
                                 </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="space-y-6 pt-2 pb-6">
+                        <div className="flex items-center justify-between">
+                            <div className="space-y-0.5">
+                                <Label className="text-base">Notifications</Label>
+                                <p className="text-sm text-muted-foreground">Enable push notifications for this device.</p>
+                            </div>
+                            <div>
+                                <NotificationsToggle />
+                            </div>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                            <div className="space-y-0.5">
+                                <Label className="text-base">Daily Summary</Label>
+                                <p className="text-sm text-muted-foreground">Receive a daily summary of incomplete tasks & habits.</p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Input
+                                    type="time"
+                                    className="w-24 h-8"
+                                    value={reminderTime}
+                                    onChange={async (e) => {
+                                        const newVal = e.target.value;
+                                        setReminderTime(newVal); // Instant update
+                                        try {
+                                            if (user) {
+                                                console.log("Saving time:", newVal);
+                                                const { updateUserDetails } = await import("@/lib/firebase/firestore");
+                                                await updateUserDetails(user.uid, { dailyReminderTime: newVal });
+                                            }
+                                        } catch (error) {
+                                            console.error("Save error:", error);
+                                            toast.error("Failed to save time");
+                                        }
+                                    }}
+                                />
+                                <Switch
+                                    checked={reminderEnabled}
+                                    onCheckedChange={async (checked) => {
+                                        setReminderEnabled(checked); // Instant update
+                                        try {
+                                            if (user) {
+                                                const { updateUserDetails } = await import("@/lib/firebase/firestore");
+                                                await updateUserDetails(user.uid, { dailyRemindersEnabled: checked });
+                                            }
+                                        } catch (error) {
+                                            console.error("Switch error:", error);
+                                            setReminderEnabled(!checked); // Revert on failure
+                                            toast.error("Failed to update setting");
+                                        }
+                                    }}
+                                />
                             </div>
                         </div>
                     </div>

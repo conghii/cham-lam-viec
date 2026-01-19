@@ -190,6 +190,10 @@ export type User = {
     // Social Graph
     followers?: string[];
     following?: string[];
+    fcmTokens?: string[];
+    // Notification Preferences
+    dailyRemindersEnabled?: boolean;
+    dailyReminderTime?: string; // Format "HH:mm"
 }
 
 export const createUser = async (user: User) => {
@@ -199,6 +203,17 @@ export const createUser = async (user: User) => {
 export const updateUser = async (userId: string, data: Partial<User>) => {
     const userRef = doc(db, "users", userId);
     await updateDoc(userRef, data);
+};
+
+export const saveFcmToken = async (userId: string, token: string) => {
+    try {
+        const userRef = doc(db, "users", userId);
+        await updateDoc(userRef, {
+            fcmTokens: arrayUnion(token)
+        });
+    } catch (error) {
+        console.error("Error saving FCM token:", error);
+    }
 };
 
 export const updateUserDetails = async (userId: string, data: Partial<User>) => {
