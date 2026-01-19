@@ -2721,3 +2721,51 @@ export const getMindmap = async (mindmapId: string) => {
     }
     return null;
 };
+
+// --- HABITS ---
+
+export type Habit = {
+    id: string;
+    userId: string;
+    name: string;
+    icon: string;
+    streak: number;
+    goal: number;
+    unit: string;
+    completed: boolean;
+    color: string;
+    iconColor: string;
+    frequency: number[];
+    history: { [dateStr: string]: boolean };
+    createdAt: Timestamp;
+}
+
+export const subscribeToHabits = (userId: string, callback: (habits: Habit[]) => void) => {
+    const q = query(
+        collection(db, "users", userId, "habits"),
+        orderBy("createdAt", "asc")
+    );
+    return onSnapshot(q, (snapshot) => {
+        const habits = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Habit));
+        callback(habits);
+    });
+};
+
+export const createHabit = async (userId: string, habit: Omit<Habit, "id" | "userId" | "createdAt">) => {
+    const habitsRef = collection(db, "users", userId, "habits");
+    await addDoc(habitsRef, {
+        ...habit,
+        userId,
+        createdAt: serverTimestamp()
+    });
+};
+
+export const updateHabitDoc = async (userId: string, habitId: string, data: Partial<Habit>) => {
+    const habitRef = doc(db, "users", userId, "habits", habitId);
+    await updateDoc(habitRef, data);
+};
+
+export const deleteHabitDoc = async (userId: string, habitId: string) => {
+    const habitRef = doc(db, "users", userId, "habits", habitId);
+    await deleteDoc(habitRef);
+};

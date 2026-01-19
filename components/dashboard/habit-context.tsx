@@ -3,6 +3,14 @@
 import React, { createContext, useContext, useState, useEffect } from "react"
 import { addDays, format, isSameDay } from "date-fns"
 import { Droplets, Activity, Footprints, BookOpen, Carrot, Flame, Pill, Target, Zap, Heart } from "lucide-react"
+import { auth } from "@/lib/firebase/auth"
+import {
+    subscribeToHabits,
+    createHabit,
+    updateHabitDoc,
+    deleteHabitDoc,
+    type Habit as FirestoreHabit
+} from "@/lib/firebase/firestore"
 
 // Icon Mapping
 export const ICON_MAP: { [key: string]: any } = {
@@ -18,105 +26,107 @@ export const ICON_MAP: { [key: string]: any } = {
     "Heart": Heart
 };
 
-// Types
-export type Habit = {
-    id: string;
-    name: string;
-    icon: string; // Changed from any (component) to string (name)
-    streak: number;
-    goal: number;
-    unit: string;
-    completed: boolean; // "today" status (legacy use mostly)
-    color: string;
-    iconColor: string;
-    frequency: number[]; // 0 for Sunday...
-    history: { [dateStr: string]: boolean }; // 'YYYY-MM-DD': true/false
-};
-
-// Initial Mock Data Removed
+// Use the type from firestore but export it as Habit for compatibility
+export type Habit = FirestoreHabit;
 
 interface HabitContextType {
     habits: Habit[];
-    addHabit: (habit: Habit) => void;
+    addHabit: (habit: Omit<Habit, "id" | "userId" | "createdAt" | "history" | "streak" | "completed" | "color" | "iconColor">) => void;
     updateHabit: (id: string, updates: Partial<Habit>) => void;
     deleteHabit: (id: string) => void;
     toggleHabit: (id: string, date: Date) => void;
+    loading: boolean;
 }
 
 const HabitContext = createContext<HabitContextType | undefined>(undefined);
 
-const STORAGE_KEY = 'chamlam_habits';
-
 export function HabitProvider({ children }: { children: React.ReactNode }) {
     const [habits, setHabits] = useState<Habit[]>([]);
-    const [isLoaded, setIsLoaded] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [user, setUser] = useState(auth.currentUser);
 
-    // Load from localStorage on mount
     useEffect(() => {
-        try {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            if (saved) {
-                const parsed = JSON.parse(saved);
-                // Basic validation could go here
-                setHabits(parsed);
+        const unsubscribeAuth = auth.onAuthStateChanged((u) => {
+            setUser(u);
+            if (!u) {
+                setHabits([]);
+                setLoading(false);
             }
-        } catch (error) {
-            console.error('Failed to load habits from storage:', error);
-        } finally {
-            setIsLoaded(true);
-        }
+        });
+        return () => unsubscribeAuth();
     }, []);
 
-    // Save to localStorage whenever habits change
     useEffect(() => {
-        if (isLoaded) {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(habits));
-        }
-    }, [habits, isLoaded]);
+        if (!user) return;
 
-    const addHabit = (habit: Habit) => {
-        setHabits(prev => [...prev, habit]);
+        const unsubscribe = subscribeToHabits(user.uid, (data) => {
+            setHabits(data);
+            setLoading(false);
+        });
+
+        return () => unsubscribe();
+    }, [user]);
+
+    const addHabit = async (habitData: any) => {
+        if (!user) return;
+        // Construct full habit object
+        const newHabit = {
+            ...habitData,
+            streak: 0,
+            completed: false,
+            color: "bg-cyan-50 text-cyan-500",
+            iconColor: "bg-cyan-100 text-cyan-600",
+            history: {}
+        };
+        await createHabit(user.uid, newHabit);
     };
 
-    const updateHabit = (id: string, updates: Partial<Habit>) => {
-        setHabits(prev => prev.map(h => h.id === id ? { ...h, ...updates } : h));
+    const updateHabit = async (id: string, updates: Partial<Habit>) => {
+        if (!user) return;
+        await updateHabitDoc(user.uid, id, updates);
     };
 
-    const deleteHabit = (id: string) => {
-        setHabits(prev => prev.filter(h => h.id !== id));
+    const deleteHabit = async (id: string) => {
+        if (!user) return;
+        await deleteHabitDoc(user.uid, id);
     };
 
-    const toggleHabit = (id: string, date: Date) => {
+    const toggleHabit = async (id: string, date: Date) => {
+        if (!user) return;
+        const habit = habits.find(h => h.id === id);
+        if (!habit) return;
+
         const dateStr = format(date, 'yyyy-MM-dd');
-        setHabits(prev => prev.map(h => {
-            if (h.id === id) {
-                const wasCompleted = !!h.history[dateStr];
-                const newHistory = { ...h.history, [dateStr]: !wasCompleted };
+        const wasCompleted = !!habit.history[dateStr];
+        const newHistory = { ...habit.history };
 
-                let newStreak = h.streak;
-                if (isSameDay(date, new Date())) {
-                    newStreak = !wasCompleted ? h.streak + 1 : Math.max(0, h.streak - 1);
-                }
+        if (wasCompleted) {
+            delete newHistory[dateStr];
+        } else {
+            newHistory[dateStr] = true;
+        }
 
-                return {
-                    ...h,
-                    streak: newStreak,
-                    history: newHistory,
-                    completed: isSameDay(date, new Date()) ? !wasCompleted : h.completed
-                };
+        // Calculate streak (basic logic, can be improved server-side or here)
+        let newStreak = habit.streak;
+        if (isSameDay(date, new Date())) {
+            // Recalculating streak accurately requires traversing history backwards.
+            // For now, simpler increment/decrement for today's toggle
+            if (!wasCompleted) {
+                newStreak += 1;
+            } else {
+                newStreak = Math.max(0, newStreak - 1);
             }
-            return h;
-        }));
-    };
+        }
 
-    // Don't render until loaded to prevent hydration mismatch if we were using server-side rendering
-    // or just to avoid flashing defaults (though we default to empty now)
-    if (!isLoaded) {
-        return null; // Or a loading spinner
-    }
+        await updateHabitDoc(user.uid, id, {
+            history: newHistory,
+            streak: newStreak,
+            completed: isSameDay(date, new Date()) ? !wasCompleted : habit.completed
+        });
+    };
 
     return (
-        <HabitContext.Provider value={{ habits, addHabit, updateHabit, deleteHabit, toggleHabit }}>
+        <HabitContext.Provider value={{ habits, addHabit, updateHabit, deleteHabit, toggleHabit, loading }}>
             {children}
         </HabitContext.Provider>
     );

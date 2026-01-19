@@ -175,20 +175,13 @@ export function HabitTracker() {
                 icon: formData.icon
             });
         } else {
-            const newHabit: Habit = {
-                id: Math.random().toString(36).slice(2),
+            addHabit({
                 name: formData.name,
                 icon: formData.icon,
-                streak: 0,
                 goal: parseInt(formData.goal) || 1,
                 unit: formData.unit,
-                completed: false,
-                color: "bg-cyan-50 text-cyan-500",
-                iconColor: "bg-cyan-100 text-cyan-600",
                 frequency: formData.frequency,
-                history: {}
-            };
-            addHabit(newHabit);
+            });
         }
         setIsDialogOpen(false);
     };
