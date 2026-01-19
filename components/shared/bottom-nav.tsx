@@ -9,7 +9,7 @@ const navItems = [
     { icon: LayoutDashboard, label: "Home", href: "/dashboard" },
     { icon: CheckSquare, label: "Tasks", href: "/dashboard/tasks" },
     { icon: Target, label: "Goals", href: "/dashboard/goals" },
-    { icon: BookOpen, label: "Planner", href: "/planner" },
+    { icon: BookOpen, label: "Planner", href: "/dashboard/planner" },
 ]
 
 export function BottomNav() {

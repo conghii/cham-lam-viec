@@ -51,8 +51,8 @@ export function ArchivedTasksStats({ tasks }: ArchivedTasksStatsProps) {
     }, [tasks]);
 
     return (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card>
+        <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+            <Card className="col-span-1">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Total Archived</CardTitle>
                     <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
@@ -63,7 +63,7 @@ export function ArchivedTasksStats({ tasks }: ArchivedTasksStatsProps) {
                 </CardContent>
             </Card>
 
-            <Card>
+            <Card className="col-span-1">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Last 7 Days</CardTitle>
                     <TrendingUp className="h-4 w-4 text-muted-foreground" />
@@ -74,7 +74,7 @@ export function ArchivedTasksStats({ tasks }: ArchivedTasksStatsProps) {
                 </CardContent>
             </Card>
 
-            <Card className="col-span-1 lg:col-span-1">
+            <Card className="col-span-2 md:col-span-1 lg:col-span-1">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Weekly Trend</CardTitle>
                     <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -98,7 +98,7 @@ export function ArchivedTasksStats({ tasks }: ArchivedTasksStatsProps) {
                 </CardContent>
             </Card>
 
-            <Card className="col-span-1 lg:col-span-1">
+            <Card className="col-span-2 md:col-span-1 lg:col-span-1">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">By Priority</CardTitle>
                     <AlertCircle className="h-4 w-4 text-muted-foreground" />

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Bell, Users, Menu } from "lucide-react"
 import { ModeToggle } from "@/components/theme-toggle"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet"
 import { Sidebar } from "@/components/shared/sidebar"
 import { NotificationsPopover } from "@/components/shared/notifications-popover"
 import { NotificationsToggle } from "@/components/dashboard/notifications-toggle"
@@ -35,6 +35,7 @@ export function Header() {
     const [showSettings, setShowSettings] = useState(false)
     const [reminderTime, setReminderTime] = useState("09:00")
     const [reminderEnabled, setReminderEnabled] = useState(false)
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const { language, setLanguage, t } = useLanguage()
 
     useEffect(() => {
@@ -169,14 +170,15 @@ export function Header() {
         <header className="sticky top-0 z-30 flex min-h-16 h-auto items-center gap-4 border-b dark:border-slate-800 bg-background/95 dark:bg-slate-950/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 md:px-6 transition-colors duration-300 py-2">
             {/* Mobile Sidebar Trigger */}
             <div className="md:hidden">
-                <Sheet>
+                <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
                     <SheetTrigger asChild>
                         <Button variant="ghost" size="icon" className="-ml-2">
                             <Menu className="h-5 w-5" />
                         </Button>
                     </SheetTrigger>
                     <SheetContent side="left" className="p-0 border-r-0 w-[85vw] max-w-[300px]">
-                        <Sidebar className="flex h-full w-full border-none bg-transparent" />
+                        <SheetTitle className="sr-only">Mobile Menu</SheetTitle>
+                        <Sidebar className="flex h-full w-full border-none bg-transparent" onNavigate={() => setIsMobileMenuOpen(false)} />
                     </SheetContent>
                 </Sheet>
             </div>

@@ -563,7 +563,7 @@ function TaskCard({
             < Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen} >
                 <DialogContent
                     showCloseButton={false}
-                    className="!w-[60vw] !max-w-[60vw] h-[80vh] overflow-hidden flex flex-col p-0 gap-0"
+                    className="w-[95vw] md:w-[80vw] lg:w-[60vw] max-w-[1000px] h-[90vh] md:h-[80vh] overflow-hidden flex flex-col p-0 gap-0"
                 >
                     <DialogHeader className="px-6 py-4 border-b bg-gradient-to-r from-muted/50 to-transparent">
                         <div className="flex items-start justify-between gap-4">
@@ -620,7 +620,7 @@ function TaskCard({
 
                     <div className="flex-1 overflow-hidden flex flex-col md:flex-row">
                         {/* Main Content: Description & Subtasks */}
-                        <ScrollArea className="flex-1 p-6 h-[500px] md:h-auto bg-background/50">
+                        <ScrollArea className="flex-1 p-4 md:p-6 bg-background/50">
                             <div className="space-y-8">
                                 {/* Metadata Row */}
                                 <div className="flex flex-wrap gap-6 p-4 bg-muted/20 rounded-xl border border-border/40">
@@ -965,7 +965,7 @@ function TaskCard({
                         </ScrollArea>
 
                         {/* Sidebar: Activity/Comments */}
-                        <div className="w-full md:w-[400px] bg-muted/10 border-l flex flex-col h-[400px] md:h-auto">
+                        <div className="w-full md:w-[340px] bg-muted/10 border-l flex flex-col h-[300px] md:h-auto shrink-0">
                             <div className="p-4 border-b font-medium flex items-center justify-between text-xs uppercase tracking-wider text-muted-foreground bg-muted/5">
                                 <div className="flex items-center gap-2">
                                     <MessageSquare className="h-3.5 w-3.5" /> Activity
@@ -1678,7 +1678,7 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
                             className="flex flex-col gap-3"
                         >
                             <div className="flex flex-col md:flex-row gap-2 md:items-center">
-                                <div className="flex-1 w-full">
+                                <div className="flex-1 w-full flex items-center gap-2">
                                     <Input
                                         id="main-task-input"
                                         placeholder={
@@ -1690,8 +1690,15 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
                                         }
                                         value={newTaskTitle}
                                         onChange={(e) => setNewTaskTitle(e.target.value)}
-                                        className="h-10 md:h-12 border-transparent bg-transparent text-base md:text-lg focus-visible:ring-0 px-2 md:px-4 placeholder:text-muted-foreground/60 dark:text-slate-100 shadow-none"
+                                        className="h-10 md:h-12 border-transparent bg-transparent text-base md:text-lg focus-visible:ring-0 px-2 md:px-4 placeholder:text-muted-foreground/60 dark:text-slate-100 shadow-none flex-1"
                                     />
+                                    <Button
+                                        type="submit"
+                                        size="icon"
+                                        className="h-10 w-10 bg-primary text-primary-foreground shrink-0 rounded-lg shadow-md hover:shadow-lg transition-all md:hidden"
+                                    >
+                                        <Plus className="h-5 w-5" />
+                                    </Button>
                                 </div>
 
                                 <div className="flex flex-wrap items-center gap-2 w-full md:w-auto px-2 justify-between md:justify-end">
@@ -1930,7 +1937,7 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
                                     <Button
                                         type="submit"
                                         size="icon"
-                                        className="h-9 w-9 bg-primary text-primary-foreground shrink-0 rounded-lg shadow-md hover:shadow-lg transition-all ml-1"
+                                        className="h-9 w-9 bg-primary text-primary-foreground shrink-0 rounded-lg shadow-md hover:shadow-lg transition-all ml-1 hidden md:flex"
                                     >
                                         <Plus className="h-5 w-5" />
                                     </Button>

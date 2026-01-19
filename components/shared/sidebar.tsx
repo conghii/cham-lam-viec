@@ -37,7 +37,7 @@ import { isSameDay } from "date-fns"
 import { NotificationsToggle } from "@/components/dashboard/notifications-toggle"
 
 
-export function Sidebar({ isCollapsed = false, className }: { isCollapsed?: boolean, className?: string }) {
+export function Sidebar({ isCollapsed = false, className, onNavigate }: { isCollapsed?: boolean, className?: string, onNavigate?: () => void }) {
     const pathname = usePathname()
     const router = useRouter()
     const { t } = useLanguage()
@@ -313,6 +313,7 @@ export function Sidebar({ isCollapsed = false, className }: { isCollapsed?: bool
                                     pathname === item.href && "bg-secondary dark:bg-slate-800 text-foreground dark:text-white shadow-sm",
                                     isCollapsed && "justify-center px-2"
                                 )}
+                                onClick={onNavigate}
                             >
                                 <item.icon className="h-5 w-5 shrink-0" />
                                 {!isCollapsed && (
@@ -341,6 +342,7 @@ export function Sidebar({ isCollapsed = false, className }: { isCollapsed?: bool
                                     pathname === item.href && "bg-secondary dark:bg-slate-800 text-foreground dark:text-white shadow-sm",
                                     isCollapsed && "justify-center px-2 h-12"
                                 )}
+                                onClick={onNavigate}
                             >
                                 <item.icon className="h-4 w-4 shrink-0" />
                                 {!isCollapsed && <span className="flex-1 text-left">{item.label}</span>}
@@ -357,7 +359,7 @@ export function Sidebar({ isCollapsed = false, className }: { isCollapsed?: bool
                 </div>
 
                 <Link href="/dashboard/profile">
-                    <Button variant="ghost" className={cn("w-full justify-start gap-3 px-2 py-6 h-auto hover:bg-accent/50 group", isCollapsed && "justify-center")}>
+                    <Button variant="ghost" className={cn("w-full justify-start gap-3 px-2 py-6 h-auto hover:bg-accent/50 group", isCollapsed && "justify-center")} onClick={onNavigate}>
                         <Avatar className="h-9 w-9 border border-border group-hover:border-primary/50 transition-colors shrink-0">
                             <AvatarImage src={userData?.photoURL || "/avatars/01.png"} />
                             <AvatarFallback>{userData?.displayName?.[0] || userData?.email?.[0]?.toUpperCase()}</AvatarFallback>

@@ -202,21 +202,21 @@ export function ArchivedTasksTable({ data, loading, tags = [], members = [], goa
     return (
         <div className="w-full flex flex-col h-full bg-slate-50/50 dark:bg-slate-900/50">
             {/* Toolbar */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900">
-                <div className="flex flex-1 items-center gap-2">
-                    <div className="relative w-full max-w-sm">
+            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between p-4 border-b border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 gap-4">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full md:w-auto flex-1">
+                    <div className="relative w-full md:max-w-sm">
                         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                         <Input
                             placeholder="Filter tasks..."
                             value={globalFilter ?? ""}
                             onChange={(event) => setGlobalFilter(event.target.value)}
-                            className="bg-slate-50 dark:bg-slate-900 border-0 focus-visible:ring-1 focus-visible:ring-primary/20 pl-9 h-9 w-[250px] lg:w-[350px]"
+                            className="bg-slate-50 dark:bg-slate-900 border-0 focus-visible:ring-1 focus-visible:ring-primary/20 pl-9 h-9 w-full md:w-[250px] lg:w-[350px]"
                         />
                     </div>
                     {/* Additional Filters can go here (Priority select, Date range) */}
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm" className="h-9 gap-2 border-dashed">
+                            <Button variant="outline" size="sm" className="h-9 gap-2 border-dashed w-full sm:w-auto">
                                 <Filter className="h-3.5 w-3.5" />
                                 Priority
                             </Button>
@@ -324,11 +324,11 @@ export function ArchivedTasksTable({ data, loading, tags = [], members = [], goa
             </div>
 
             {/* Pagination */}
-            <div className="flex items-center justify-end p-4 border-t border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 gap-2">
-                <div className="flex-1 text-sm text-muted-foreground">
+            <div className="flex flex-col sm:flex-row items-center justify-between p-4 border-t border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 gap-4">
+                <div className="flex-1 text-sm text-muted-foreground w-full text-center sm:text-left">
                     {table.getFilteredRowModel().rows.length} archived tasks
                 </div>
-                <div className="space-x-2">
+                <div className="flex items-center space-x-2 w-full sm:w-auto justify-center">
                     <Button
                         variant="outline"
                         size="sm"

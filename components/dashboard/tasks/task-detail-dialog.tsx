@@ -209,19 +209,22 @@ export function TaskDetailDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent showCloseButton={false} className="!w-[60vw] !max-w-[800px] h-[80vh] overflow-hidden flex flex-col p-0 gap-0">
+            <DialogContent showCloseButton={false} className="w-[95vw] md:w-[80vw] lg:w-[60vw] max-w-[800px] h-[90vh] md:h-[80vh] overflow-hidden flex flex-col p-0 gap-0">
                 {/* Header */}
                 <DialogHeader className="px-6 py-4 border-b bg-gradient-to-r from-muted/50 to-transparent flex-shrink-0">
                     <div className="flex items-start justify-between gap-4">
                         <div className="space-y-1 flex-1">
                             {isEditMode ? (
-                                <Input
-                                    value={title}
-                                    onChange={(e) => setTitle(e.target.value)}
-                                    className="font-bold text-xl border-transparent px-0 h-auto focus-visible:ring-0 bg-transparent placeholder:text-muted-foreground/80 hover:bg-muted/50 transition-colors"
-                                    placeholder="Task title"
-                                    autoFocus
-                                />
+                                <>
+                                    <DialogTitle className="sr-only">Edit Task</DialogTitle>
+                                    <Input
+                                        value={title}
+                                        onChange={(e) => setTitle(e.target.value)}
+                                        className="font-bold text-xl border-transparent px-0 h-auto focus-visible:ring-0 bg-transparent placeholder:text-muted-foreground/80 hover:bg-muted/50 transition-colors"
+                                        placeholder="Task title"
+                                        autoFocus
+                                    />
+                                </>
                             ) : (
                                 <DialogTitle className="text-xl font-bold leading-tight py-1">
                                     {task.title}
@@ -260,7 +263,7 @@ export function TaskDetailDialog({
                 </DialogHeader>
 
                 <div className="flex-1 overflow-hidden flex flex-col md:flex-row">
-                    <ScrollArea className="flex-1 p-6 h-full bg-background/50">
+                    <ScrollArea className="flex-1 p-4 md:p-6 h-full bg-background/50">
                         <div className="space-y-8">
                             {/* Metadata Grid */}
                             <div className="flex flex-wrap gap-6 p-4 bg-muted/20 rounded-xl border border-border/40">
@@ -411,7 +414,7 @@ export function TaskDetailDialog({
                     </ScrollArea>
 
                     {/* Activity Feed */}
-                    <div className="w-full md:w-[320px] bg-muted/10 border-l flex flex-col h-[400px] md:h-full">
+                    <div className="w-full md:w-[320px] bg-muted/10 border-l flex flex-col h-[300px] md:h-full shrink-0">
                         <div className="p-4 border-b font-medium text-xs uppercase tracking-wider text-muted-foreground bg-muted/5">
                             Activity
                         </div>

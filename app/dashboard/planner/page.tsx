@@ -226,7 +226,7 @@ export default function PlannerPage() {
     }
 
     return (
-        <div className="min-h-[calc(100vh-4rem)] -m-6 relative overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans selection:bg-indigo-100 dark:selection:bg-indigo-900/30 transition-colors duration-500">
+        <div className="min-h-[calc(100vh-4rem)] relative overflow-y-auto md:overflow-hidden overflow-x-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans selection:bg-indigo-100 dark:selection:bg-indigo-900/30 transition-colors duration-500">
             {/* Aurora Background (Light Pastel) */}
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
                 <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-indigo-200/40 dark:bg-indigo-900/20 rounded-full blur-[120px] animate-pulse" />
@@ -234,7 +234,7 @@ export default function PlannerPage() {
                 <div className="absolute top-[40%] left-[40%] w-[30%] h-[30%] bg-cyan-100/60 dark:bg-cyan-900/10 rounded-full blur-[100px] animate-pulse delay-700" />
             </div>
 
-            <div className="relative z-10 max-w-7xl mx-auto p-6 md:p-12 h-full flex flex-col items-center justify-center min-h-[calc(100vh-4rem)]">
+            <div className="relative z-10 max-w-7xl mx-auto p-4 md:p-12 h-auto lg:h-full flex flex-col items-center justify-center min-h-[calc(100vh-4rem)]">
 
                 {isGenerating ? (
                     <div className="flex flex-col items-center justify-center space-y-8 animate-in fade-in duration-500">
@@ -257,14 +257,14 @@ export default function PlannerPage() {
                     <div className="grid lg:grid-cols-2 gap-12 w-full items-center">
                         {/* Left: Intro & Visuals */}
                         {/* Left: My Plans List */}
-                        <div className="space-y-6 h-full min-h-[500px] flex flex-col justify-center">
+                        <div className="space-y-6 h-full min-h-[300px] lg:min-h-[500px] flex flex-col justify-center">
                             <div className="flex items-center justify-between px-1">
                                 <h2 className="text-sm font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">
                                     {t("my_plans")} ({savedPlans.length})
                                 </h2>
                             </div>
 
-                            <ScrollArea className="flex-1 pr-6 -mr-6 h-[500px]">
+                            <ScrollArea className="flex-1 h-[300px] lg:h-[500px]">
                                 <div className="space-y-4 pb-4 pt-1">
                                     {savedPlans.length === 0 ? (
                                         <div className="text-center py-16 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-3xl bg-white/30 dark:bg-slate-900/30">
@@ -275,7 +275,7 @@ export default function PlannerPage() {
                                             <div
                                                 key={saved.id}
                                                 className={cn(
-                                                    "group relative p-5 rounded-2xl border transition-all duration-300 cursor-pointer",
+                                                    "group relative p-3 md:p-5 rounded-2xl border transition-all duration-300 cursor-pointer",
                                                     selectedPlan?.id === saved.id
                                                         ? "bg-white dark:bg-slate-900 border-indigo-500/50 shadow-lg shadow-indigo-100 dark:shadow-indigo-900/20 ring-1 ring-indigo-500/20"
                                                         : "bg-white/60 dark:bg-slate-900/60 border-white/50 dark:border-slate-800 backdrop-blur-md hover:bg-white hover:dark:bg-slate-900 hover:shadow-md hover:border-indigo-200 dark:hover:border-indigo-800 hover:-translate-y-0.5"
@@ -285,7 +285,7 @@ export default function PlannerPage() {
                                                 <div className="flex justify-between items-start">
                                                     <div className="space-y-2">
                                                         <h3 className={cn(
-                                                            "font-bold text-lg transition-colors",
+                                                            "font-bold text-base md:text-lg transition-colors",
                                                             selectedPlan?.id === saved.id
                                                                 ? "text-indigo-600 dark:text-indigo-400"
                                                                 : "text-slate-800 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400"
@@ -320,11 +320,11 @@ export default function PlannerPage() {
                         {/* Right: Conversational UI Form */}
                         <div className="relative">
                             <div className="absolute -inset-1 bg-gradient-to-r from-indigo-200 to-purple-200 dark:from-indigo-900/40 dark:to-purple-900/40 rounded-3xl blur opacity-30 group-hover:opacity-50 transition duration-1000"></div>
-                            <div className="relative bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl border border-white/50 dark:border-slate-800/50 rounded-3xl p-8 md:p-10 shadow-2xl shadow-indigo-100/50 dark:shadow-none">
+                            <div className="relative bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl border border-white/50 dark:border-slate-800/50 rounded-3xl p-4 md:p-10 shadow-2xl shadow-indigo-100/50 dark:shadow-none">
                                 <div className="space-y-8">
                                     <div className="space-y-6">
                                         <div className="space-y-6">
-                                            <div className="text-xl md:text-3xl font-light leading-relaxed text-slate-600 dark:text-slate-400 flex flex-col md:block gap-4 md:gap-2">
+                                            <div className="text-lg md:text-3xl font-light leading-relaxed text-slate-600 dark:text-slate-400 flex flex-col md:block gap-4 md:gap-2">
                                                 <div className="inline-flex flex-col md:inline md:flex-row gap-2 md:gap-0">
                                                     <span>{t("i_want_to")}{" "}</span>
                                                     <input
@@ -332,7 +332,7 @@ export default function PlannerPage() {
                                                         placeholder="learn React Native..."
                                                         value={goalInput}
                                                         onChange={e => setGoalInput(e.target.value)}
-                                                        className="w-full md:w-auto md:min-w-[200px] bg-transparent border-b-2 border-slate-200 dark:border-slate-700 focus:border-indigo-500 dark:focus:border-indigo-400 outline-none text-slate-900 dark:text-white placeholder:text-slate-300 dark:placeholder:text-slate-600 font-medium transition-colors pb-1 md:text-center text-left"
+                                                        className="w-full max-w-full md:w-auto md:min-w-[200px] bg-transparent border-b-2 border-slate-200 dark:border-slate-700 focus:border-indigo-500 dark:focus:border-indigo-400 outline-none text-slate-900 dark:text-white placeholder:text-slate-300 dark:placeholder:text-slate-600 font-medium transition-colors pb-1 md:text-center text-left"
                                                     />
                                                 </div>
 
@@ -388,7 +388,7 @@ export default function PlannerPage() {
                                                         setGoalInput(chip.goal);
                                                         setHoursInput(chip.time);
                                                     }}
-                                                    className="px-4 py-2 rounded-full bg-slate-50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-indigo-200 dark:hover:border-indigo-500/50 text-sm text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all hover:scale-105 active:scale-95 shadow-sm"
+                                                    className="px-3 py-1 md:px-4 md:py-2 rounded-full bg-slate-50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-indigo-200 dark:hover:border-indigo-500/50 text-xs md:text-sm text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all hover:scale-105 active:scale-95 shadow-sm"
                                                 >
                                                     {chip.label}
                                                 </button>
@@ -399,7 +399,7 @@ export default function PlannerPage() {
                                     <Button
                                         onClick={() => handleGenerateWithContext([])}
                                         disabled={isGenerating}
-                                        className="w-full h-16 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-lg font-bold shadow-lg shadow-indigo-200 dark:shadow-indigo-900/30 hover:shadow-xl hover:shadow-indigo-300 dark:hover:shadow-indigo-800/50 transition-all transform hover:-translate-y-1 relative overflow-hidden group"
+                                        className="w-full h-12 md:h-16 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-base md:text-lg font-bold shadow-lg shadow-indigo-200 dark:shadow-indigo-900/30 hover:shadow-xl hover:shadow-indigo-300 dark:hover:shadow-indigo-800/50 transition-all transform hover:-translate-y-1 relative overflow-hidden group"
                                     >
                                         <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-in-out" />
                                         <span className="relative flex items-center gap-3">

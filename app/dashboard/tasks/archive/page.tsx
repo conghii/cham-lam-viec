@@ -119,31 +119,31 @@ export default function ArchivedTasksPage() {
     };
 
     return (
-        <div className="h-full flex flex-col space-y-6 pt-6 md:p-8 bg-slate-50/30 dark:bg-slate-950/30">
+        <div className="h-auto md:h-full flex flex-col space-y-6 pt-6 md:p-8 bg-slate-50/30 dark:bg-slate-950/30">
             <div className="flex flex-col gap-6 px-6 md:px-0">
                 {/* Header */}
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex items-start gap-4">
                         <Button
                             variant="ghost"
                             size="icon"
                             onClick={() => router.back()}
-                            className="h-8 w-8"
+                            className="h-8 w-8 mt-1 shrink-0"
                         >
                             <ArrowLeft className="h-4 w-4" />
                         </Button>
                         <div>
                             <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-                                <Archive className="h-6 w-6 text-muted-foreground" />
+                                <Archive className="h-6 w-6 text-muted-foreground hidden md:block" />
                                 Archived Tasks
                             </h2>
-                            <p className="text-muted-foreground">
+                            <p className="text-muted-foreground text-sm md:text-base">
                                 View and manage your completed tasks history.
                             </p>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-row items-center gap-2 w-full md:w-auto">
                         <Popover>
                             <PopoverTrigger asChild>
                                 <Button
@@ -151,23 +151,25 @@ export default function ArchivedTasksPage() {
                                     variant={"outline"}
                                     size="sm"
                                     className={cn(
-                                        "w-[240px] justify-start text-left font-normal",
+                                        "flex-1 md:w-[240px] md:flex-none justify-start text-left font-normal",
                                         !dateRange && "text-muted-foreground"
                                     )}
                                 >
-                                    <CalendarIcon className="mr-2 h-4 w-4" />
-                                    {dateRange?.from ? (
-                                        dateRange.to ? (
-                                            <>
-                                                {format(dateRange.from, "LLL dd, y")} -{" "}
-                                                {format(dateRange.to, "LLL dd, y")}
-                                            </>
+                                    <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
+                                    <span className="truncate">
+                                        {dateRange?.from ? (
+                                            dateRange.to ? (
+                                                <>
+                                                    {format(dateRange.from, "LLL dd, y")} -{" "}
+                                                    {format(dateRange.to, "LLL dd, y")}
+                                                </>
+                                            ) : (
+                                                format(dateRange.from, "LLL dd, y")
+                                            )
                                         ) : (
-                                            format(dateRange.from, "LLL dd, y")
-                                        )
-                                    ) : (
-                                        <span>Pick a date range</span>
-                                    )}
+                                            <span>Pick a date range</span>
+                                        )}
+                                    </span>
                                 </Button>
                             </PopoverTrigger>
                             <PopoverContent className="w-auto p-0" align="end">
@@ -182,9 +184,9 @@ export default function ArchivedTasksPage() {
                             </PopoverContent>
                         </Popover>
 
-                        <Button variant="outline" size="sm" onClick={handleExport}>
-                            <Download className="mr-2 h-4 w-4" />
-                            Export CSV
+                        <Button variant="outline" size="sm" onClick={handleExport} className="flex-1 md:flex-none md:w-auto px-2 md:px-4">
+                            <Download className="mr-2 h-4 w-4 shrink-0" />
+                            <span className="truncate">Export CSV</span>
                         </Button>
                     </div>
                 </div>
@@ -193,8 +195,8 @@ export default function ArchivedTasksPage() {
                 <ArchivedTasksStats tasks={filteredTasks} />
             </div>
 
-            <div className="flex-1 px-6 md:px-0 overflow-hidden pb-6">
-                <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 h-full flex flex-col overflow-hidden shadow-sm">
+            <div className="flex-1 px-6 md:px-0 md:overflow-hidden pb-6">
+                <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 h-auto md:h-full flex flex-col md:overflow-hidden shadow-sm">
                     <ArchivedTasksTable
                         data={filteredTasks}
                         loading={loading}
