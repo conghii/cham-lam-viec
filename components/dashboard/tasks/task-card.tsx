@@ -13,6 +13,7 @@ import {
     type Goal,
     Tag,
     updateTaskStatus,
+    deleteTask,
 } from "@/lib/firebase/firestore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -437,11 +438,15 @@ export function TaskCard({
                                 )}
                                 <DropdownMenuItem
                                     className="text-destructive focus:text-destructive"
-                                    onClick={(e) => {
+                                    onClick={async (e) => {
                                         e.stopPropagation();
-                                        onDeleteTag && task.id && onDeleteTag(task.id);
-                                        // Wait, original code was deleteTask(task.id) from firestore import. 
-                                        // I need to import deleteTask.
+                                        try {
+                                            await deleteTask(task.id);
+                                            toast.success(t("task_deleted") || "Task deleted");
+                                        } catch (error: any) {
+                                            console.error("Failed to delete task", error);
+                                            toast.error(t("failed_delete_task") || "Failed to delete task");
+                                        }
                                     }}
                                 >
                                     <Trash2 className="h-4 w-4 mr-2" /> {t("delete_task")}

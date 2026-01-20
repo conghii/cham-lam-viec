@@ -175,6 +175,9 @@ export const dictionaries = {
         "medium": "Medium",
         "high": "High",
         "backlog": "Backlog",
+        "confirm_delete_task": "Are you sure you want to delete this task?",
+        "task_deleted": "Task deleted successfully",
+        "failed_delete_task": "Failed to delete task",
 
         // Habits
         "habits_title": "Habit Tracker",
@@ -565,6 +568,9 @@ export const dictionaries = {
         "medium": "Trung bình",
         "high": "Cao",
         "backlog": "Tồn đọng",
+        "confirm_delete_task": "Bạn có chắc muốn xóa nhiệm vụ này?",
+        "task_deleted": "Đã xóa nhiệm vụ thành công",
+        "failed_delete_task": "Xóa nhiệm vụ thất bại",
 
         // Habits
         "habits_title": "Theo dõi thói quen",
