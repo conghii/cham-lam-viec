@@ -13,6 +13,7 @@ import { ContentWrapper } from "@/components/dashboard/content-wrapper"
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
 import { cn } from "@/lib/utils"
 import { HabitProvider } from "@/components/dashboard/habit-context"
+import { GamificationProvider } from "@/components/providers/gamification-provider"
 
 export default function DashboardLayout({
     children,
@@ -54,57 +55,61 @@ export default function DashboardLayout({
     if (isWidget) {
         return (
             <HabitProvider>
-                <div className="h-screen w-full bg-background dark:bg-slate-950 overflow-auto">
-                    {children}
-                </div>
+                <GamificationProvider>
+                    <div className="h-screen w-full bg-background dark:bg-slate-950 overflow-auto">
+                        {children}
+                    </div>
+                </GamificationProvider>
             </HabitProvider>
         )
     }
 
     return (
         <HabitProvider>
-            <div className={cn(
-                "flex h-screen w-full overflow-hidden transition-colors duration-700 ease-in-out bg-background dark:bg-slate-950",
-                isFocusMode && "bg-slate-50 dark:bg-slate-950"
-            )}>
-                {/* Desktop Layout */}
-                <div className="hidden md:flex w-full h-full overflow-hidden">
-                    <ResizablePanelGroup direction="horizontal">
-                        <ResizablePanel
-                            defaultSize={20}
-                            minSize={15}
-                            maxSize={250}
-                            collapsible={true}
-                            collapsedSize={4}
-                            className={cn(isCollapsed && "min-w-[50px] transition-all duration-300 ease-in-out")}
-                            onResize={(size: any) => setIsCollapsed(size < 10)}
-                        >
-                            <Sidebar isCollapsed={isCollapsed} />
-                        </ResizablePanel>
-                        <ResizableHandle withHandle />
-                        <ResizablePanel defaultSize={80}>
-                            <div className="flex flex-1 flex-col overflow-hidden h-full">
-                                <Header />
-                                <ContentWrapper>
-                                    {children}
-                                </ContentWrapper>
-                            </div>
-                        </ResizablePanel>
-                    </ResizablePanelGroup>
-                </div>
-
-                {/* Mobile Layout */}
-                <div className="flex flex-col h-full w-full md:hidden overflow-hidden relative">
-                    <div className="flex-1 flex flex-col overflow-hidden">
-                        <Header />
-                        <ContentWrapper>
-                            {children}
-                        </ContentWrapper>
+            <GamificationProvider>
+                <div className={cn(
+                    "flex h-screen w-full overflow-hidden transition-colors duration-700 ease-in-out bg-background dark:bg-slate-950",
+                    isFocusMode && "bg-slate-50 dark:bg-slate-950"
+                )}>
+                    {/* Desktop Layout */}
+                    <div className="hidden md:flex w-full h-full overflow-hidden">
+                        <ResizablePanelGroup direction="horizontal">
+                            <ResizablePanel
+                                defaultSize={20}
+                                minSize={15}
+                                maxSize={250}
+                                collapsible={true}
+                                collapsedSize={4}
+                                className={cn(isCollapsed && "min-w-[50px] transition-all duration-300 ease-in-out")}
+                                onResize={(size: any) => setIsCollapsed(size < 10)}
+                            >
+                                <Sidebar isCollapsed={isCollapsed} />
+                            </ResizablePanel>
+                            <ResizableHandle withHandle />
+                            <ResizablePanel defaultSize={80}>
+                                <div className="flex flex-1 flex-col overflow-hidden h-full">
+                                    <Header />
+                                    <ContentWrapper>
+                                        {children}
+                                    </ContentWrapper>
+                                </div>
+                            </ResizablePanel>
+                        </ResizablePanelGroup>
                     </div>
-                </div>
 
-                <BottomNav />
-            </div>
+                    {/* Mobile Layout */}
+                    <div className="flex flex-col h-full w-full md:hidden overflow-hidden relative">
+                        <div className="flex-1 flex flex-col overflow-hidden">
+                            <Header />
+                            <ContentWrapper>
+                                {children}
+                            </ContentWrapper>
+                        </div>
+                    </div>
+
+                    <BottomNav />
+                </div>
+            </GamificationProvider>
         </HabitProvider>
     )
 }

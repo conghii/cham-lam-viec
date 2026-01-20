@@ -6,6 +6,7 @@ import { getCurrentUser, updateUserProfile } from "@/lib/firebase/auth"
 import { getDailyWinsHistory, DailyWin, updateMemberName, subscribeToUserPosts, type Post, getUser, updateUserDetails, type User } from "@/lib/firebase/firestore"
 import { uploadFile } from "@/lib/firebase/storage"
 import { ThreeWins } from "@/components/dashboard/three-wins"
+import { WeeklyChart } from "@/components/dashboard/analytics/weekly-chart"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -452,6 +453,9 @@ export default function ProfilePage() {
                                     </div>
                                 </CardContent>
                             </Card>
+
+                            {/* Weekly Focus Chart */}
+                            <WeeklyChart />
                         </div>
                     </div>
                 </TabsContent>

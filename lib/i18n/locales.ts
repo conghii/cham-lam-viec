@@ -126,6 +126,9 @@ export const dictionaries = {
         "add_task_placeholder": "What needs to be done?",
         "no_date": "No Date",
         "add_task": "Add Task",
+        "no_tasks_yet": "No tasks yet",
+        "no_tasks_desc": "Get started by creating a task or use the default board setup.",
+        "create_default_board": "Create Default Board",
 
 
         "active_tasks": "Active Tasks",
@@ -200,6 +203,7 @@ export const dictionaries = {
         "days_week": "days/week",
         "no_habits_today": "No habits scheduled for today. Enjoy your day off!",
         "all_habits": "All Habits",
+        "create_habit": "Create Habit",
 
         // Goals
         "goals_title": "Goals & OKRs",
@@ -513,6 +517,9 @@ export const dictionaries = {
         "add_task_placeholder": "Cần làm gì hôm nay?",
         "no_date": "Ngày",
         "add_task": "Thêm nhiệm vụ",
+        "no_tasks_yet": "Chưa có nhiệm vụ nào",
+        "no_tasks_desc": "Hãy bắt đầu bằng cách tạo nhiệm vụ hoặc sử dụng thiết lập bảng mặc định.",
+        "create_default_board": "Tạo bảng mặc định",
 
         "active_tasks": "Nhiệm vụ đang làm",
         "active_goals": "Mục tiêu đang làm",
@@ -586,6 +593,7 @@ export const dictionaries = {
         "days_week": "ngày/tuần",
         "no_habits_today": "Không có thói quen nào hôm nay. Hãy tận hưởng ngày nghỉ!",
         "all_habits": "Tất cả thói quen",
+        "create_habit": "Tạo thói quen",
 
         // Common
         "loading": "Đang tải...",

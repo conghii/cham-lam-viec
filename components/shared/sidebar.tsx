@@ -35,6 +35,7 @@ import { useLanguage } from "@/components/shared/language-context"
 import { useHabits } from "@/components/dashboard/habit-context"
 import { isSameDay } from "date-fns"
 import { NotificationsToggle } from "@/components/dashboard/notifications-toggle"
+import { XPBar } from "@/components/dashboard/gamification/xp-bar"
 
 
 export function Sidebar({ isCollapsed = false, className, onNavigate }: { isCollapsed?: boolean, className?: string, onNavigate?: () => void }) {
@@ -376,7 +377,8 @@ export function Sidebar({ isCollapsed = false, className, onNavigate }: { isColl
                     </Button>
                 </Link>
 
-
+                {/* XP Bar removed as per user request */}
+                {/* {!isCollapsed && <XPBar />} */}
             </div>
         </aside >
     )

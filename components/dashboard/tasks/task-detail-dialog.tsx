@@ -16,8 +16,11 @@ import {
     Target,
     Pencil,
     Edit2,
-    User as UserIcon
+    User as UserIcon,
+    Sparkles
 } from "lucide-react";
+
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -92,6 +95,41 @@ export function TaskDetailDialog({
     orgId
 }: TaskDetailDialogProps) {
     const [isEditMode, setIsEditMode] = useState(false);
+    const [isGenerating, setIsGenerating] = useState(false);
+
+    const handleGenerateSubtasks = async () => {
+        if (!title) {
+            toast.error("Please ensure the task has a title first.");
+            return;
+        }
+        setIsGenerating(true);
+        try {
+            const res = await fetch("/api/ai/subtasks", {
+                method: "POST",
+                body: JSON.stringify({ title, description }),
+            });
+            const data = await res.json();
+
+            if (data.error) throw new Error(data.error);
+
+            if (data.subtasks && Array.isArray(data.subtasks)) {
+                const newSubtasks = data.subtasks.map((st: string) => ({
+                    id: Math.random().toString(36).substr(2, 9),
+                    title: st,
+                    completed: false
+                }));
+                // Append to existing, don't overwrite if in edit mode, usually user wants to add to it.
+                const updatedSubtasks = [...(task.subtasks || []), ...newSubtasks];
+                await updateTask(task.id, { subtasks: updatedSubtasks });
+                toast.success("Subtasks generated with AI! ✨");
+            }
+        } catch (e: any) {
+            console.error(e);
+            toast.error(e.message || "Failed to generate subtasks");
+        } finally {
+            setIsGenerating(false);
+        }
+    };
 
     // Task State
     const [title, setTitle] = useState(task.title);
@@ -386,7 +424,21 @@ export function TaskDetailDialog({
                                     <Label className="flex items-center gap-2 text-sm font-semibold">
                                         <CheckCircle2 className="h-4 w-4 text-primary" /> Subtasks
                                     </Label>
-                                    <span className="text-xs text-muted-foreground">{subtasksCompleted}/{subtasksTotal}</span>
+                                    <div className="flex items-center gap-2">
+                                        {isEditMode && (
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={handleGenerateSubtasks}
+                                                disabled={isGenerating}
+                                                className="h-6 text-[10px] px-2 gap-1.5 border-dashed border-indigo-300 text-indigo-600 hover:bg-indigo-50"
+                                            >
+                                                <Sparkles className={cn("h-3 w-3", isGenerating && "animate-spin")} />
+                                                {isGenerating ? "Generating..." : "Auto-Breakdown"}
+                                            </Button>
+                                        )}
+                                        <span className="text-xs text-muted-foreground">{subtasksCompleted}/{subtasksTotal}</span>
+                                    </div>
                                 </div>
 
                                 <div className="space-y-2">

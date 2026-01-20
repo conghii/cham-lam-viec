@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { format } from "date-fns";
+import { AmbiencePlayer } from "@/components/focus/ambience-player";
 import {
     Play, Pause, RotateCcw, Plus, Coffee,
     Layout, Calendar as CalendarIcon, Clock,
@@ -361,15 +362,18 @@ export default function FocusPage() {
 
                 {/* Widget Launcher */}
                 <div className="absolute top-4 right-4 z-30">
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-slate-400 hover:text-slate-600 font-bold text-[10px] uppercase tracking-widest gap-2"
-                        onClick={() => window.open('/dashboard/focus/widget', 'FocusWidget', 'width=350,height=550')}
-                    >
-                        <Maximize2 className="w-4 h-4" />
-                        <span className="hidden sm:inline">Mini Widget</span>
-                    </Button>
+                    <div className="flex items-center gap-2">
+                        <AmbiencePlayer />
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-slate-400 hover:text-slate-600 font-bold text-[10px] uppercase tracking-widest gap-2"
+                            onClick={() => window.open('/dashboard/focus/widget', 'FocusWidget', 'width=350,height=550')}
+                        >
+                            <Maximize2 className="w-4 h-4" />
+                            <span className="hidden sm:inline">Mini Widget</span>
+                        </Button>
+                    </div>
                 </div>
 
                 {/* Scrollable Content Area */}
