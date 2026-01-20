@@ -1137,6 +1137,9 @@ function TaskDetailsContent({
                 <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
                     {MainContent}
 
+                    {/* Mobile Properties Section (SidebarContent handles mobile layout internally) */}
+                    {SidebarContent}
+
                     {/* Mobile Comments Section */}
                     <div className="mt-8 pt-6 border-t">
                         <div className="flex items-center justify-between mb-4">

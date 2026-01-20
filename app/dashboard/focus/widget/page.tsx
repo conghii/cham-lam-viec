@@ -21,6 +21,7 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover";
+import { AmbiencePlayer } from "@/components/focus/ambience-player";
 
 export default function FocusWidgetPage() {
     const { t } = useLanguage();
@@ -237,8 +238,11 @@ export default function FocusWidgetPage() {
                 </Popover>
             </div>
 
+
             {/* Controls */}
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-4">
+                <AmbiencePlayer />
+
                 <Button
                     variant="outline"
                     size="icon"

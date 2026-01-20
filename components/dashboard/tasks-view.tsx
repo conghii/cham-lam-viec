@@ -5,6 +5,7 @@ import {
     LayoutList,
     Kanban,
     Grid2X2,
+    Maximize2,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -66,6 +67,16 @@ export function TasksView({ compact = false, className }: TasksViewProps) {
                                     {t("matrix_view")}
                                 </Button>
                             </div>
+
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-9 px-3 text-xs gap-2 ml-auto"
+                                onClick={() => window.open('/dashboard/tasks/widget', 'TasksWidget', 'width=350,height=600')}
+                            >
+                                <Maximize2 className="h-4 w-4" />
+                                <span className="hidden sm:inline">Mini Widget</span>
+                            </Button>
                         </div>
                     ) : null}
 

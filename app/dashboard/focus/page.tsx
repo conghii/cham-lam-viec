@@ -149,6 +149,11 @@ export default function FocusPage() {
 
     const toggleTimer = () => {
         if (!isRunning) {
+            if (!activeTaskId) {
+                toast.error("Please select a task to begin focus mode");
+                setIsSidebarOpen(true);
+                return;
+            }
             // Starting the timer - Close Sidebar
             setIsSidebarOpen(false);
         } else {
@@ -271,7 +276,11 @@ export default function FocusPage() {
                             {tasks.map(task => (
                                 <div
                                     key={task.id}
-                                    onClick={() => setActiveTaskId(task.id)}
+                                    onClick={() => {
+                                        setActiveTaskId(task.id);
+                                        // Auto-close sidebar on mobile/desktop selection for better flow
+                                        setIsSidebarOpen(false);
+                                    }}
                                     className={cn(
                                         "p-2.5 rounded-lg border transition-all cursor-pointer group relative overflow-hidden",
                                         activeTaskId === task.id

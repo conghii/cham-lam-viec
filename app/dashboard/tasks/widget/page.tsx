@@ -113,7 +113,7 @@ export default function TasksWidgetPage() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50/50 dark:bg-black p-4 flex flex-col font-sans">
+        <div className="min-h-screen bg-slate-50/40 dark:bg-black/40 backdrop-blur-xl p-4 flex flex-col font-sans">
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                     <div className="bg-blue-500 rounded-lg p-1.5">
